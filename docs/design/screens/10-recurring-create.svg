@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">创建周期账目</text>
+<text x="370" y="41" font-size="12" font-weight="500" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">取消</text>
+<rect x="16" y="90" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="125" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">名称</text>
+<text x="354" y="125" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">例如：房租</text>
+<rect x="16" y="156" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="191" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">类型</text>
+<text x="354" y="191" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">支出 &gt;</text>
+<rect x="16" y="222" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="257" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">金额</text>
+<text x="354" y="257" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥ 0.00</text>
+<rect x="16" y="288" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="323" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">分类</text>
+<text x="354" y="323" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">住房 &gt;</text>
+<rect x="16" y="354" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="389" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">重复</text>
+<text x="354" y="389" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">每月 &gt;</text>
+<rect x="16" y="420" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="455" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">开始日期</text>
+<text x="354" y="455" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">2026-07-15 &gt;</text>
+<rect x="16" y="486" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="521" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">生成方式</text>
+<text x="354" y="521" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">自动记账 &gt;</text>
+<rect x="16" y="552" width="358" height="58" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="587" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">归属账本</text>
+<text x="354" y="587" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">个人账本 &gt;</text>
+<rect x="16" y="628" width="358" height="70" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="657" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">结束条件</text>
+<text x="354" y="657" font-size="14" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">不设结束 &gt;</text>
+<text x="32" y="684" font-size="12" font-weight="400" fill="#a1a7b0" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">分期可选择总期数</text>
+<rect x="16" y="718" width="358" height="52" rx="14" fill="#5b7cfa" stroke="#5b7cfa" stroke-width="1"/>
+<text x="195" y="750" font-size="16" font-weight="600" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">保存规则</text>
+</svg>

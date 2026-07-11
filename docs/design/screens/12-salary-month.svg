@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">2026年7月工资</text>
+<text x="370" y="41" font-size="12" font-weight="500" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">已到账</text>
+<rect x="16" y="88" width="358" height="108" rx="16" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="120" font-size="13" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">实发工资</text>
+<text x="32" y="163" font-size="30" font-weight="700" fill="#5b7cfa" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥ 8,500</text>
+<text x="350" y="126" font-size="12" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">应发 ¥10,200</text>
+<text x="350" y="154" font-size="12" font-weight="400" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">扣除 ¥1,700</text>
+<text x="16" y="234" font-size="18" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">收入项目</text>
+<rect x="16" y="250" width="358" height="50" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="281" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">基本工资</text>
+<text x="354" y="281" font-size="14" font-weight="600" fill="#1f2329" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥8,000</text>
+<rect x="16" y="302" width="358" height="50" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="333" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">绩效工资</text>
+<text x="354" y="333" font-size="14" font-weight="600" fill="#1f2329" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥1,500</text>
+<rect x="16" y="354" width="358" height="50" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="385" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">奖金</text>
+<text x="354" y="385" font-size="14" font-weight="600" fill="#1f2329" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥700</text>
+<text x="16" y="430" font-size="18" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">扣除项目</text>
+<rect x="16" y="446" width="358" height="48" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="476" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">养老保险</text>
+<text x="354" y="476" font-size="14" font-weight="600" fill="#e67e22" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥640</text>
+<rect x="16" y="496" width="358" height="48" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="526" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">医疗保险</text>
+<text x="354" y="526" font-size="14" font-weight="600" fill="#e67e22" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥160</text>
+<rect x="16" y="546" width="358" height="48" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="576" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">失业保险</text>
+<text x="354" y="576" font-size="14" font-weight="600" fill="#e67e22" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥40</text>
+<rect x="16" y="596" width="358" height="48" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="626" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">公积金</text>
+<text x="354" y="626" font-size="14" font-weight="600" fill="#e67e22" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥600</text>
+<rect x="16" y="646" width="358" height="48" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<text x="32" y="676" font-size="14" font-weight="500" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">个人所得税</text>
+<text x="354" y="676" font-size="14" font-weight="600" fill="#e67e22" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥260</text>
+</svg>

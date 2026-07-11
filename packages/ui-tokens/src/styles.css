@@ -1,0 +1,63 @@
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --siyu-primary: #5b7cfa;
+  --siyu-primary-soft: #eef2ff;
+  --siyu-page-bg: #f6f7f9;
+  --siyu-surface: #ffffff;
+  --siyu-text: #1f2329;
+  --siyu-text-secondary: #6f7682;
+  --siyu-border: #e8ebef;
+  --siyu-income: #22a06b;
+  --siyu-expense: #e85d5d;
+  --siyu-warning: #f5a623;
+  --siyu-danger: #e5484d;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --siyu-primary: #7d98ff;
+  --siyu-primary-soft: #242c4a;
+  --siyu-page-bg: #0f1115;
+  --siyu-surface: #191c22;
+  --siyu-text: #f4f5f7;
+  --siyu-text-secondary: #a7adb7;
+  --siyu-border: #2b3039;
+  --siyu-income: #49bf8a;
+  --siyu-expense: #f17b7b;
+  --siyu-warning: #f4b85e;
+  --siyu-danger: #f17b7b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--siyu-page-bg);
+  color: var(--siyu-text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

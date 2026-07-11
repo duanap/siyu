@@ -1,0 +1,1445 @@
+openapi: 3.1.0
+info:
+  title: SIYU API
+  version: 0.1.0
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+  description: |
+    四时有余核心 REST API 契约。金额使用整数分且不得超过 JavaScript 安全整数；
+    业务日期使用 YYYY-MM-DD，系统时间使用 UTC ISO 8601。
+servers:
+  - url: /api/v1
+tags:
+  - name: Auth
+    description: QQ OAuth、令牌刷新与注销。
+  - name: Users
+    description: 当前用户资料。
+  - name: Ledgers
+    description: 个人账本与朝暮同笺共享关系。
+  - name: Categories
+    description: 系统和用户分类。
+  - name: Entries
+    description: 普通收入与支出账目。
+  - name: Debts
+    description: 本人私有借贷及处理记录。
+  - name: Recurring
+    description: 周期规则和执行实例。
+  - name: Salary
+    description: 本人私有工资档案、记录和统计。
+  - name: SavingGoals
+    description: 个人或情侣攒钱目标。
+  - name: Statistics
+    description: 账本统计查询。
+  - name: Notifications
+    description: 本人站内通知。
+  - name: Exports
+    description: 有权限范围内的 CSV 导出。
+security:
+  - bearerAuth: []
+paths:
+  /auth/qq/authorize:
+    get:
+      tags: [Auth]
+      operationId: authorizeQq
+      summary: 开始 QQ OAuth 登录
+      security: []
+      responses:
+        '302':
+          description: 跳转至 QQ OAuth
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/qq/callback:
+    get:
+      tags: [Auth]
+      operationId: handleQqCallback
+      summary: 处理 QQ OAuth 回调
+      security: []
+      parameters:
+        - in: query
+          name: code
+          required: true
+          schema: { type: string, minLength: 1 }
+        - in: query
+          name: state
+          required: true
+          schema: { type: string, minLength: 16, maxLength: 256 }
+      responses:
+        '302':
+          description: 登录完成后跳转至手机端
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshAccessToken
+      summary: 使用 HttpOnly Cookie 刷新访问令牌
+      security:
+        - refreshCookie: []
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: 注销当前会话
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /users/me:
+    get:
+      tags: [Users]
+      operationId: getCurrentUser
+      summary: 获取当前用户
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Users]
+      operationId: updateCurrentUser
+      summary: 更新当前用户资料
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUserRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /ledgers:
+    get:
+      tags: [Ledgers]
+      operationId: listLedgers
+      summary: 获取可访问账本
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /ledgers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Ledgers]
+      operationId: getLedger
+      summary: 获取账本详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /couple-ledgers:
+    post:
+      tags: [Ledgers]
+      operationId: createCoupleLedger
+      summary: 创建情侣账本
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCoupleLedgerRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /couple-ledgers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Ledgers]
+      operationId: updateCoupleLedger
+      summary: 更新情侣账本
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCoupleLedgerRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Ledgers]
+      operationId: dissolveCoupleLedger
+      summary: 解散情侣账本
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /couple-ledgers/{id}/invitations:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Ledgers]
+      operationId: createCoupleInvitation
+      summary: 创建有时效的情侣邀请
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /couple-invitations/accept:
+    post:
+      tags: [Ledgers]
+      operationId: acceptCoupleInvitation
+      summary: 接受情侣邀请
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcceptInvitationRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /couple-ledgers/{id}/leave:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Ledgers]
+      operationId: leaveCoupleLedger
+      summary: 普通成员退出情侣账本
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /categories:
+    get:
+      tags: [Categories]
+      operationId: listCategories
+      summary: 获取系统和个人分类
+      parameters:
+        - in: query
+          name: type
+          schema: { $ref: '#/components/schemas/EntryType' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Categories]
+      operationId: createCategory
+      summary: 创建个人分类
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCategoryRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+  /categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Categories]
+      operationId: updateCategory
+      summary: 更新个人分类
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCategoryRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /categories/{id}/disable:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Categories]
+      operationId: disableCategory
+      summary: 停用个人分类
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /entries:
+    get:
+      tags: [Entries]
+      operationId: listEntries
+      summary: 分页查询账目
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: month
+          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+        - in: query
+          name: type
+          schema: { $ref: '#/components/schemas/EntryType' }
+        - in: query
+          name: categoryId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: creatorUserId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: keyword
+          schema: { type: string, maxLength: 100 }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Entries]
+      operationId: createEntry
+      summary: 创建手工账目
+      description: 相同用户和操作下，相同幂等键与载荷重放原结果；不同载荷返回 409。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEntryRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /entries/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Entries]
+      operationId: getEntry
+      summary: 获取账目详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Entries]
+      operationId: updateEntry
+      summary: 更新手工账目
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEntryRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Entries]
+      operationId: deleteEntry
+      summary: 软删除账目
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /debts:
+    get:
+      tags: [Debts]
+      operationId: listDebts
+      summary: 查询本人借贷
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Debts]
+      operationId: createDebt
+      summary: 创建本人借贷
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDebtRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+  /debts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Debts]
+      operationId: getDebt
+      summary: 获取本人借贷详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Debts]
+      operationId: updateDebt
+      summary: 更新本人借贷
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateDebtRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Debts]
+      operationId: deleteDebt
+      summary: 软删除本人借贷
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /debts/{id}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Debts]
+      operationId: createDebtTransaction
+      summary: 记录还款或收款
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateDebtTransactionRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /recurring-rules:
+    get:
+      tags: [Recurring]
+      operationId: listRecurringRules
+      summary: 查询可见周期规则
+      parameters:
+        - $ref: '#/components/parameters/LedgerIdOptional'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Recurring]
+      operationId: createRecurringRule
+      summary: 创建周期规则
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRecurringRuleRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /recurring-rules/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Recurring]
+      operationId: getRecurringRule
+      summary: 获取周期规则详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Recurring]
+      operationId: updateRecurringRule
+      summary: 更新周期规则
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRecurringRuleRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Recurring]
+      operationId: deleteRecurringRule
+      summary: 结束并软删除周期规则
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /recurring-rules/{id}/pause:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Recurring]
+      operationId: pauseRecurringRule
+      summary: 暂停周期规则
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /recurring-rules/{id}/resume:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Recurring]
+      operationId: resumeRecurringRule
+      summary: 恢复周期规则
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /recurring-runs:
+    get:
+      tags: [Recurring]
+      operationId: listRecurringRuns
+      summary: 查询可见周期实例
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/RecurringRunStatus' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /recurring-runs/{id}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Recurring]
+      operationId: confirmRecurringRun
+      summary: 确认周期实例并入账
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmRecurringRunRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /recurring-runs/{id}/skip:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Recurring]
+      operationId: skipRecurringRun
+      summary: 跳过待确认周期实例
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /salary/profiles:
+    get:
+      tags: [Salary]
+      operationId: listSalaryProfiles
+      summary: 查询本人工资档案
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Salary]
+      operationId: createSalaryProfile
+      summary: 创建本人工资档案
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSalaryProfileRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+  /salary/profiles/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Salary]
+      operationId: updateSalaryProfile
+      summary: 更新本人工资档案
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSalaryProfileRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /salary/records:
+    get:
+      tags: [Salary]
+      operationId: listSalaryRecords
+      summary: 查询本人工资记录
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: year
+          schema: { type: integer, minimum: 2000, maximum: 9999 }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Salary]
+      operationId: createSalaryRecord
+      summary: 创建本人工资记录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSalaryRecordRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /salary/records/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Salary]
+      operationId: getSalaryRecord
+      summary: 获取本人工资记录详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Salary]
+      operationId: updateSalaryRecord
+      summary: 更新未到账工资记录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSalaryRecordRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /salary/records/{id}/mark-paid:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Salary]
+      operationId: markSalaryPaid
+      summary: 确认工资到账
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MarkSalaryPaidRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /salary/summary/{year}:
+    parameters:
+      - $ref: '#/components/parameters/Year'
+    get:
+      tags: [Salary]
+      operationId: getSalarySummary
+      summary: 获取本人年度工资汇总
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+  /salary/balance:
+    get:
+      tags: [Salary]
+      operationId: getSalaryBalance
+      summary: 获取本人工资周期余额
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /saving-goals:
+    get:
+      tags: [SavingGoals]
+      operationId: listSavingGoals
+      summary: 查询可见攒钱目标
+      parameters:
+        - $ref: '#/components/parameters/LedgerIdOptional'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [SavingGoals]
+      operationId: createSavingGoal
+      summary: 创建攒钱目标
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSavingGoalRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /saving-goals/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [SavingGoals]
+      operationId: getSavingGoal
+      summary: 获取攒钱目标详情
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [SavingGoals]
+      operationId: updateSavingGoal
+      summary: 更新攒钱目标
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSavingGoalRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [SavingGoals]
+      operationId: deleteSavingGoal
+      summary: 软删除攒钱目标
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /saving-goals/{id}/contributions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [SavingGoals]
+      operationId: addSavingContribution
+      summary: 添加本人存入记录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSavingContributionRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /saving-goals/{goalId}/contributions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/GoalId'
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [SavingGoals]
+      operationId: updateSavingContribution
+      summary: 更新本人存入记录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSavingContributionRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [SavingGoals]
+      operationId: deleteSavingContribution
+      summary: 软删除本人存入记录
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /statistics/overview:
+    get:
+      tags: [Statistics]
+      operationId: getStatisticsOverview
+      summary: 获取账本统计概览
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+        - in: query
+          name: month
+          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /statistics/trend:
+    get:
+      tags: [Statistics]
+      operationId: getStatisticsTrend
+      summary: 获取账本收支趋势
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /statistics/categories:
+    get:
+      tags: [Statistics]
+      operationId: getStatisticsCategories
+      summary: 获取账本分类统计
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /statistics/members:
+    get:
+      tags: [Statistics]
+      operationId: getStatisticsMembers
+      summary: 获取情侣成员对比
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+      responses:
+        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /notifications:
+    get:
+      tags: [Notifications]
+      operationId: listNotifications
+      summary: 查询本人站内通知
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /notifications/read:
+    post:
+      tags: [Notifications]
+      operationId: markNotificationsRead
+      summary: 标记本人通知已读
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MarkNotificationsReadRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+  /exports/entries.csv:
+    get:
+      tags: [Exports]
+      operationId: exportEntriesCsv
+      summary: 导出可访问账目 CSV
+      parameters:
+        - $ref: '#/components/parameters/LedgerId'
+      responses:
+        '200': { $ref: '#/components/responses/CsvExport' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /exports/salary.csv:
+    get:
+      tags: [Exports]
+      operationId: exportSalaryCsv
+      summary: 导出本人工资 CSV
+      parameters:
+        - in: query
+          name: year
+          schema: { type: integer, minimum: 2000, maximum: 9999 }
+      responses:
+        '200': { $ref: '#/components/responses/CsvExport' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: siyu_refresh_token
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+    GoalId:
+      in: path
+      name: goalId
+      required: true
+      schema: { type: string, format: uuid }
+    LedgerId:
+      in: query
+      name: ledgerId
+      required: true
+      schema: { type: string, format: uuid }
+    LedgerIdOptional:
+      in: query
+      name: ledgerId
+      schema: { type: string, format: uuid }
+    Page:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    Year:
+      in: path
+      name: year
+      required: true
+      schema: { type: integer, minimum: 2000, maximum: 9999 }
+  responses:
+    ResourceOk:
+      description: 查询或更新成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ResourceResponse' }
+    ResourceCreated:
+      description: 创建成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ResourceResponse' }
+    ResourceListOk:
+      description: 分页查询成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ResourceListResponse' }
+    ActionOk:
+      description: 操作成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ActionResponse' }
+    StatisticsOk:
+      description: 统计查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatisticsResponse' }
+    CsvExport:
+      description: CSV 文件
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Content-Disposition:
+          schema: { type: string }
+      content:
+        text/csv:
+          schema: { type: string }
+    ValidationFailed:
+      description: 请求参数不合法
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unauthorized:
+      description: 未认证或会话已失效
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: 无权执行目标操作
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: 资源不存在或按安全策略不可见
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: 幂等、唯一性、并发或业务状态冲突
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: 请求过于频繁
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  headers:
+    RequestId:
+      description: 当前请求追踪标识
+      schema: { type: string, minLength: 8, maxLength: 128 }
+  schemas:
+    Cent:
+      type: integer
+      format: int64
+      minimum: 1
+      maximum: 9007199254740991
+      description: 整数分，不得超过 JavaScript 安全整数。
+    NonNegativeCent:
+      type: integer
+      format: int64
+      minimum: 0
+      maximum: 9007199254740991
+    BusinessDate:
+      type: string
+      format: date
+    Timestamp:
+      type: string
+      format: date-time
+      description: UTC ISO 8601 时间。
+    IdempotencyKey:
+      type: string
+      minLength: 8
+      maxLength: 128
+      pattern: '^[A-Za-z0-9._:-]+$'
+    EntryType:
+      type: string
+      enum: [INCOME, EXPENSE]
+    RecurringRunStatus:
+      type: string
+      enum: [PENDING, GENERATED, CONFIRMED, SKIPPED, FAILED]
+    User:
+      type: object
+      required: [id, nickname, timezone, status]
+      properties:
+        id: { type: string, format: uuid }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        avatarUrl: { type: [string, 'null'], format: uri }
+        timezone: { type: string, minLength: 1, maxLength: 64 }
+        status: { type: string, enum: [ACTIVE, DISABLED] }
+    Ledger:
+      type: object
+      required: [id, type, name, ownerUserId, status]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [PERSONAL, COUPLE] }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        ownerUserId: { type: string, format: uuid }
+        status: { type: string, enum: [ACTIVE, DISSOLVED] }
+    Category:
+      type: object
+      required: [id, type, name, isSystem, isEnabled]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EntryType' }
+        name: { type: string, minLength: 1, maxLength: 50 }
+        icon: { type: [string, 'null'], maxLength: 100 }
+        sortOrder: { type: integer, minimum: 0 }
+        isSystem: { type: boolean }
+        isEnabled: { type: boolean }
+    Entry:
+      type: object
+      required: [id, ledgerId, creatorUserId, type, amountCent, categoryId, businessDate, sourceType]
+      properties:
+        id: { type: string, format: uuid }
+        ledgerId: { type: string, format: uuid }
+        creatorUserId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        paymentMethod: { type: [string, 'null'], maxLength: 50 }
+        sourceType: { type: string, enum: [MANUAL, SALARY, DEBT_TRANSACTION, RECURRING_RUN] }
+    Debt:
+      type: object
+      required: [id, direction, counterpartyName, principalCent, processedCent, remainingCent, startDate, status]
+      properties:
+        id: { type: string, format: uuid }
+        direction: { type: string, enum: [BORROWED, LENT] }
+        counterpartyName: { type: string, minLength: 1, maxLength: 100 }
+        principalCent: { $ref: '#/components/schemas/Cent' }
+        processedCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        remainingCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        startDate: { $ref: '#/components/schemas/BusinessDate' }
+        dueDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        status: { type: string, enum: [ACTIVE, SETTLED, OVERDUE, CANCELLED] }
+    DebtTransaction:
+      type: object
+      required: [id, debtId, userId, amountCent, businessDate, syncEntry]
+      properties:
+        id: { type: string, format: uuid }
+        debtId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        syncEntry: { type: boolean }
+        entryId: { type: [string, 'null'], format: uuid }
+        note: { type: [string, 'null'], maxLength: 500 }
+    RecurringRule:
+      type: object
+      required: [id, ledgerId, name, entryType, amountCent, categoryId, frequency, generationMode, status]
+      properties:
+        id: { type: string, format: uuid }
+        ledgerId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        entryType: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        frequency: { type: string, enum: [MONTHLY, YEARLY] }
+        generationMode: { type: string, enum: [AUTO, CONFIRM] }
+        status: { type: string, enum: [ACTIVE, PAUSED, COMPLETED, CANCELLED] }
+    RecurringRun:
+      type: object
+      required: [id, ruleId, scheduledDate, amountCent, status, attempts]
+      properties:
+        id: { type: string, format: uuid }
+        ruleId: { type: string, format: uuid }
+        scheduledDate: { $ref: '#/components/schemas/BusinessDate' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        status: { $ref: '#/components/schemas/RecurringRunStatus' }
+        entryId: { type: [string, 'null'], format: uuid }
+        attempts: { type: integer, minimum: 0 }
+        lastError: { type: [string, 'null'] }
+    SalaryProfile:
+      type: object
+      required: [id, name, payDay, defaultSyncEntry]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        employerName: { type: [string, 'null'], maxLength: 100 }
+        payDay: { type: integer, minimum: 1, maximum: 31 }
+        defaultSyncEntry: { type: boolean }
+    SalaryRecord:
+      type: object
+      required: [id, profileId, salaryMonth, grossCent, deductionCent, netCent, paymentStatus, items]
+      properties:
+        id: { type: string, format: uuid }
+        profileId: { type: string, format: uuid }
+        salaryMonth: { $ref: '#/components/schemas/BusinessDate' }
+        grossCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        deductionCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        netCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        paymentStatus: { type: string, enum: [UNPAID, PAID] }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/SalaryItem' }
+    SalaryItem:
+      type: object
+      required: [itemType, itemCode, itemName, amountCent]
+      properties:
+        itemType: { type: string, enum: [EARNING, DEDUCTION] }
+        itemCode: { type: string, minLength: 1, maxLength: 50 }
+        itemName: { type: string, minLength: 1, maxLength: 100 }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+    SavingGoal:
+      type: object
+      required: [id, ledgerId, creatorUserId, name, targetCent, initialCent, savedCent, status]
+      properties:
+        id: { type: string, format: uuid }
+        ledgerId: { type: string, format: uuid }
+        creatorUserId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        targetCent: { $ref: '#/components/schemas/Cent' }
+        initialCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        savedCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        targetDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        status: { type: string, enum: [ACTIVE, COMPLETED, CANCELLED] }
+    SavingContribution:
+      type: object
+      required: [id, goalId, userId, amountCent, businessDate]
+      properties:
+        id: { type: string, format: uuid }
+        goalId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+    Notification:
+      type: object
+      required: [id, type, title, content, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, minLength: 1, maxLength: 50 }
+        title: { type: string, minLength: 1, maxLength: 100 }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        readAt: { anyOf: [{ $ref: '#/components/schemas/Timestamp' }, { type: 'null' }] }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+    DomainResource:
+      oneOf:
+        - $ref: '#/components/schemas/User'
+        - $ref: '#/components/schemas/Ledger'
+        - $ref: '#/components/schemas/Category'
+        - $ref: '#/components/schemas/Entry'
+        - $ref: '#/components/schemas/Debt'
+        - $ref: '#/components/schemas/DebtTransaction'
+        - $ref: '#/components/schemas/RecurringRule'
+        - $ref: '#/components/schemas/RecurringRun'
+        - $ref: '#/components/schemas/SalaryProfile'
+        - $ref: '#/components/schemas/SalaryRecord'
+        - $ref: '#/components/schemas/SavingGoal'
+        - $ref: '#/components/schemas/SavingContribution'
+        - $ref: '#/components/schemas/Notification'
+    ResourceResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/DomainResource' }
+        requestId: { type: string }
+    ResourceListResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [items, page, pageSize, total, hasNext]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/DomainResource' }
+            page: { type: integer, minimum: 1 }
+            pageSize: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+            hasNext: { type: boolean }
+        requestId: { type: string }
+    ActionResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [status]
+          properties:
+            status: { type: string, minLength: 1, maxLength: 50 }
+        requestId: { type: string }
+    StatisticsResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          description: 统计字段按对应统计端点返回，所有金额字段以 Cent 结尾。
+          additionalProperties:
+            anyOf:
+              - { type: integer }
+              - { type: number }
+              - { type: string }
+              - { type: array }
+        requestId: { type: string }
+    ErrorResponse:
+      type: object
+      required: [success, code, message, details, requestId]
+      properties:
+        success: { const: false }
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+        requestId: { type: string }
+    UpdateUserRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        avatarUrl: { type: [string, 'null'], format: uri }
+        timezone: { type: string, minLength: 1, maxLength: 64 }
+    CreateCoupleLedgerRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, default: 朝暮同笺 }
+    UpdateCoupleLedgerRequest:
+      type: object
+      required: [name]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+    AcceptInvitationRequest:
+      type: object
+      required: [token]
+      additionalProperties: false
+      properties:
+        token: { type: string, minLength: 8, maxLength: 256 }
+    CreateCategoryRequest:
+      type: object
+      required: [type, name]
+      additionalProperties: false
+      properties:
+        type: { $ref: '#/components/schemas/EntryType' }
+        name: { type: string, minLength: 1, maxLength: 50 }
+        icon: { type: [string, 'null'], maxLength: 100 }
+        sortOrder: { type: integer, minimum: 0, default: 0 }
+    UpdateCategoryRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 50 }
+        icon: { type: [string, 'null'], maxLength: 100 }
+        sortOrder: { type: integer, minimum: 0 }
+    CreateEntryRequest:
+      type: object
+      required: [ledgerId, type, amountCent, categoryId, businessDate, idempotencyKey]
+      additionalProperties: false
+      properties:
+        ledgerId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        paymentMethod: { type: [string, 'null'], maxLength: 50 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    UpdateEntryRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        type: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        paymentMethod: { type: [string, 'null'], maxLength: 50 }
+    CreateDebtRequest:
+      type: object
+      required: [direction, counterpartyName, principalCent, startDate]
+      additionalProperties: false
+      properties:
+        direction: { type: string, enum: [BORROWED, LENT] }
+        counterpartyName: { type: string, minLength: 1, maxLength: 100 }
+        principalCent: { $ref: '#/components/schemas/Cent' }
+        startDate: { $ref: '#/components/schemas/BusinessDate' }
+        dueDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        note: { type: [string, 'null'], maxLength: 500 }
+        reminderEnabled: { type: boolean, default: false }
+    UpdateDebtRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        counterpartyName: { type: string, minLength: 1, maxLength: 100 }
+        dueDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        note: { type: [string, 'null'], maxLength: 500 }
+        reminderEnabled: { type: boolean }
+    CreateDebtTransactionRequest:
+      type: object
+      required: [amountCent, businessDate, syncEntry, idempotencyKey]
+      additionalProperties: false
+      properties:
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        syncEntry: { type: boolean }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+        note: { type: [string, 'null'], maxLength: 500 }
+    CreateRecurringRuleRequest:
+      type: object
+      required: [ledgerId, name, entryType, amountCent, categoryId, frequency, startDate, generationMode]
+      additionalProperties: false
+      properties:
+        ledgerId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        entryType: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        frequency: { type: string, enum: [MONTHLY, YEARLY] }
+        intervalValue: { type: integer, minimum: 1, default: 1 }
+        startDate: { $ref: '#/components/schemas/BusinessDate' }
+        endDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        totalOccurrences: { type: [integer, 'null'], minimum: 1 }
+        generationMode: { type: string, enum: [AUTO, CONFIRM] }
+        reminderDaysBefore: { type: integer, minimum: 0, default: 1 }
+    UpdateRecurringRuleRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        entryType: { $ref: '#/components/schemas/EntryType' }
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        categoryId: { type: string, format: uuid }
+        frequency: { type: string, enum: [MONTHLY, YEARLY] }
+        intervalValue: { type: integer, minimum: 1 }
+        startDate: { $ref: '#/components/schemas/BusinessDate' }
+        endDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        totalOccurrences: { type: [integer, 'null'], minimum: 1 }
+        generationMode: { type: string, enum: [AUTO, CONFIRM] }
+        reminderDaysBefore: { type: integer, minimum: 0 }
+    ConfirmRecurringRunRequest:
+      type: object
+      required: [amountCent, idempotencyKey]
+      additionalProperties: false
+      properties:
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    CreateSalaryProfileRequest:
+      type: object
+      required: [name, payDay, defaultSyncEntry]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        employerName: { type: [string, 'null'], maxLength: 100 }
+        payDay: { type: integer, minimum: 1, maximum: 31 }
+        defaultSyncEntry: { type: boolean }
+    UpdateSalaryProfileRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        employerName: { type: [string, 'null'], maxLength: 100 }
+        payDay: { type: integer, minimum: 1, maximum: 31 }
+        defaultSyncEntry: { type: boolean }
+    CreateSalaryRecordRequest:
+      type: object
+      required: [profileId, salaryMonth, items]
+      additionalProperties: false
+      properties:
+        profileId: { type: string, format: uuid }
+        salaryMonth: { type: string, pattern: '^\d{4}-\d{2}-01$' }
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/SalaryItem' }
+    UpdateSalaryRecordRequest:
+      type: object
+      required: [items]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/SalaryItem' }
+    MarkSalaryPaidRequest:
+      type: object
+      required: [paidDate, syncEntry, idempotencyKey]
+      additionalProperties: false
+      properties:
+        paidDate: { $ref: '#/components/schemas/BusinessDate' }
+        syncEntry: { type: boolean }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    CreateSavingGoalRequest:
+      type: object
+      required: [ledgerId, name, targetCent, initialCent]
+      additionalProperties: false
+      properties:
+        ledgerId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        targetCent: { $ref: '#/components/schemas/Cent' }
+        initialCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        targetDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        coverUrl: { type: [string, 'null'], format: uri }
+        note: { type: [string, 'null'], maxLength: 500 }
+    UpdateSavingGoalRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        targetCent: { $ref: '#/components/schemas/Cent' }
+        targetDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        coverUrl: { type: [string, 'null'], format: uri }
+        note: { type: [string, 'null'], maxLength: 500 }
+    CreateSavingContributionRequest:
+      type: object
+      required: [amountCent, businessDate, idempotencyKey]
+      additionalProperties: false
+      properties:
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    UpdateSavingContributionRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        amountCent: { $ref: '#/components/schemas/Cent' }
+        businessDate: { $ref: '#/components/schemas/BusinessDate' }
+        note: { type: [string, 'null'], maxLength: 500 }
+    MarkNotificationsReadRequest:
+      type: object
+      required: [ids]
+      additionalProperties: false
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          uniqueItems: true
+          items: { type: string, format: uuid }

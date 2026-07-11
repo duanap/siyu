@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">情侣账本</text>
+<circle cx="195" cy="142" r="42" fill="#eef2ff"/>
+<text x="195" y="151" font-size="28" font-weight="600" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">♥</text>
+<text x="195" y="214" font-size="20" font-weight="600" fill="#1f2329" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">和重要的人一起记录生活</text>
+<text x="195" y="244" font-size="13" font-weight="400" fill="#6f7682" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">最多两个人，共同账目清晰可见</text>
+<rect x="16" y="286" width="358" height="148" rx="16" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="318" font-size="13" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">我的邀请码</text>
+<text x="32" y="362" font-size="30" font-weight="700" fill="#5b7cfa" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">CP-8866</text>
+<text x="350" y="322" font-size="12" font-weight="400" fill="#f5a623" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">24小时有效</text>
+<rect x="32" y="382" width="140" height="36" rx="10" fill="#eef2ff" stroke="#eef2ff" stroke-width="1"/>
+<text x="102" y="406" font-size="13" font-weight="600" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">复制邀请码</text>
+<text x="16" y="478" font-size="18" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">加入情侣账本</text>
+<rect x="16" y="496" width="358" height="54" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="529" font-size="14" font-weight="400" fill="#a1a7b0" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">输入对方的邀请码</text>
+<rect x="16" y="566" width="358" height="52" rx="14" fill="#5b7cfa" stroke="#5b7cfa" stroke-width="1"/>
+<text x="195" y="598" font-size="16" font-weight="600" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">确认加入</text>
+<rect x="16" y="648" width="358" height="74" rx="14" fill="#fff8e8" stroke="#f5d89a" stroke-width="1"/>
+<text x="32" y="677" font-size="12" font-weight="400" fill="#8a6500" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">共同账目双方可见；工资和个人借贷</text>
+<text x="32" y="699" font-size="12" font-weight="400" fill="#8a6500" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">仍然仅本人可见。</text>
+</svg>

@@ -1,0 +1,41 @@
+{
+  "name": "siyu",
+  "version": "0.1.0",
+  "private": true,
+  "description": "朝暮同笺 · 四时有余 Monorepo",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "docs:check": "bash scripts/check-docs.sh",
+    "manifest:check": "bash scripts/generate-manifest.sh --check",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter @siyu/api test:e2e",
+    "build": "pnpm -r --if-present build",
+    "prisma:validate": "pnpm --filter @siyu/api prisma:validate",
+    "prisma:migrate:test": "bash scripts/test-migrations.sh",
+    "openapi:generate": "openapi-typescript docs/architecture/openapi.yaml -o packages/shared-types/src/openapi.generated.ts && prettier --write packages/shared-types/src/openapi.generated.ts",
+    "openapi:lint": "redocly lint docs/architecture/openapi.yaml && node scripts/check-openapi-coverage.mjs",
+    "compose:check": "node scripts/check-compose.mjs",
+    "verify": "bash scripts/verify.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@redocly/cli": "^2.5.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.5.1",
+    "globals": "^16.5.0",
+    "openapi-typescript": "^7.10.1",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.52.0",
+    "yaml": "^2.8.2"
+  }
+}

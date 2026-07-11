@@ -1,0 +1,482 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum LedgerType {
+  PERSONAL
+  COUPLE
+}
+
+enum LedgerStatus {
+  ACTIVE
+  DISSOLVED
+}
+
+enum MemberRole {
+  OWNER
+  MEMBER
+}
+
+enum MemberStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum EntryType {
+  INCOME
+  EXPENSE
+}
+
+enum EntrySourceType {
+  MANUAL
+  SALARY
+  DEBT_TRANSACTION
+  RECURRING_RUN
+}
+
+enum DebtDirection {
+  BORROWED
+  LENT
+}
+
+enum DebtStatus {
+  ACTIVE
+  SETTLED
+  OVERDUE
+  CANCELLED
+}
+
+enum RecurringFrequency {
+  MONTHLY
+  YEARLY
+}
+
+enum GenerationMode {
+  AUTO
+  CONFIRM
+}
+
+enum RecurringRuleStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum RecurringRunStatus {
+  PENDING
+  GENERATED
+  CONFIRMED
+  SKIPPED
+  FAILED
+}
+
+enum SalaryItemType {
+  EARNING
+  DEDUCTION
+}
+
+enum SalaryPaymentStatus {
+  UNPAID
+  PAID
+}
+
+enum SavingGoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  qqOpenId       String   @unique @map("qq_open_id")
+  nickname       String
+  avatarUrl      String?  @map("avatar_url")
+  timezone       String   @default("Asia/Shanghai")
+  status         UserStatus @default(ACTIVE)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  ownedLedgers   Ledger[] @relation("LedgerOwner")
+  memberships    LedgerMember[]
+  sentInvitations LedgerInvitation[] @relation("InvitationInviter")
+  acceptedInvitations LedgerInvitation[] @relation("InvitationAcceptor")
+  categories     Category[]
+  createdEntries Entry[]
+  debts          Debt[]
+  debtTransactions DebtTransaction[]
+  recurringRules RecurringRule[]
+  salaryProfiles SalaryProfile[]
+  salaryRecords  SalaryRecord[]
+  createdSavingGoals SavingGoal[]
+  contributions  SavingContribution[]
+  notifications  Notification[]
+  auditLogs      AuditLog[] @relation("AuditActor")
+
+  @@map("users")
+}
+
+model Ledger {
+  id          String   @id @default(uuid()) @db.Uuid
+  type        LedgerType
+  name        String
+  ownerUserId String   @map("owner_user_id") @db.Uuid
+  status      LedgerStatus @default(ACTIVE)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  owner          User @relation("LedgerOwner", fields: [ownerUserId], references: [id])
+  members        LedgerMember[]
+  invitations    LedgerInvitation[]
+  entries        Entry[]
+  recurringRules RecurringRule[]
+  savingGoals    SavingGoal[]
+
+  @@index([ownerUserId, type, status])
+  @@map("ledgers")
+}
+
+model LedgerMember {
+  id        String @id @default(uuid()) @db.Uuid
+  ledgerId  String @map("ledger_id") @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  role      MemberRole
+  status    MemberStatus @default(ACTIVE)
+  joinedAt  DateTime @default(now()) @map("joined_at") @db.Timestamptz
+  leftAt    DateTime? @map("left_at") @db.Timestamptz
+
+  ledger Ledger @relation(fields: [ledgerId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([ledgerId, userId])
+  @@index([userId, status])
+  @@map("ledger_members")
+}
+
+model LedgerInvitation {
+  id               String @id @default(uuid()) @db.Uuid
+  ledgerId         String @map("ledger_id") @db.Uuid
+  inviterUserId    String @map("inviter_user_id") @db.Uuid
+  tokenHash        String @unique @map("token_hash")
+  status           InvitationStatus @default(PENDING)
+  expiresAt        DateTime @map("expires_at") @db.Timestamptz
+  acceptedByUserId String? @map("accepted_by_user_id") @db.Uuid
+  acceptedAt       DateTime? @map("accepted_at") @db.Timestamptz
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  ledger     Ledger @relation(fields: [ledgerId], references: [id])
+  inviter    User @relation("InvitationInviter", fields: [inviterUserId], references: [id])
+  acceptedBy User? @relation("InvitationAcceptor", fields: [acceptedByUserId], references: [id])
+
+  @@index([ledgerId, status])
+  @@map("ledger_invitations")
+}
+
+model Category {
+  id          String @id @default(uuid()) @db.Uuid
+  ownerUserId String? @map("owner_user_id") @db.Uuid
+  type        EntryType
+  name        String
+  icon        String?
+  sortOrder   Int @default(0) @map("sort_order")
+  isSystem    Boolean @default(false) @map("is_system")
+  isEnabled   Boolean @default(true) @map("is_enabled")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  entries        Entry[]
+  recurringRules RecurringRule[]
+  owner          User? @relation(fields: [ownerUserId], references: [id])
+
+  @@index([ownerUserId, type, isEnabled])
+  @@map("categories")
+}
+
+model Entry {
+  id             String @id @default(uuid()) @db.Uuid
+  ledgerId       String @map("ledger_id") @db.Uuid
+  creatorUserId  String @map("creator_user_id") @db.Uuid
+  type           EntryType
+  amountCent     BigInt @map("amount_cent")
+  categoryId     String @map("category_id") @db.Uuid
+  businessDate   DateTime @map("business_date") @db.Date
+  note           String?
+  paymentMethod  String? @map("payment_method")
+  sourceType     EntrySourceType @default(MANUAL) @map("source_type")
+  sourceId       String? @map("source_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  ledger   Ledger @relation(fields: [ledgerId], references: [id])
+  creator  User @relation(fields: [creatorUserId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  debtTransaction DebtTransaction?
+  recurringRun RecurringRun?
+  salaryRecord SalaryRecord?
+
+  @@index([ledgerId, businessDate])
+  @@index([ledgerId, type, businessDate])
+  @@index([ledgerId, categoryId, businessDate])
+  @@index([ledgerId, creatorUserId, businessDate])
+  @@unique([creatorUserId, idempotencyKey])
+  @@map("entries")
+}
+
+model Debt {
+  id               String @id @default(uuid()) @db.Uuid
+  userId           String @map("user_id") @db.Uuid
+  direction        DebtDirection
+  counterpartyName String @map("counterparty_name")
+  principalCent    BigInt @map("principal_cent")
+  processedCent    BigInt @default(0) @map("processed_cent")
+  remainingCent    BigInt @map("remaining_cent")
+  startDate        DateTime @map("start_date") @db.Date
+  dueDate          DateTime? @map("due_date") @db.Date
+  status           DebtStatus @default(ACTIVE)
+  note             String?
+  reminderEnabled  Boolean @default(false) @map("reminder_enabled")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+
+  user         User @relation(fields: [userId], references: [id])
+  transactions DebtTransaction[]
+
+  @@index([userId, status, dueDate])
+  @@map("debts")
+}
+
+model DebtTransaction {
+  id             String @id @default(uuid()) @db.Uuid
+  debtId         String @map("debt_id") @db.Uuid
+  userId         String @map("user_id") @db.Uuid
+  amountCent     BigInt @map("amount_cent")
+  businessDate   DateTime @map("business_date") @db.Date
+  syncEntry      Boolean @default(false) @map("sync_entry")
+  entryId        String? @unique @map("entry_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key")
+  note           String?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  debt Debt @relation(fields: [debtId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  entry Entry? @relation(fields: [entryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, idempotencyKey])
+  @@index([debtId, businessDate])
+  @@map("debt_transactions")
+}
+
+model RecurringRule {
+  id                   String @id @default(uuid()) @db.Uuid
+  ownerUserId          String @map("owner_user_id") @db.Uuid
+  ledgerId             String @map("ledger_id") @db.Uuid
+  name                 String
+  entryType            EntryType @map("entry_type")
+  amountCent           BigInt @map("amount_cent")
+  categoryId           String @map("category_id") @db.Uuid
+  frequency            RecurringFrequency
+  intervalValue        Int @default(1) @map("interval_value")
+  startDate            DateTime @map("start_date") @db.Date
+  endDate              DateTime? @map("end_date") @db.Date
+  totalOccurrences     Int? @map("total_occurrences")
+  completedOccurrences Int @default(0) @map("completed_occurrences")
+  nextRunDate          DateTime? @map("next_run_date") @db.Date
+  generationMode       GenerationMode @map("generation_mode")
+  status               RecurringRuleStatus @default(ACTIVE)
+  reminderDaysBefore   Int @default(1) @map("reminder_days_before")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz
+
+  ledger   Ledger @relation(fields: [ledgerId], references: [id])
+  owner    User @relation(fields: [ownerUserId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  runs     RecurringRun[]
+
+  @@index([status, nextRunDate])
+  @@index([ownerUserId, ledgerId])
+  @@map("recurring_rules")
+}
+
+model RecurringRun {
+  id            String @id @default(uuid()) @db.Uuid
+  ruleId        String @map("rule_id") @db.Uuid
+  scheduledDate DateTime @map("scheduled_date") @db.Date
+  amountCent    BigInt @map("amount_cent")
+  status        RecurringRunStatus @default(PENDING)
+  entryId       String? @unique @map("entry_id") @db.Uuid
+  attempts      Int @default(0)
+  lastError     String? @map("last_error")
+  confirmedAt   DateTime? @map("confirmed_at") @db.Timestamptz
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  rule RecurringRule @relation(fields: [ruleId], references: [id])
+  entry Entry? @relation(fields: [entryId], references: [id], onDelete: Restrict)
+
+  @@unique([ruleId, scheduledDate])
+  @@index([status, scheduledDate])
+  @@map("recurring_runs")
+}
+
+model SalaryProfile {
+  id               String @id @default(uuid()) @db.Uuid
+  userId           String @map("user_id") @db.Uuid
+  name             String
+  employerName     String? @map("employer_name")
+  payDay           Int @map("pay_day")
+  defaultSyncEntry Boolean @default(true) @map("default_sync_entry")
+  status           String @default("ACTIVE")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+
+  user    User @relation(fields: [userId], references: [id])
+  records SalaryRecord[]
+
+  @@index([userId, status])
+  @@map("salary_profiles")
+}
+
+model SalaryRecord {
+  id            String @id @default(uuid()) @db.Uuid
+  userId        String @map("user_id") @db.Uuid
+  profileId     String @map("profile_id") @db.Uuid
+  salaryMonth   DateTime @map("salary_month") @db.Date
+  grossCent     BigInt @map("gross_cent")
+  deductionCent BigInt @map("deduction_cent")
+  netCent       BigInt @map("net_cent")
+  paymentStatus SalaryPaymentStatus @default(UNPAID) @map("payment_status")
+  paidDate      DateTime? @map("paid_date") @db.Date
+  entryId       String? @unique @map("entry_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
+
+  user    User @relation(fields: [userId], references: [id])
+  profile SalaryProfile @relation(fields: [profileId], references: [id])
+  entry   Entry? @relation(fields: [entryId], references: [id])
+  items   SalaryItem[]
+
+  @@index([userId, salaryMonth])
+  @@map("salary_records")
+}
+
+model SalaryItem {
+  id             String @id @default(uuid()) @db.Uuid
+  salaryRecordId String @map("salary_record_id") @db.Uuid
+  itemType       SalaryItemType @map("item_type")
+  itemCode       String @map("item_code")
+  itemName       String @map("item_name")
+  amountCent     BigInt @map("amount_cent")
+  sortOrder      Int @default(0) @map("sort_order")
+
+  record SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
+
+  @@index([salaryRecordId, itemType])
+  @@map("salary_items")
+}
+
+model SavingGoal {
+  id            String @id @default(uuid()) @db.Uuid
+  ledgerId      String @map("ledger_id") @db.Uuid
+  creatorUserId String @map("creator_user_id") @db.Uuid
+  name          String
+  targetCent    BigInt @map("target_cent")
+  initialCent   BigInt @default(0) @map("initial_cent")
+  savedCent     BigInt @default(0) @map("saved_cent")
+  targetDate    DateTime? @map("target_date") @db.Date
+  status        SavingGoalStatus @default(ACTIVE)
+  coverUrl      String? @map("cover_url")
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
+
+  ledger        Ledger @relation(fields: [ledgerId], references: [id])
+  creator       User @relation(fields: [creatorUserId], references: [id])
+  contributions SavingContribution[]
+
+  @@index([ledgerId, status])
+  @@map("saving_goals")
+}
+
+model SavingContribution {
+  id             String @id @default(uuid()) @db.Uuid
+  goalId         String @map("goal_id") @db.Uuid
+  userId         String @map("user_id") @db.Uuid
+  amountCent     BigInt @map("amount_cent")
+  businessDate   DateTime @map("business_date") @db.Date
+  note           String?
+  idempotencyKey String @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+
+  goal SavingGoal @relation(fields: [goalId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, idempotencyKey])
+  @@index([goalId, businessDate])
+  @@map("saving_contributions")
+}
+
+model Notification {
+  id          String @id @default(uuid()) @db.Uuid
+  userId      String @map("user_id") @db.Uuid
+  type        String
+  title       String
+  content     String
+  relatedType String? @map("related_type")
+  relatedId   String? @map("related_id") @db.Uuid
+  readAt      DateTime? @map("read_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String @id @default(uuid()) @db.Uuid
+  actorUserId String? @map("actor_user_id") @db.Uuid
+  actorType   String @map("actor_type")
+  action      String
+  targetType  String @map("target_type")
+  targetId    String? @map("target_id") @db.Uuid
+  requestId   String? @map("request_id")
+  beforeJson  Json? @map("before_json")
+  afterJson   Json? @map("after_json")
+  ipHash      String? @map("ip_hash")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  actor User? @relation("AuditActor", fields: [actorUserId], references: [id])
+
+  @@index([targetType, targetId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("audit_logs")
+}

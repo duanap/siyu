@@ -1,0 +1,12 @@
+{
+  "id": "/",
+  "name": "四时有余",
+  "short_name": "四时有余",
+  "description": "个人与情侣的轻量财务记录",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#5b7cfa"
+}

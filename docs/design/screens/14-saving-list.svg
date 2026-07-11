@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">攒钱目标</text>
+<text x="370" y="41" font-size="12" font-weight="500" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">新增</text>
+<rect x="16" y="88" width="358" height="94" rx="16" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="32" y="120" font-size="13" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">目标总额 / 已存</text>
+<text x="32" y="160" font-size="27" font-weight="700" fill="#5b7cfa" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥ 25,000 / ¥ 11,300</text>
+<rect x="16" y="222" width="358" height="82" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<circle cx="46" cy="262" r="20" fill="#eef2ff"/>
+<text x="46" y="267" font-size="12" font-weight="600" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">旅</text>
+<text x="78" y="253" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">旅行基金</text>
+<text x="78" y="278" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">68% · 目标12月31日</text>
+<text x="354" y="264" font-size="15" font-weight="600" fill="#22a06b" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥6,800 / ¥10,000</text>
+<rect x="16" y="316" width="358" height="82" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<circle cx="46" cy="356" r="20" fill="#eef2ff"/>
+<text x="46" y="361" font-size="12" font-weight="600" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">应</text>
+<text x="78" y="347" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">应急储备</text>
+<text x="78" y="372" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">35% · 进行中</text>
+<text x="354" y="358" font-size="15" font-weight="600" fill="#5b7cfa" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥3,500 / ¥10,000</text>
+<rect x="16" y="410" width="358" height="82" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<circle cx="46" cy="450" r="20" fill="#eef2ff"/>
+<text x="46" y="455" font-size="12" font-weight="600" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">情</text>
+<text x="78" y="441" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">情侣买家电</text>
+<text x="78" y="466" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">20% · 双方共同</text>
+<text x="354" y="452" font-size="15" font-weight="600" fill="#8d6be8" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥1,000 / ¥5,000</text>
+</svg>

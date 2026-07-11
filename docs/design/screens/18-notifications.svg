@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">消息中心</text>
+<text x="370" y="41" font-size="12" font-weight="500" fill="#6f7682" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">全部已读</text>
+<rect x="16" y="90" width="358" height="86" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<circle cx="46" cy="127" r="18" fill="#5b7cfa"/>
+<text x="46" y="132" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">!</text>
+<text x="76" y="119" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">情侣邀请</text>
+<text x="76" y="144" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">李四邀请你加入情侣账本</text>
+<text x="354" y="119" font-size="11" font-weight="400" fill="#8b929d" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">刚刚</text>
+<rect x="16" y="180" width="358" height="86" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<circle cx="46" cy="217" r="18" fill="#f5a623"/>
+<text x="46" y="222" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">!</text>
+<text x="76" y="209" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">周期账单待确认</text>
+<text x="76" y="234" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">本月话费需要确认实际金额</text>
+<text x="354" y="209" font-size="11" font-weight="400" fill="#8b929d" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">1小时前</text>
+<rect x="16" y="270" width="358" height="86" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<circle cx="46" cy="307" r="18" fill="#e5484d"/>
+<text x="46" y="312" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">!</text>
+<text x="76" y="299" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">借贷已逾期</text>
+<text x="76" y="324" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">欠张三的借款已逾期5天</text>
+<text x="354" y="299" font-size="11" font-weight="400" fill="#8b929d" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">昨天</text>
+<rect x="16" y="360" width="358" height="86" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<circle cx="46" cy="397" r="18" fill="#22a06b"/>
+<text x="46" y="402" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">!</text>
+<text x="76" y="389" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">攒钱目标完成</text>
+<text x="76" y="414" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">旅行基金已达到目标金额</text>
+<text x="354" y="389" font-size="11" font-weight="400" fill="#8b929d" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">7月8日</text>
+<rect x="16" y="450" width="358" height="86" rx="0" fill="#fff" stroke="#eef0f3" stroke-width="1"/>
+<circle cx="46" cy="487" r="18" fill="#e5484d"/>
+<text x="46" y="492" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">!</text>
+<text x="76" y="479" font-size="15" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">任务生成失败</text>
+<text x="76" y="504" font-size="12" font-weight="400" fill="#6f7682" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">房租账目生成失败，系统将重试</text>
+<text x="354" y="479" font-size="11" font-weight="400" fill="#8b929d" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">7月5日</text>
+<rect x="16" y="582" width="358" height="116" rx="14" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="195" y="620" font-size="16" font-weight="600" fill="#1f2329" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">空状态 / 错误状态</text>
+<text x="195" y="651" font-size="12" font-weight="400" fill="#6f7682" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">没有消息时展示简洁说明</text>
+<text x="195" y="675" font-size="12" font-weight="400" fill="#6f7682" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">加载失败时提供重新加载</text>
+</svg>

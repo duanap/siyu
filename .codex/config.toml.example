@@ -1,0 +1,8 @@
+# 复制到 ~/.codex/config.toml，或按当前 Codex 客户端支持方式设置。
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+plan_mode_reasoning_effort = "high"
+model_verbosity = "medium"
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"

@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+overrides:
+  '@hono/node-server': '>=1.19.13'
+
+allowBuilds:
+  '@prisma/engines': true
+  core-js: false
+  esbuild: true
+  msgpackr-extract: false
+  prisma: true

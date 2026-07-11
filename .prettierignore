@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+docs/design/screens
+docs
+apps/api/prisma/migrations
+apps/api/src/generated
+MANIFEST.md

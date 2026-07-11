@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844">
+<rect width="390" height="844" fill="#f6f7f9"/>
+<rect x="0" y="0" width="390" height="72" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+<text x="20" y="42" font-size="22" font-weight="600" fill="#1f2329" text-anchor="start" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">四时有余</text>
+<circle cx="195" cy="185" r="54" fill="#eef2ff"/>
+<text x="195" y="197" font-size="42" font-weight="700" fill="#5b7cfa" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">¥</text>
+<text x="195" y="282" font-size="20" font-weight="600" fill="#1f2329" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">把每一笔生活，记得更清楚</text>
+<text x="195" y="315" font-size="14" font-weight="400" fill="#6f7682" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">个人与情侣的轻量财务记录</text>
+<rect x="32" y="382" width="326" height="54" rx="14" fill="#5b7cfa" stroke="#5b7cfa" stroke-width="1"/>
+<text x="195" y="416" font-size="16" font-weight="600" fill="#fff" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">使用 QQ 登录</text>
+<rect x="32" y="452" width="326" height="48" rx="12" fill="#fff" stroke="#e8ebef" stroke-width="1"/>
+<text x="195" y="482" font-size="13" font-weight="400" fill="#6f7682" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">登录状态 / 错误提示</text>
+<text x="195" y="724" font-size="12" font-weight="400" fill="#8b929d" text-anchor="middle" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif">登录即表示同意用户协议和隐私政策</text>
+</svg>

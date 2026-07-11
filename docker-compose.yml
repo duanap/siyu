@@ -1,0 +1,121 @@
+name: siyu
+
+services:
+  siyu-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-siyu}
+      POSTGRES_USER: ${POSTGRES_USER:-siyu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-siyu_local_only}
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - siyu-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-siyu} -d ${POSTGRES_DB:-siyu}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  siyu-redis:
+    image: redis:7.4-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - siyu-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  siyu-api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      SIYU_API_PORT: 3000
+      SIYU_CORS_ORIGINS: ${SIYU_PUBLIC_URL:-http://localhost:8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
+      REDIS_URL: redis://siyu-redis:6379
+    depends_on:
+      siyu-postgres:
+        condition: service_healthy
+      siyu-redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(''http://localhost:3000/health'').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  siyu-worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ['node', 'dist/worker.js']
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
+      REDIS_URL: redis://siyu-redis:6379
+    depends_on:
+      siyu-postgres:
+        condition: service_healthy
+      siyu-redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "const net=require(''node:net'');const socket=net.createConnection(6379,''siyu-redis'');socket.setTimeout(3000);socket.on(''connect'',()=>{socket.end();process.exit(0)});socket.on(''timeout'',()=>process.exit(1));socket.on(''error'',()=>process.exit(1))"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  siyu-nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - 127.0.0.1:8080:80
+    depends_on:
+      siyu-api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1/health >/dev/null 2>&1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  siyu-postgres-test:
+    image: postgres:17-alpine
+    profiles: ['test']
+    environment:
+      POSTGRES_DB: siyu_test
+      POSTGRES_USER: siyu
+      POSTGRES_PASSWORD: siyu_test_only
+    ports:
+      - 127.0.0.1:55432:5432
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U siyu -d siyu_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  siyu-postgres-data:
+  siyu-redis-data:
