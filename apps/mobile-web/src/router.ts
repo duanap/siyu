@@ -4,15 +4,16 @@ import { useAuthStore } from './auth';
 import AccountView from './views/AccountView.vue';
 import AuthenticationView from './views/AuthenticationView.vue';
 import ForbiddenView from './views/ForbiddenView.vue';
+import HomeView from './views/HomeView.vue';
+import LegalView from './views/LegalView.vue';
 import OAuthCallbackView from './views/OAuthCallbackView.vue';
 
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: '/',
-      redirect: '/account',
-    },
+    { path: '/', name: 'home', component: HomeView, meta: { public: true } },
+    { path: '/privacy', name: 'privacy', component: LegalView, meta: { public: true } },
+    { path: '/terms', name: 'terms', component: LegalView, meta: { public: true } },
     { path: '/login', name: 'login', component: AuthenticationView, meta: { public: true } },
     { path: '/register', name: 'register', component: AuthenticationView, meta: { public: true } },
     {
