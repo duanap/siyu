@@ -40,7 +40,8 @@ export class AuthController {
   constructor(
     @Inject(AuthService) private readonly auth: AuthService,
     @Inject(OAuthService) private readonly oauth: OAuthService,
-    @Inject(AuthRateLimitService) private readonly rateLimit: AuthRateLimitService,
+    @Inject(AuthRateLimitService)
+    private readonly rateLimit: AuthRateLimitService,
   ) {}
 
   private setRefresh(response: Response, token: string): void {
@@ -123,7 +124,11 @@ export class AuthController {
     await this.rateLimit.consume('logout', request.ip || 'unknown', 30, 60);
     await this.auth.logout(request.cookies?.[REFRESH_COOKIE]);
     this.clearRefresh(response);
-    return { success: true, data: { status: 'ok' }, requestId: request.requestId };
+    return {
+      success: true,
+      data: { status: 'ok' },
+      requestId: request.requestId,
+    };
   }
 
   @Post('password/forgot')
@@ -131,14 +136,22 @@ export class AuthController {
   async forgot(@Body() body: ForgotPasswordDto, @Req() request: RequestWithId): Promise<object> {
     await this.rateLimit.consume('forgot', request.ip || 'unknown', 5, 3600);
     await this.auth.requestReset(body.email);
-    return { success: true, data: { status: 'accepted' }, requestId: request.requestId };
+    return {
+      success: true,
+      data: { status: 'accepted' },
+      requestId: request.requestId,
+    };
   }
 
   @Post('password/reset')
   @HttpCode(HttpStatus.OK)
   async reset(@Body() body: ResetPasswordDto, @Req() request: RequestWithId): Promise<object> {
     await this.auth.resetPassword(body.token, body.newPassword);
-    return { success: true, data: { status: 'ok' }, requestId: request.requestId };
+    return {
+      success: true,
+      data: { status: 'ok' },
+      requestId: request.requestId,
+    };
   }
 
   @Post('password/change')
