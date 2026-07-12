@@ -9,7 +9,7 @@
 | `.codex/config.toml.example` | `b352088ed273cc644744bca944b5b724188a61cbb5f623150d0dff09a9b1a2f8` |
 | `.env.example` | `46eebf5290c4cfd8718839446e9748ee7cf09ed1f352b9f8dc688d6e9a0ee361` |
 | `.env.test.example` | `3b4a02d5031fbd11e3fc1bab1b6c279605e163fd67c61dd2b6fc0710c53abf0c` |
-| `.github/workflows/ci.yml` | `859fbbbf9a46d30fc4ff8e9ffc399f4be73395c75c881f30629fe033a220ac55` |
+| `.github/workflows/ci.yml` | `fc87a4be290b7f12962732d8d812db46488f9f6593958c5f0aa20080eb88486d` |
 | `.gitignore` | `719c5adb279d021d19f1b9e07971aea385b5cd92afae2f36f86a6a0fb19b4f95` |
 | `.prettierignore` | `69bbb9b129e2fbcb1f2906a328a9c40c00c01e80e39297d7e7fd64fc87e8b903` |
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
