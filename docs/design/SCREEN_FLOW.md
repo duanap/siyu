@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-    A[QQ 登录] --> B[OAuth 回调]
+    A[邮箱注册或 QQ 登录] --> B[密码校验或 OAuth 回调]
     B --> C{已有用户?}
     C -->|否| D[创建用户和个人账本]
     C -->|是| E[读取默认账本]

@@ -11,6 +11,12 @@ enum UserStatus {
   DISABLED
 }
 
+enum AuthSessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
 enum LedgerType {
   PERSONAL
   COUPLE
@@ -106,7 +112,7 @@ enum SavingGoalStatus {
 
 model User {
   id             String   @id @default(uuid()) @db.Uuid
-  qqOpenId       String   @unique @map("qq_open_id")
+  qqOpenId       String?  @unique @map("qq_open_id")
   nickname       String
   avatarUrl      String?  @map("avatar_url")
   timezone       String   @default("Asia/Shanghai")
@@ -130,8 +136,119 @@ model User {
   contributions  SavingContribution[]
   notifications  Notification[]
   auditLogs      AuditLog[] @relation("AuditActor")
+  credential     UserCredential?
+  authSessions   AuthSession[]
+  passwordResetTokens PasswordResetToken[]
+  userRoles      UserRole[]
 
   @@map("users")
+}
+
+model UserCredential {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  emailNormalized String   @unique @map("email_normalized")
+  passwordHash    String   @map("password_hash")
+  passwordChangedAt DateTime @default(now()) @map("password_changed_at") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("user_credentials")
+}
+
+model AuthSession {
+  id         String            @id @default(uuid()) @db.Uuid
+  userId     String            @map("user_id") @db.Uuid
+  status     AuthSessionStatus @default(ACTIVE)
+  expiresAt  DateTime          @map("expires_at") @db.Timestamptz
+  lastUsedAt DateTime          @default(now()) @map("last_used_at") @db.Timestamptz
+  revokedAt  DateTime?         @map("revoked_at") @db.Timestamptz
+  revokeReason String?         @map("revoke_reason")
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, status, expiresAt])
+  @@map("auth_sessions")
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  sessionId    String    @map("session_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz
+  usedAt       DateTime? @map("used_at") @db.Timestamptz
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz
+  replacedById String?   @unique @map("replaced_by_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  session       AuthSession  @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  replacement   RefreshToken? @relation("TokenRotation", fields: [replacedById], references: [id], onDelete: Restrict)
+  replacedToken RefreshToken? @relation("TokenRotation")
+
+  @@index([sessionId, expiresAt])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model Role {
+  id          String @id @default(uuid()) @db.Uuid
+  code        String @unique
+  description String?
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String @id @default(uuid()) @db.Uuid
+  code        String @unique
+  description String?
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
 }
 
 model Ledger {

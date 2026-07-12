@@ -35,8 +35,8 @@ DATABASE_URL='postgresql://siyu:siyu_test_only@localhost:55432/siyu_test?schema=
   pnpm --filter @siyu/api exec prisma db pull --print --config prisma.config.ts \
   > /tmp/siyu-introspected.prisma
 
-if [[ "$(grep -c '^model ' /tmp/siyu-introspected.prisma)" -ne 17 ]]; then
-  echo "Expected 17 introspected application models." >&2
+if [[ "$(grep -c '^model ' /tmp/siyu-introspected.prisma)" -ne 25 ]]; then
+  echo "Expected 25 introspected application models." >&2
   exit 1
 fi
 
