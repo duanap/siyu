@@ -12,10 +12,30 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: HomeView, meta: { public: true } },
-    { path: '/privacy', name: 'privacy', component: LegalView, meta: { public: true } },
-    { path: '/terms', name: 'terms', component: LegalView, meta: { public: true } },
-    { path: '/login', name: 'login', component: AuthenticationView, meta: { public: true } },
-    { path: '/register', name: 'register', component: AuthenticationView, meta: { public: true } },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: LegalView,
+      meta: { public: true },
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: LegalView,
+      meta: { public: true },
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: AuthenticationView,
+      meta: { public: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: AuthenticationView,
+      meta: { public: true },
+    },
     {
       path: '/forgot-password',
       name: 'forgot',
