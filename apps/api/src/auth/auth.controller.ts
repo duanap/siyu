@@ -168,11 +168,16 @@ export class AuthController {
 
   @Get('qq/callback')
   async qqCallback(
-    @Query('code') code: string,
-    @Query('state') state: string,
+    @Query('code') code: string | undefined,
+    @Query('state') state: string | undefined,
     @Req() request: RequestWithId,
     @Res() response: Response,
   ): Promise<void> {
+    if (!code || !state) {
+      response.redirect(new URL('/?qqCallback=ready', this.config.publicUrl).toString());
+      return;
+    }
+
     await this.rateLimit.consume('qq-callback', request.ip || 'unknown', 20, 600);
     const userId = await this.oauth.consumeCallback(code, state);
     const result = await this.auth.createSession(userId);
