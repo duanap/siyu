@@ -23,6 +23,7 @@ jobs:
       - run: corepack enable
       - run: corepack prepare pnpm@11.11.0 --activate
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siyu/api prisma:generate
       - run: pnpm docs:check
       - run: pnpm format:check
       - run: pnpm lint
