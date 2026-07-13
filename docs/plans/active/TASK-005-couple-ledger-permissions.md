@@ -2,7 +2,7 @@
 
 ## 状态
 
-已完成
+已完成、已合并并正式关闭
 
 ## 模型与推理
 
@@ -94,6 +94,9 @@ git status --short
 - 2026-07-14：使用 Windows Chrome 150.0.7871.101 通过 CDP 完成 `/login`、`/account`、
   `/couple/invite` 的 320/375/480px 日间与暗色真浏览器补验；修复提交错误状态、返回点击区和长昵称头像压缩。
 - 2026-07-14：最终 `pnpm verify`、`git diff --check`、`pnpm audit` 通过；Compose 已关闭，本机 Redis 恢复并返回 `PONG`。
+- 2026-07-14：PR #2 以 Squash merge 合入 main，合并提交为
+  `6ebb13537dc0246a4a6a165bd348b88582c4dbbe`；main push CI Run `29275012134` 的 `quality`、
+  `database`、`secret-scan` 全部通过，TASK-005 正式关闭。
 
 ## 完成结果
 
@@ -105,3 +108,6 @@ Windows Chrome 150.0.7871.101 真浏览器覆盖 `/login`、`/account`、`/coupl
 页面/视口/主题组合，320/375/480px 均无横向溢出，日间与暗色模式、44px 点击区、Tab 焦点、长文本、
 加载、空、成功、失败、禁用、重复提交、邀请复制、双方权限、转移/退出/解散确认和刷新返回恢复均通过。
 临时截图和隔离浏览器目录已在验收后清理，TASK-005 达到仓库完成定义。
+
+PR #2 已以 Squash merge 合入 main，main 提交 `6ebb13537dc0246a4a6a165bd348b88582c4dbbe` 的
+push CI Run `29275012134` 全部通过；远程任务分支按负责人要求保留，TASK-005 已正式关闭。
