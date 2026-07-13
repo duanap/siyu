@@ -6,6 +6,10 @@
 时间：ISO 8601 UTC
 认证：Bearer Access Token；Refresh Token 使用 HttpOnly Cookie
 
+认证成功响应返回 15 分钟 Access Token 和当前用户；Refresh Token 不出现在 JSON 中，只通过
+`siyu_refresh_token` HttpOnly Cookie 传递。刷新必须轮换 Cookie，退出清除 Cookie 并幂等撤销会话。
+密码重置请求始终返回一致的受理结果。
+
 金额最小值与各业务规则一致，最大值不得超过 `Number.MAX_SAFE_INTEGER`（9007199254740991）。
 客户端幂等键按“用户 + 操作 + Key”隔离：相同载荷重放已保存结果，不同载荷返回
 `409 IDEMPOTENCY_CONFLICT`。
@@ -64,12 +68,18 @@
 
 ### 认证和用户
 
+- `POST /auth/register`
+- `POST /auth/login`
 - `GET /auth/qq/authorize`
 - `GET /auth/qq/callback`
 - `POST /auth/refresh`
 - `POST /auth/logout`
+- `POST /auth/password/forgot`
+- `POST /auth/password/reset`
+- `POST /auth/password/change`
 - `GET /users/me`
 - `PATCH /users/me`
+- `GET /admin/auth/check`
 
 ### 账本和情侣关系
 

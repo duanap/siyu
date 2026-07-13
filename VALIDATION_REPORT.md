@@ -1,60 +1,69 @@
-# TASK-000 验证报告
+# TASK-004 验证报告
 
-日期：2026-07-11
+日期：2026-07-12
 
 ## 结论
 
-TASK-000 最终验收通过并关闭。未开始 TASK-001；本报告作为 TASK-000 最终 Git 归档依据。
+TASK-004 身份认证与用户基础能力实现和本地最终验收通过。未开始 TASK-002、TASK-003 或其他业务
+任务。正式 QQ 凭据和生产邮件提供方未配置，因此未将线上联调写成已完成。
 
 ## 数据库验收
 
-- `pnpm prisma:migrate:test` 在 tmpfs 空库应用 `20260711000000_init`：通过。
+- 从 tmpfs 空库顺序应用 `20260711000000_init` 和
+  `20260712000000_authentication_foundation`：通过。
 - `prisma migrate status`：数据库最新；`prisma migrate diff --exit-code`：无差异。
-- `prisma db pull --print`：introspection 得到 17 个应用模型，并识别 migration 中的 CHECK。
-- 唯一约束、部分唯一索引、金额/日期/汇总 CHECK、复合归属外键：通过。
-- RESTRICT、SET NULL、CASCADE 删除策略：通过。
-- 两个并发连接复用同一用户幂等键：恰好一条成功，一条命中
-  `entries_creator_user_id_idempotency_key_key`，最终仅一行。
+- `prisma db pull --print`：introspection 得到 25 个应用模型，并识别受审迁移中的 CHECK。
+- 用户邮箱、QQ OpenID、角色权限、Refresh/Reset Token 唯一约束：通过。
+- 状态/时间 CHECK、复合归属外键以及 RESTRICT/CASCADE 删除策略：通过。
+- 既有财务基线的部分唯一索引、CHECK、归属外键和并发幂等回归：通过。
+
+## 认证与权限验收
+
+- 邮箱规范化、Argon2id、密码 12–128 字符、JWT、配置校验和前端认证状态单元测试：通过。
+- 注册事务同时创建 User、UserCredential、唯一 PERSONAL Ledger、OWNER LedgerMember 和 USER 角色。
+- 重复注册和并发同邮箱注册：恰好一个成功；失败不会留下部分用户或账本。
+- 登录未知邮箱与错误密码使用相同 401 响应；响应和日志不含密码哈希或原始 Token。
+- Access Token、`GET/PATCH /users/me`、USER/ADMIN 服务端 Guard：通过。
+- Refresh 正常轮换、旧令牌失效、重放撤销令牌族、并发消费条件更新：通过。
+- 改密轮换当前会话并撤销其他会话；重置令牌一次性使用并撤销全部会话：通过。
+- Logout 幂等；Redis 限流和一次性 QQ OAuth state 的隔离测试通过。
+- 邮件 Job 使用固定 ID；测试传输器由 Worker 消费并写入隔离邮箱；未配置生产 Provider 时明确失败。
 
 ## 容器与服务链路
 
-- Docker Engine 29.6.1、Docker Compose 5.3.1；Compose 配置校验通过。
 - `siyu-postgres`、`siyu-redis`、`siyu-api`、`siyu-worker`、`siyu-nginx`：全部 running/healthy。
-- PostgreSQL：接受连接，数据库时区 UTC，18 张 public 表，初始迁移 finished。
-- Redis：PING、临时键写入/读取/删除通过。
-- API：容器内可达 PostgreSQL 5432、Redis 6379，直连 `/health` 通过。
-- Worker：`node dist/worker.js` 运行，Redis 可见 ioredis 普通连接及 BullMQ `bzpopmin` 阻塞连接。
-- Nginx：移动端 `/`、后台 `/admin/` 和 `/health` 均返回 200；响应含一致的 requestId。
-- API 与 Worker 同时重启后容器 IP 互换，二者恢复 healthy，Worker 重连 Redis；Nginx 未重启并通过
-  Docker DNS 动态解析恢复 API 代理，`http://localhost:8080/health` 再次返回 200。
+- `http://localhost:8080/health`、移动端 `/`、后台 `/admin/`、PostgreSQL、Redis、API、Worker、Nginx
+  链路：通过。
+- 经 Nginx 实测注册、当前用户、刷新、USER 访问管理端 403、忘记密码 Worker 消费、QQ 未配置 503、
+  两次退出 200：通过。
+- API 与 Worker 同时重启后恢复 healthy，重启前 Cookie 可继续刷新会话：通过。
+- 五个容器完整日志已检查；API 重启窗口内 Nginx healthcheck 出现一次预期 502，API healthy 后自动恢复
+  200，无持续应用异常。Redis 的 `vm.overcommit_memory=0` 环境提示记录为 KI-016。
+
+## 前端验收
+
+- 移动端登录、注册、忘记/重置密码、OAuth 回调、无权限和受保护占位页：通过。
+- 管理端登录、启动恢复、路由 Guard、USER 无权限和 ADMIN 登录：通过。
+- Chrome 150 DevTools 设备指标实测 320/375/480px：`scrollWidth` 分别等于视口宽度，无横向溢出；
+  卡片宽度为 288/343/420px。
+- 日夜主题切换和 localStorage 持久化通过；控件最小点击高度 44px。
+- Browser 插件与 Playwright 在环境中不可用，按前端测试技能降级使用本机 Chrome DevTools Protocol；
+  控制台仅有未登录启动恢复的预期 401 网络记录，无页面脚本异常。
 
 ## 全量质量门禁
 
-- `pnpm verify`：通过，覆盖文档、MANIFEST、格式、lint、类型、单元/组件、Prisma、OpenAPI、
-  Compose、API E2E、build、Docker Compose config 和 Git diff 检查。
-- 17 项单元/组件测试和 3 项 API E2E：通过。
-- Redocly OpenAPI 3.1 lint，API_CONTRACT 覆盖 65/65，类型生成可重复：通过。
-- `pnpm audit --audit-level moderate`：无已知漏洞。
-- MANIFEST 哈希与最终文件一致；应用 Schema 与文档镜像逐字一致。
-- Git 分支、忽略文件、敏感文件、构建缓存、diff whitespace：通过；未提交任何内容。
+- `pnpm format`、`pnpm lint`、`pnpm typecheck`、`pnpm test`、`pnpm build`：通过。
+- 22 项单元/组件测试与隔离 PostgreSQL 认证 E2E：通过。
+- Prisma validate、空库迁移回放、OpenAPI lint/覆盖/类型生成、Compose 检查：通过。
+- OpenAPI 覆盖 71/71 个批准操作；应用 Schema 与文档镜像一致。
+- `pnpm audit`：无已知漏洞。
+- `pnpm verify`、MANIFEST、秘密扫描和 `git diff --check`：通过。
 
-## 验收中发现并修复
+## 配置边界和已知项
 
-- Prisma diff 缺少 shadow datasource：测试容器增加独立 `siyu_shadow` 并仅在 diff 时注入 URL。
-- 并发测试引用无效分类 UUID：改用有效分类，并断言指定唯一索引和最终行数。
-- Worker、Nginx 无 Docker healthcheck：补充 Redis TCP 和 Nginx 代理健康检查。
-- Nginx 缓存 API 旧容器 IP：启用 Docker DNS 动态解析，重启恢复实测通过。
-
-## 日志与已知环境提示
-
-五个容器完整日志已检查，无未处理的应用异常。Redis 报告宿主机 `vm.overcommit_memory=0`，不影响
-本次 PING、AOF 启动、Worker 连接和重启验收；低内存下后台持久化/复制风险记录为 KI-016，部署
-主机应设为 `1`。PostgreSQL Alpine 初始化时缺少系统 locale 的 warning 不影响 UTF8 数据库启动。
-
-## 视觉验证说明
-
-TASK-000 明确不制作高保真 UI，现有 18 张低保真图不是本任务要复刻的成品概念。浏览器冒烟仅
-验证工程壳的品牌、留白、Token、响应式和主题能力；没有伪装业务页面。浏览器插件不可用，因此
-使用本机 Chrome 150 的 DevTools Protocol，并用 `view_image` 检查低保真登录参考与最新 320px
-工程壳截图。检查点为品牌文案、居中布局、字体层级、背景/文字色、按钮边界、44px 点击区、无
-横向溢出和日夜切换；未发现工程基线范围内的可修复视觉问题。
+- QQ App ID/App Key/正式回调地址未提供；Provider 实现按官方 Authorization Code 流程隔离验证，
+  本地接口准确返回“服务未配置”。
+- 生产邮件提供方未配置；本任务交付真实队列、测试传输器和明确失败码，不承诺生产邮件已发送。
+- Docker 构建默认仍使用官方 npm registry；因本地官方 registry 多次超时，本次镜像验收通过显式
+  `PNPM_REGISTRY=https://registry.npmmirror.com` 构建参数完成，锁文件完整性仍由 pnpm 校验。
+- 未写入 `.env`、真实密钥、Token、密码、生产数据、构建产物、日志或截图。

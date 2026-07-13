@@ -42,6 +42,13 @@ services:
       SIYU_CORS_ORIGINS: ${SIYU_PUBLIC_URL:-http://localhost:8080}
       DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
       REDIS_URL: redis://siyu-redis:6379
+      JWT_SECRET: ${JWT_SECRET:-siyu-local-compose-jwt-secret-change-me-now}
+      SIYU_COOKIE_SECURE: 'false'
+      SIYU_PUBLIC_URL: ${SIYU_PUBLIC_URL:-http://localhost:8080}
+      SIYU_ADMIN_URL: ${SIYU_ADMIN_URL:-http://localhost:8080/admin/}
+      SIYU_QQ_CLIENT_ID: ${SIYU_QQ_CLIENT_ID:-}
+      SIYU_QQ_CLIENT_SECRET: ${SIYU_QQ_CLIENT_SECRET:-}
+      SIYU_QQ_CALLBACK_URL: ${SIYU_QQ_CALLBACK_URL:-http://localhost:8080/api/v1/auth/qq/callback}
     depends_on:
       siyu-postgres:
         condition: service_healthy
@@ -67,6 +74,8 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
       REDIS_URL: redis://siyu-redis:6379
+      JWT_SECRET: ${JWT_SECRET:-siyu-local-compose-jwt-secret-change-me-now}
+      SIYU_MAIL_PROVIDER: ${SIYU_MAIL_PROVIDER:-test}
     depends_on:
       siyu-postgres:
         condition: service_healthy

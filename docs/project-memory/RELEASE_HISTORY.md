@@ -11,3 +11,10 @@
 日期：2026-07-11
 内容：建立 SIYU Monorepo、Prisma/OpenAPI、API/Worker、Docker/Nginx、测试和 CI 工程基线。
 状态：工程基线已确认；空库迁移、数据库约束/并发、五容器健康、服务链路和重启恢复均通过。
+
+## v0.2.0-authentication-foundation
+
+日期：2026-07-12
+内容：实现邮箱密码与 QQ OAuth 双认证、用户和个人账本原子初始化、可撤销会话、密码重置、最小
+RBAC、移动端认证页面和管理端登录基础。
+状态：本地验收通过；QQ Provider 仅完成隔离测试，正式 QQ 凭据和生产邮件提供方仍待部署配置。

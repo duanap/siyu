@@ -86,6 +86,8 @@ flowchart TB
 ## API 与 Worker 边界
 
 - API 负责认证、授权、校验、同步事务、任务投递与 `/health`。
+- Auth 模块实现邮箱密码和 QQ OAuth；Session/Refresh、RBAC 和密码重置均持久化到 PostgreSQL，
+  OAuth state 与认证限流使用 Redis。
 - Worker 只消费 BullMQ 任务，不暴露业务 HTTP 接口，不复制领域规则。
 - TASK-000 只建立两个入口和 Redis 连接能力，不注册业务 Controller、Repository 或 Job。
 

@@ -6,7 +6,7 @@
 | TASK-001 | 已吸收进 TASK-000（不再单独执行） | M1 | — | — | TASK-000 |
 | TASK-002 | 设计 Token 与基础组件 | M1 | Terra | Medium | TASK-000 |
 | TASK-003 | PostgreSQL/Prisma 业务实现基线 | M1 | Sol | High | TASK-000 |
-| TASK-004 | 认证、用户和个人账本初始化 | M2 | Sol | High | TASK-003 |
+| TASK-004 | 邮箱密码与 QQ 认证、用户和个人账本初始化 | M2 | Sol | High | TASK-000 |
 | TASK-005 | 情侣账本邀请和权限 | M2 | Sol | Extra High | TASK-004 |
 | TASK-006 | 分类模块 | M3 | Terra | Medium | TASK-003 |
 | TASK-007 | 普通账目 API | M3 | Sol | High | TASK-005,TASK-006 |

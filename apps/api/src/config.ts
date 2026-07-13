@@ -2,6 +2,15 @@ export interface AppConfig {
   port: number;
   corsOrigins: string[];
   redisUrl: string;
+  databaseUrl: string;
+  jwtSecret: string;
+  publicUrl: string;
+  adminUrl: string;
+  isProduction: boolean;
+  cookieSecure: boolean;
+  qqClientId: string | undefined;
+  qqClientSecret: string | undefined;
+  qqCallbackUrl: string | undefined;
 }
 
 function readPort(value: string | undefined): number {
@@ -26,9 +35,30 @@ function readOrigins(value: string | undefined): string[] {
 }
 
 export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppConfig {
+  const isProduction = environment.NODE_ENV === 'production';
+  const jwtSecret =
+    environment.JWT_SECRET ?? (isProduction ? '' : 'siyu-test-only-jwt-secret-change-me');
+  if (jwtSecret.length < 32) {
+    throw new TypeError('JWT_SECRET 必须至少包含 32 个字符。');
+  }
+
   return {
     port: readPort(environment.SIYU_API_PORT),
     corsOrigins: readOrigins(environment.SIYU_CORS_ORIGINS),
     redisUrl: environment.REDIS_URL ?? 'redis://localhost:6379',
+    databaseUrl:
+      environment.DATABASE_URL ??
+      'postgresql://siyu:siyu_local_only@localhost:5432/siyu?schema=public',
+    jwtSecret,
+    publicUrl: environment.SIYU_PUBLIC_URL ?? 'http://localhost:5173',
+    adminUrl: environment.SIYU_ADMIN_URL ?? 'http://localhost:5174/admin/',
+    isProduction,
+    cookieSecure:
+      environment.SIYU_COOKIE_SECURE === undefined
+        ? isProduction
+        : environment.SIYU_COOKIE_SECURE === 'true',
+    qqClientId: environment.SIYU_QQ_CLIENT_ID || undefined,
+    qqClientSecret: environment.SIYU_QQ_CLIENT_SECRET || undefined,
+    qqCallbackUrl: environment.SIYU_QQ_CALLBACK_URL || undefined,
   };
 }

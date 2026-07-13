@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+  '/auth/register': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 使用邮箱和密码注册 */
+    post: operations['registerWithEmail'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/login': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 使用邮箱和密码登录 */
+    post: operations['loginWithPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/qq/authorize': {
     parameters: {
       query?: never;
@@ -66,6 +100,74 @@ export interface paths {
     put?: never;
     /** 注销当前会话 */
     post: operations['logout'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/forgot': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 请求密码重置 */
+    post: operations['requestPasswordReset'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/reset': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 使用一次性令牌重置密码 */
+    post: operations['resetPassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password/change': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 修改当前用户密码并轮换会话 */
+    post: operations['changePassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/auth/check': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 校验管理端访问权限 */
+    get: operations['checkAdminAccess'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -883,6 +985,10 @@ export interface components {
       timezone: string;
       /** @enum {string} */
       status: 'ACTIVE' | 'DISABLED';
+      /** Format: email */
+      email: string | null;
+      roles: ('USER' | 'ADMIN')[];
+      permissions: string[];
     };
     Ledger: {
       /** Format: uuid */
@@ -1102,6 +1208,40 @@ export interface components {
       };
       requestId: string;
     };
+    AuthTokenResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        accessToken: string;
+        /** @constant */
+        expiresIn: 900;
+        user: components['schemas']['User'];
+      };
+      requestId: string;
+    };
+    RegisterRequest: {
+      /** Format: email */
+      email: string;
+      password: string;
+      nickname: string;
+    };
+    LoginRequest: {
+      /** Format: email */
+      email: string;
+      password: string;
+    };
+    ForgotPasswordRequest: {
+      /** Format: email */
+      email: string;
+    };
+    ResetPasswordRequest: {
+      token: string;
+      newPassword: string;
+    };
+    ChangePasswordRequest: {
+      currentPassword: string;
+      newPassword: string;
+    };
     UpdateUserRequest: {
       nickname?: string;
       /** Format: uri */
@@ -1316,6 +1456,17 @@ export interface components {
         'application/json': components['schemas']['ActionResponse'];
       };
     };
+    /** @description 认证成功并通过 HttpOnly Cookie 设置轮换用 Refresh Token */
+    AuthTokenOk: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        'Set-Cookie'?: string;
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['AuthTokenResponse'];
+      };
+    };
     /** @description 统计查询成功 */
     StatisticsOk: {
       headers: {
@@ -1410,6 +1561,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  registerWithEmail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RegisterRequest'];
+      };
+    };
+    responses: {
+      201: components['responses']['AuthTokenOk'];
+      400: components['responses']['ValidationFailed'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  loginWithPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LoginRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['AuthTokenOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   authorizeQq: {
     parameters: {
       query?: never;
@@ -1463,7 +1652,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['AuthTokenOk'];
       401: components['responses']['Unauthorized'];
       429: components['responses']['RateLimited'];
     };
@@ -1478,7 +1667,75 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components['responses']['ActionOk'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  requestPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ForgotPasswordRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['ActionOk'];
+      400: components['responses']['ValidationFailed'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResetPasswordRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['ActionOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
+    };
+  };
+  changePassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ChangePasswordRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['AuthTokenOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  checkAdminAccess: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ActionOk'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
   getCurrentUser: {

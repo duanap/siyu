@@ -73,3 +73,43 @@ OpenAPI 覆盖 65/65 个批准操作，并定义统一成功/错误/分页、金
 
 - 所有业务模块、高保真 UI、真实 OAuth/域名/S3/生产密钥。
 - 无 TASK-000 范围内未完成项；TASK-001 已吸收且不再单独执行。
+
+## 2026-07-12 / TASK-004
+
+### 任务
+
+实现邮箱密码与 QQ OAuth 双认证、用户原子初始化、安全会话、密码重置、最小 RBAC，以及移动端和
+管理端认证基础。
+
+### 修改内容
+
+- 新增 Auth、Users、Database、Session/RBAC、QQ Provider 和 Redis 限流模块。
+- 实现 Argon2id 密码、15 分钟 Access Token、30 天 Refresh Session、原子轮换和重放撤销。
+- 实现密码修改/重置、BullMQ 邮件任务、认证审计脱敏和严格环境变量配置。
+- 实现移动端登录/注册/忘记与重置密码/OAuth 回调/受保护占位页，以及管理端登录和 ADMIN Guard。
+- OpenAPI 从 65 扩展到 71 个批准操作并重新生成共享类型；同步产品、设计、架构和项目记忆。
+
+### 数据库变化
+
+新增正式迁移 `20260712000000_authentication_foundation`，将 `User.qqOpenId` 改为可空唯一，并新增
+UserCredential、AuthSession、RefreshToken、PasswordResetToken、Role、Permission、UserRole、
+RolePermission。迁移包含唯一约束、CHECK、复合约束和明确的 RESTRICT/CASCADE 删除策略。
+
+### API 变化
+
+实现既有 QQ authorize/callback、refresh、logout、users/me 契约，新增邮箱 register/login、
+forgot/reset/change password 和管理端认证检查；Refresh Token 仅通过 HttpOnly Cookie 传递。
+
+### 验证
+
+- 22 项单元/组件测试和隔离 PostgreSQL 认证 E2E 通过。
+- 空库迁移、status、零 diff、25 模型 introspection、约束与并发幂等通过。
+- OpenAPI 71/71、Prisma、构建、Compose、依赖审计和 `pnpm verify` 通过。
+- 五容器服务链路、密码重置 Worker、API/Worker 重启后会话恢复通过。
+- Chrome DevTools 真实 320/375/480 CSS 视口无横向溢出，主题切换通过。
+
+### 未完成
+
+- 未配置真实 QQ 凭据，未执行线上 QQ 授权；未配置生产邮件提供方。
+- 未实现任何账本 API/页面、记账、统计、情侣、多用户协作或后台业务管理。
+- 未创建 PR；正式 QQ 与生产邮件部署配置仍需后续提供。

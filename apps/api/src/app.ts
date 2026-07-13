@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { readConfig } from './config';
@@ -16,6 +17,7 @@ export async function createApp(): Promise<NestExpressApplication> {
     origin: config.corsOrigins,
     credentials: true,
   });
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

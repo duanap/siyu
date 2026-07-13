@@ -7,11 +7,22 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,6 +33,7 @@ jobs:
       - run: corepack enable
       - run: corepack prepare pnpm@11.11.0 --activate
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siyu/api prisma:generate
       - run: pnpm docs:check
       - run: pnpm format:check
       - run: pnpm lint

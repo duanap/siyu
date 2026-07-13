@@ -284,4 +284,30 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+INSERT INTO user_credentials (id, user_id, email_normalized, password_hash, updated_at)
+VALUES ('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'constraint@example.com', '$argon2id$test-only-hash', CURRENT_TIMESTAMP);
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO user_credentials (id, user_id, email_normalized, password_hash, updated_at) VALUES ('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', 'constraint@example.com', 'hash', CURRENT_TIMESTAMP)$sql$, '23505', 'credential normalized email unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO user_credentials (id, user_id, email_normalized, password_hash, updated_at) VALUES ('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002', 'UPPER@example.com', 'hash', CURRENT_TIMESTAMP)$sql$, '23514', 'credential normalized email check');
+
+INSERT INTO auth_sessions (id, user_id, expires_at)
+VALUES ('30000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', CURRENT_TIMESTAMP + INTERVAL '30 days');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO auth_sessions (id, user_id, expires_at) VALUES ('30000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', CURRENT_TIMESTAMP - INTERVAL '1 minute')$sql$, '23514', 'session expiry check');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE auth_sessions SET status = 'REVOKED' WHERE id = '30000000-0000-0000-0000-000000000010'$sql$, '23514', 'session revocation state check');
+
+INSERT INTO refresh_tokens (id, session_id, token_hash, expires_at)
+VALUES ('30000000-0000-0000-0000-000000000020', '30000000-0000-0000-0000-000000000010', repeat('a', 64), CURRENT_TIMESTAMP + INTERVAL '30 days');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO refresh_tokens (id, session_id, token_hash, expires_at) VALUES ('30000000-0000-0000-0000-000000000021', '30000000-0000-0000-0000-000000000010', repeat('a', 64), CURRENT_TIMESTAMP + INTERVAL '30 days')$sql$, '23505', 'refresh digest unique');
+SELECT pg_temp.expect_sqlstate($sql$DELETE FROM auth_sessions WHERE id = '30000000-0000-0000-0000-000000000010'$sql$, '23503', 'session delete restrict');
+
+INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at)
+VALUES ('30000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000001', repeat('b', 64), CURRENT_TIMESTAMP + INTERVAL '30 minutes');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at) VALUES ('30000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000002', repeat('b', 64), CURRENT_TIMESTAMP + INTERVAL '30 minutes')$sql$, '23505', 'reset digest unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at) VALUES ('30000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000002', repeat('c', 64), CURRENT_TIMESTAMP - INTERVAL '1 minute')$sql$, '23514', 'reset expiry check');
+
+INSERT INTO user_roles (user_id, role_id)
+VALUES ('00000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO user_roles (user_id, role_id) VALUES ('00000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001')$sql$, '23505', 'user role composite unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO user_roles (user_id, role_id) VALUES ('00000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000009999')$sql$, '23503', 'user role foreign key');
+SELECT pg_temp.expect_sqlstate($sql$DELETE FROM roles WHERE code = 'USER'$sql$, '23503', 'role delete restrict');
+
 SELECT 'database constraint verification passed' AS result;

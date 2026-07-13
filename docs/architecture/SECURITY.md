@@ -2,11 +2,15 @@
 
 ## 认证
 
+- 邮箱密码长度为 12–128 字符，使用 Argon2id；邮箱统一小写并由数据库唯一约束保证。
 - QQ OAuth 使用 state、严格回调域校验，并在支持时使用 PKCE。
-- Access Token 短期有效。
-- Refresh Token 使用 HttpOnly、Secure、SameSite Cookie。
+- Access Token 有效期 15 分钟，仅保存在前端内存。
+- Refresh Session 有效期 30 天；Refresh Token 仅存摘要、每次轮换并检测重放。
+- Refresh Token 使用 HttpOnly、生产 Secure、SameSite=Lax Cookie。
 - 登出和账号禁用后使 Refresh Token 失效。
 - 不在 localStorage 长期保存 Refresh Token。
+- 密码重置令牌有效期 30 分钟、一次性使用；请求响应不得泄露邮箱是否存在。
+- USER/ADMIN 角色和权限由数据库决定，前端路由保护不替代服务端 Guard。
 
 ## API
 

@@ -5,6 +5,12 @@
 
 ## 队列
 
+### siyu-password-reset
+
+- API 在创建密码重置摘要后投递邮件任务，Job ID 使用重置记录 ID 防止重复投递。
+- Worker 最多重试三次且不得记录邮件中的一次性令牌。
+- 测试环境使用隔离传输适配器；未配置生产邮件提供方时明确失败为 `MAIL_PROVIDER_UNCONFIGURED`。
+
 - `recurring-due`
 - `debt-reminder`
 - `salary-reminder`

@@ -12,7 +12,7 @@ servers:
   - url: /api/v1
 tags:
   - name: Auth
-    description: QQ OAuth、令牌刷新与注销。
+    description: 邮箱密码、QQ OAuth、令牌轮换、密码安全与注销。
   - name: Users
     description: 当前用户资料。
   - name: Ledgers
@@ -38,6 +38,38 @@ tags:
 security:
   - bearerAuth: []
 paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: registerWithEmail
+      summary: 使用邮箱和密码注册
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/AuthTokenOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: loginWithPassword
+      summary: 使用邮箱和密码登录
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokenOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /auth/qq/authorize:
     get:
       tags: [Auth]
@@ -82,7 +114,7 @@ paths:
       security:
         - refreshCookie: []
       responses:
-        '200': { $ref: '#/components/responses/ActionOk' }
+        '200': { $ref: '#/components/responses/AuthTokenOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/RateLimited' }
   /auth/logout:
@@ -90,9 +122,64 @@ paths:
       tags: [Auth]
       operationId: logout
       summary: 注销当前会话
+      security:
+        - refreshCookie: []
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/password/forgot:
+    post:
+      tags: [Auth]
+      operationId: requestPasswordReset
+      summary: 请求密码重置
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ForgotPasswordRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/password/reset:
+    post:
+      tags: [Auth]
+      operationId: resetPassword
+      summary: 使用一次性令牌重置密码
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPasswordRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ActionOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /auth/password/change:
+    post:
+      tags: [Auth]
+      operationId: changePassword
+      summary: 修改当前用户密码并轮换会话
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangePasswordRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokenOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /admin/auth/check:
+    get:
+      tags: [Auth]
+      operationId: checkAdminAccess
+      summary: 校验管理端访问权限
       responses:
         '200': { $ref: '#/components/responses/ActionOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /users/me:
     get:
       tags: [Users]
@@ -897,6 +984,15 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ActionResponse' }
+    AuthTokenOk:
+      description: 认证成功并通过 HttpOnly Cookie 设置轮换用 Refresh Token
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+        Set-Cookie:
+          schema: { type: string }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AuthTokenResponse' }
     StatisticsOk:
       description: 统计查询成功
       content:
@@ -980,13 +1076,22 @@ components:
       enum: [PENDING, GENERATED, CONFIRMED, SKIPPED, FAILED]
     User:
       type: object
-      required: [id, nickname, timezone, status]
+      required: [id, nickname, timezone, status, email, roles, permissions]
       properties:
         id: { type: string, format: uuid }
         nickname: { type: string, minLength: 1, maxLength: 100 }
         avatarUrl: { type: [string, 'null'], format: uri }
         timezone: { type: string, minLength: 1, maxLength: 64 }
         status: { type: string, enum: [ACTIVE, DISABLED] }
+        email: { type: [string, 'null'], format: email }
+        roles:
+          type: array
+          uniqueItems: true
+          items: { type: string, enum: [USER, ADMIN] }
+        permissions:
+          type: array
+          uniqueItems: true
+          items: { type: string }
     Ledger:
       type: object
       required: [id, type, name, ownerUserId, status]
@@ -1209,6 +1314,54 @@ components:
         message: { type: string }
         details: { type: object, additionalProperties: true }
         requestId: { type: string }
+    AuthTokenResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [accessToken, expiresIn, user]
+          properties:
+            accessToken: { type: string, minLength: 32 }
+            expiresIn: { type: integer, const: 900 }
+            user: { $ref: '#/components/schemas/User' }
+        requestId: { type: string }
+    RegisterRequest:
+      type: object
+      required: [email, password, nickname]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 12, maxLength: 128, writeOnly: true }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, maxLength: 128, writeOnly: true }
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword]
+      additionalProperties: false
+      properties:
+        token: { type: string, minLength: 32, maxLength: 512, writeOnly: true }
+        newPassword: { type: string, minLength: 12, maxLength: 128, writeOnly: true }
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      additionalProperties: false
+      properties:
+        currentPassword: { type: string, minLength: 1, maxLength: 128, writeOnly: true }
+        newPassword: { type: string, minLength: 12, maxLength: 128, writeOnly: true }
     UpdateUserRequest:
       type: object
       minProperties: 1

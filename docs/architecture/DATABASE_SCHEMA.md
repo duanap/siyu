@@ -10,6 +10,25 @@ ORM：Prisma
 
 ## 核心表
 
+### user_credentials
+
+邮箱密码凭据：`id, user_id, email_normalized, password_hash, password_changed_at, created_at, updated_at`。
+用户和规范化邮箱分别唯一，密码仅保存 Argon2id 哈希。
+
+### auth_sessions / refresh_tokens
+
+会话记录用户、状态、到期与撤销原因；Refresh Token 记录不可逆摘要、使用/撤销时间和唯一后继关系。
+并发消费通过条件更新保证只有一个后继，重放撤销所属会话。
+
+### password_reset_tokens
+
+`id, user_id, token_hash, expires_at, used_at, created_at`。摘要唯一，令牌短时有效且只能使用一次。
+
+### roles / permissions / user_roles / role_permissions
+
+最小关联表 RBAC。复合主键阻止重复授权；所有关联外键使用 RESTRICT。内置 USER、ADMIN 及
+`profile:read`、`profile:write`、`admin:access`。
+
 ### users
 
 `id, qq_open_id, nickname, avatar_url, timezone, status, created_at, updated_at, deleted_at`
