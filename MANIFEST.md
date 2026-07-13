@@ -15,7 +15,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `605dea767a04e89b4846a1aed5555b6821005794b7e8efecb0e1de7d102a1ea7` |
-| `VALIDATION_REPORT.md` | `69151c23b3743875eb6ea40e82e4872f8b29936d9bb878744fb64451101a75e1` |
+| `VALIDATION_REPORT.md` | `b9947faf521da81b9def370bbaab80b4fee5891d05e73a3e5b95a28280914814` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -148,7 +148,7 @@
 | `docs/plans/TASK_BACKLOG.md` | `f00decf86e1bdc6aac96fb72b30f952a69e853a2ca536dbd3ba20c1c47d09655` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
-| `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13fd59739eba465a45dd41c0023bbc86513a95b5239ecc17b312f1b9d68500b3` |
+| `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `2151f7a60b50885bf76138a8a544146a3bdec05405b014dd439bd906a32bfb9f` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -156,11 +156,11 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `ff7946ec3c4761fcb5dfab519bf8400c626b7bf5cd1a871fb28cf56a9886d923` |
-| `docs/project-memory/CURRENT_STATE.md` | `c5f38f309ec9c965a1fc1dced1edaff46cc2fb9eb5a44a52c13536e3a1e3f3e8` |
+| `docs/project-memory/CHANGELOG_AI.md` | `a7d86dc86f3b748aff78024e5bc54e1904c1d44c4cfe379cc635de6f755be9c7` |
+| `docs/project-memory/CURRENT_STATE.md` | `14b8247647e37ffa58679c7787098b108d256690a7b93a99fe8beacdc24d164a` |
 | `docs/project-memory/DECISIONS.md` | `a308a9f9aa9a67d1f36620de2726cdaad6eeaadf551881326af9008a60f5228d` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `30dde31a33d282518f61dd783419111939864102d19d0ae53e2c1c69923a5be1` |
-| `docs/project-memory/RELEASE_HISTORY.md` | `7a06e8b1320b5de7166a6f5232e0feb75dbb9b62386af08fa1400c50f8125b5f` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `e50211cbea8d3e5ce2112665a589e0e5f3bc57e78136238c629aeaa189dc1757` |
+| `docs/project-memory/RELEASE_HISTORY.md` | `9ad7100bcb0ba89ba941bccfa5a8449dc01c16221d2261769aa3639550468057` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
