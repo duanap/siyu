@@ -1,8 +1,8 @@
 # 交付清单
 
-生成日期：2026-07-12
+生成日期：2026-07-14
 
-文件数量（不含本清单、依赖和构建产物）：178
+文件数量（不含本清单、依赖和构建产物）：180
 
 | 文件 | SHA-256 |
 |---|---|
@@ -42,7 +42,7 @@
 | `apps/api/src/app.module.ts` | `23607da9974adfa49e6462598b728b202df635ebf69a70de1b0504322c413fd8` |
 | `apps/api/src/app.ts` | `0c3ec241f256a57381337016a5a8ef3f2854793511c2a7b131981bf6efd4d678` |
 | `apps/api/src/auth/auth.constants.ts` | `4445de5a832e29b60a1c9cf489838047ed6dad63888a2fd9b7804ee2c75bf5fa` |
-| `apps/api/src/auth/auth.controller.ts` | `7148b820f8e058dcfbae50c7ffa8d5736041fa23146a91b5af23a76516d3f8fa` |
+| `apps/api/src/auth/auth.controller.ts` | `b4bb003fabf3e4300ce5d44ebced35ed715297d8be9908de8e83fd7c5b11e80d` |
 | `apps/api/src/auth/auth.dto.ts` | `2496e27f432fb4fe1f85b50a37ffdaf47cfb8a95785e040715d3583a04752c0a` |
 | `apps/api/src/auth/auth.guard.ts` | `386016ac75da74cd35f58b1ef33e923f2b06c81d6f6a63b9fb94e64b42ba86ed` |
 | `apps/api/src/auth/auth.module.ts` | `51b7a1a41bc240e161a51d3a86b43991e64ea0f841ad162789da2181933c766c` |
@@ -76,13 +76,15 @@
 | `apps/mobile-web/src/auth.test.ts` | `719f5b8dc96cb09bf408e3597b8611c4b7b2d42f3edd1fc4060b529f44bdd76a` |
 | `apps/mobile-web/src/auth.ts` | `a39fdc5d948bc68e06b787c3994263795a20c7481523a8d4d1dc99c18044905b` |
 | `apps/mobile-web/src/main.ts` | `400a865e931fe74c0e79a706d440a150987b2d0e4994fb478c559b713a42493b` |
-| `apps/mobile-web/src/router.ts` | `7c779ef737fc467a67120fdc6c0da3e07ff01a6a5eebdeaac23991ecf26c679c` |
+| `apps/mobile-web/src/router.ts` | `881e7b815415b9c7bcfb38d4a7447749e2c5b7d8f3f01594bd7168052535c210` |
 | `apps/mobile-web/src/theme.ts` | `ee1933f52332978567715670203561a9ae22c2531e97450fbf34cd3432aebc8a` |
 | `apps/mobile-web/src/views/AccountView.vue` | `91dc4439e20d83df3013723d7d2cfb3174fbe8ca329c33ee0099e9243bf283df` |
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
 | `apps/mobile-web/src/views/ForbiddenView.vue` | `f93d19979857c91275b914de20070ac2479f70697527ff37634aa9d6753dd886` |
+| `apps/mobile-web/src/views/HomeView.vue` | `39c07c888fc362ef94c6b5b4e0d322f404f8018be949f3d58bc023417d894824` |
+| `apps/mobile-web/src/views/LegalView.vue` | `d9bf2c187c2172ad5392ca1561164857356b7786e284f317f9f12d66c3e06877` |
 | `apps/mobile-web/src/views/OAuthCallbackView.vue` | `f795f0d242794f5f33e55e6ffabf533803966e39049f58f81dc23842993bac4b` |
 | `apps/mobile-web/src/vite-env.d.ts` | `65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5` |
 | `apps/mobile-web/tsconfig.json` | `255056a44d7e57a7073e416393b43b4d325eab412e14fc3cde377f89f7112d8e` |
