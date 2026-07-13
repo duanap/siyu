@@ -2,7 +2,7 @@
 
 ## 状态
 
-已完成（2026-07-11）。TASK-001 已吸收，不再单独执行。
+已完成（2026-07-11）。TASK-001、TASK-002 和 TASK-003 已吸收，不再单独执行。
 
 ## 目标
 
@@ -126,6 +126,8 @@ git status --short
 
 - 默认时区按授权计划暂定 `Asia/Shanghai`，保留负责人否决后的向前迁移方案。
 - TASK-001 的 Monorepo、工具链和 CI 范围吸收到 TASK-000。
+- TASK-002 的设计 Token、日夜主题和基础组件基线吸收到 TASK-000。
+- TASK-003 的 PostgreSQL/Prisma 模型、迁移、特殊约束和验证基线吸收到 TASK-000。
 - 部分唯一索引不依赖 Prisma 预览特性，使用人工审查 SQL。
 - TASK-000 不创建 Session、Attachment、Setting 或 Admin 模型。
 

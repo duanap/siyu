@@ -11,6 +11,6 @@ import { AuthRateLimitService } from './rate-limit.service';
   imports: [JwtModule.register({})],
   controllers: [AuthController],
   providers: [AuthService, AccessGuard, OAuthService, AuthRateLimitService],
-  exports: [AccessGuard, JwtModule],
+  exports: [AccessGuard, JwtModule, AuthRateLimitService],
 })
 export class AuthModule {}

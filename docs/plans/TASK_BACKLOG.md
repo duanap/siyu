@@ -4,8 +4,8 @@
 |---|---|---|---|---|---|
 | TASK-000 | 项目接管、工程初始化、工具链和 CI | M1 | Sol | High | 无 |
 | TASK-001 | 已吸收进 TASK-000（不再单独执行） | M1 | — | — | TASK-000 |
-| TASK-002 | 设计 Token 与基础组件 | M1 | Terra | Medium | TASK-000 |
-| TASK-003 | PostgreSQL/Prisma 业务实现基线 | M1 | Sol | High | TASK-000 |
+| TASK-002 | 已吸收进 TASK-000（设计 Token、主题和基础组件基线已验收） | M1 | — | — | TASK-000 |
+| TASK-003 | 已吸收进 TASK-000（PostgreSQL/Prisma 模型、迁移和约束基线已验收） | M1 | — | — | TASK-000 |
 | TASK-004 | 邮箱密码与 QQ 认证、用户和个人账本初始化 | M2 | Sol | High | TASK-000 |
 | TASK-005 | 情侣账本邀请和权限 | M2 | Sol | Extra High | TASK-004 |
 | TASK-006 | 分类模块 | M3 | Terra | Medium | TASK-003 |

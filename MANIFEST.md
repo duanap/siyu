@@ -2,7 +2,7 @@
 
 生成日期：2026-07-14
 
-文件数量（不含本清单、依赖和构建产物）：180
+文件数量（不含本清单、依赖和构建产物）：192
 
 | 文件 | SHA-256 |
 |---|---|
@@ -15,7 +15,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `605dea767a04e89b4846a1aed5555b6821005794b7e8efecb0e1de7d102a1ea7` |
-| `VALIDATION_REPORT.md` | `1bb3ad5451e4e1708d4751110ccb8e1ac1507680f81ef25641c4e9ffd749d837` |
+| `VALIDATION_REPORT.md` | `69151c23b3743875eb6ea40e82e4872f8b29936d9bb878744fb64451101a75e1` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -37,15 +37,16 @@
 | `apps/api/prisma.config.ts` | `91c4bfb7795e49410314cd534fd5f5fdcddda0710960921cb22019ba71a33643` |
 | `apps/api/prisma/migrations/20260711000000_init/migration.sql` | `947cfab3643921ad2b39938c0c0be4cda01b8155ba098cc0d9fd36835775442b` |
 | `apps/api/prisma/migrations/20260712000000_authentication_foundation/migration.sql` | `91d0757a57b27dcc0a3608b0069488706bd94a2017107346c83ad2f7fc2479ef` |
+| `apps/api/prisma/migrations/20260714000000_couple_ledger_permissions/migration.sql` | `f33e453823064d9e429057aecf6a36aba8633f88cf3e1235dfaebbea810c38b4` |
 | `apps/api/prisma/migrations/migration_lock.toml` | `39867c82b80b5912c94f5027c9ef43614c165635ab6c683213c0082cc52d58de` |
-| `apps/api/prisma/schema.prisma` | `34ba30e46f91270d01de234fcac47fc8ae756ea0d93092e9bf84320cdf47d458` |
-| `apps/api/src/app.module.ts` | `23607da9974adfa49e6462598b728b202df635ebf69a70de1b0504322c413fd8` |
+| `apps/api/prisma/schema.prisma` | `9233ddfafad8c824f7415f1c6842bf65a9d9e16e08571a4c9e9c500ea9e4e71d` |
+| `apps/api/src/app.module.ts` | `d38e155da9b2debe3f34d9acfecaab19a1d288507868d3853c1fa1d512f04a55` |
 | `apps/api/src/app.ts` | `0c3ec241f256a57381337016a5a8ef3f2854793511c2a7b131981bf6efd4d678` |
 | `apps/api/src/auth/auth.constants.ts` | `4445de5a832e29b60a1c9cf489838047ed6dad63888a2fd9b7804ee2c75bf5fa` |
 | `apps/api/src/auth/auth.controller.ts` | `b4bb003fabf3e4300ce5d44ebced35ed715297d8be9908de8e83fd7c5b11e80d` |
 | `apps/api/src/auth/auth.dto.ts` | `2496e27f432fb4fe1f85b50a37ffdaf47cfb8a95785e040715d3583a04752c0a` |
 | `apps/api/src/auth/auth.guard.ts` | `386016ac75da74cd35f58b1ef33e923f2b06c81d6f6a63b9fb94e64b42ba86ed` |
-| `apps/api/src/auth/auth.module.ts` | `51b7a1a41bc240e161a51d3a86b43991e64ea0f841ad162789da2181933c766c` |
+| `apps/api/src/auth/auth.module.ts` | `55c2a5ca758a7c87cdbc074c845d7e3833e7f83787aa3a5c74266f20fff8e7bb` |
 | `apps/api/src/auth/auth.service.ts` | `c6d1bd1ce5977a2f1b914222a2c68bcc8a8627d4d945816cd7c252e223af0991` |
 | `apps/api/src/auth/auth.types.ts` | `8f20f88a483d47b646a69fe187a0dcf53d716817c2c0e999818720b17ead1199` |
 | `apps/api/src/auth/oauth.service.test.ts` | `53def71ace22a8bcf42a6a4870f905564b6b1fff3c6d6eaee9020308b3d8a7df` |
@@ -56,7 +57,12 @@
 | `apps/api/src/database/database.module.ts` | `c80ac92072bc91310538535195904b088c6f67aaafa5c58e7df1d8981d5b8bfb` |
 | `apps/api/src/database/prisma.service.ts` | `d19f0550d60e83ebc62d05be9b47f598d591e6f3598f2dad0cc7a8dcc3b97db8` |
 | `apps/api/src/health.controller.ts` | `c8a605c4ed1b63c67a5d7f91cc600e3c0129c1fa2142ee472bb9d593bec14058` |
-| `apps/api/src/http-error.filter.ts` | `046b79f8f3b7046cb6982f77c6e8265376b49d21873400dc0e14175d915722aa` |
+| `apps/api/src/http-error.filter.ts` | `ce419e1cd5b4f4747cf5c18498550409f119d3d02b6b43ee15711a08be51ec4c` |
+| `apps/api/src/ledgers/ledgers.controller.ts` | `d9fb880a481d129d154be1492f59c5d72776b93fa5233b57c484af41160c4cdb` |
+| `apps/api/src/ledgers/ledgers.dto.ts` | `237d7341ca264e1ce3a7f758929f4e2292bfcb6831a39adcc4fc3fbaeef7e260` |
+| `apps/api/src/ledgers/ledgers.module.ts` | `737ebc7aa866f4917eac8aa672622eb17d27124bc0aecc5d0ebdce40599892ef` |
+| `apps/api/src/ledgers/ledgers.repository.ts` | `7767cba6d4bf41dac11069c21fee67b3374168e9f481ea9e651e06c2da33e243` |
+| `apps/api/src/ledgers/ledgers.service.ts` | `21a7138f14a66ee54913a450071c0d2917e6a7e222ff502eb8300ba344f7fe23` |
 | `apps/api/src/main.ts` | `d1c52f488f0653090eee87f9dee353a8bdfcb0d49d1458d9f7e6ae1265ab11fd` |
 | `apps/api/src/request-id.ts` | `0eb667fbd761454ae03c2d8f3fdfa8daad9b44b44cee4588c8680ceb2e3575a7` |
 | `apps/api/src/users/admin-auth.controller.ts` | `4d99246635d116793d7fa9f1153c7079365175b396f37dab56a4dd86c7986f34` |
@@ -64,7 +70,7 @@
 | `apps/api/src/users/users.dto.ts` | `ebf0bbc24907c047559d21381fce78afc3500843263cd6e4f523fd3cdd3288b0` |
 | `apps/api/src/users/users.module.ts` | `a60ca0d45604685d23ab7c9a59b1db8ab778827f4c492e27b9dd2bcb79998ce0` |
 | `apps/api/src/worker.ts` | `0465c7278eb72d90b33e25a24615560402eda9d8622c83bb6aa60da79539e0c1` |
-| `apps/api/test/run-e2e.cjs` | `7b80e20eeac722068aeddd9bb2964f5d508d4ff1216119a0de09faefe8333e8d` |
+| `apps/api/test/run-e2e.cjs` | `b14f2dd8610456fd0ce1d328dab109a239385d5b36d148efecc982463941d672` |
 | `apps/api/tsconfig.build.json` | `2cb0671aac773e691b6ab793e3dc46d71f88a9f3830d3a351e63f9630035db46` |
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
 | `apps/api/vitest.config.ts` | `ab62155f398c51eab4e82c644ad2c943e15fe60e4ee983ecaa916f4567d93e9f` |
@@ -73,15 +79,20 @@
 | `apps/mobile-web/package.json` | `4e6d18d978eb806ff2c53a718d872c417ae43f04d70c2de704d6457b879dcc90` |
 | `apps/mobile-web/public/manifest.webmanifest` | `18e2ad0eca76c67d0d85e96812bbb5c529bb5d8968fd0414603705bf851aa068` |
 | `apps/mobile-web/src/App.vue` | `d01dd8890478297d228ac0e8e84038c49cb14a271faa60d9792db5e073c85e7c` |
+| `apps/mobile-web/src/api.ts` | `2950846eed37976b6a40879ca080b4142af5f0d04fb5e52714f067177af292bb` |
 | `apps/mobile-web/src/auth.test.ts` | `719f5b8dc96cb09bf408e3597b8611c4b7b2d42f3edd1fc4060b529f44bdd76a` |
 | `apps/mobile-web/src/auth.ts` | `a39fdc5d948bc68e06b787c3994263795a20c7481523a8d4d1dc99c18044905b` |
+| `apps/mobile-web/src/couple-ledger.test.ts` | `b4926cbd16685646f42cd235cae82cf5b32b7de193ae728ef03c337d18fbad3b` |
+| `apps/mobile-web/src/couple-ledger.ts` | `f4885015f9437b3657f8a8e516607715d2b8340d8b697b261e638bd2952ab749` |
 | `apps/mobile-web/src/main.ts` | `400a865e931fe74c0e79a706d440a150987b2d0e4994fb478c559b713a42493b` |
-| `apps/mobile-web/src/router.ts` | `881e7b815415b9c7bcfb38d4a7447749e2c5b7d8f3f01594bd7168052535c210` |
+| `apps/mobile-web/src/router.ts` | `04b9e0075d474bc36cb13e9014a0b1f4c35e6d26853738ea7146cc1211c82ffc` |
 | `apps/mobile-web/src/theme.ts` | `ee1933f52332978567715670203561a9ae22c2531e97450fbf34cd3432aebc8a` |
-| `apps/mobile-web/src/views/AccountView.vue` | `91dc4439e20d83df3013723d7d2cfb3174fbe8ca329c33ee0099e9243bf283df` |
+| `apps/mobile-web/src/views/AccountView.vue` | `34ca16486bb127953633e69f8d62e50aa845cef280e4f05581a5f8318b30c5a0` |
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
+| `apps/mobile-web/src/views/CoupleLedgerView.test.ts` | `78bebca1b9c3a177eb6304f2dc38e42af5d789cd8b697abda2125940d1688c06` |
+| `apps/mobile-web/src/views/CoupleLedgerView.vue` | `1e9e275df0bd81d58ad36864780b8ae59b7c4a0cdbaf514c9be8cfcefa7d6f7d` |
 | `apps/mobile-web/src/views/ForbiddenView.vue` | `f93d19979857c91275b914de20070ac2479f70697527ff37634aa9d6753dd886` |
 | `apps/mobile-web/src/views/HomeView.vue` | `39c07c888fc362ef94c6b5b4e0d322f404f8018be949f3d58bc023417d894824` |
 | `apps/mobile-web/src/views/LegalView.vue` | `d9bf2c187c2172ad5392ca1561164857356b7786e284f317f9f12d66c3e06877` |
@@ -91,26 +102,26 @@
 | `apps/mobile-web/vite.config.ts` | `f4124222771d0dd352192ebdad86d77b5e85519aa781b22550ad0d5ae6faa0ae` |
 | `apps/mobile-web/vitest.config.ts` | `5d9a8aa3cb51ea7586d7cbc9ba4939e22a0ccaf41286ebd11308873b6b8ad014` |
 | `docker-compose.yml` | `b6bad82dae8b1f90467a2e77362ecf9771bd15423c6558b5bfac7345e8e4c2ec` |
-| `docs/architecture/API_CONTRACT.md` | `70d08882231cd9d375f6c843c4798ecb8f6000e4c37db793b1e0bd69ad4751aa` |
+| `docs/architecture/API_CONTRACT.md` | `5325fb3065151204ca0dd610cbea6ac020e38399529cc5263698485ec5975a33` |
 | `docs/architecture/BACKGROUND_JOBS.md` | `327dbfcc617c47c1384181d1cbe3acdf26c43f26198c7ab89d20862c9a913159` |
-| `docs/architecture/DATABASE_SCHEMA.md` | `46149bbcfe3e57aef1f79f6caed2db30ce14b902d3f0c2815a333bcff2d5aad7` |
+| `docs/architecture/DATABASE_SCHEMA.md` | `0e88d5cd13859cb0517d04c318b4bca0ddc2424511395ec2c576b8b5b34cd686` |
 | `docs/architecture/DEPLOYMENT.md` | `ef78e7672509d6f8a955b1dc462e123f26c9c4aaccec5f41ab5e0218fd377c52` |
-| `docs/architecture/PERMISSION_MODEL.md` | `89570a2473ddb3da0b90acc2d5fc0bd6ff87445fac092ae8190d39f862b55583` |
-| `docs/architecture/SECURITY.md` | `b98d5251fad9a639da4f7c9f7aed772f9531724abe036e2224a8f48fcbf85367` |
+| `docs/architecture/PERMISSION_MODEL.md` | `c80f7d494249b80318d350810beede8838fd1ffd5d27813477de1adcd517c154` |
+| `docs/architecture/SECURITY.md` | `fed6439d29c23e54a21f85c3837add1421b452901983c340cf46b86880d0e3ea` |
 | `docs/architecture/TECH_ARCHITECTURE.md` | `9f2614fb7ed21afe500a61b1ee73308dfdbcf61ae4ae3cc11558103b18ec98be` |
-| `docs/architecture/openapi.yaml` | `2b6ade4fe2e7a84246bf645b081b6a283762ec962bfba519d173cab370bff015` |
-| `docs/architecture/schema.prisma` | `34ba30e46f91270d01de234fcac47fc8ae756ea0d93092e9bf84320cdf47d458` |
+| `docs/architecture/openapi.yaml` | `cc4b9ed0e00962c205eb8afa0d3582832ccb12cb53988e5f592fb09120abb9f7` |
+| `docs/architecture/schema.prisma` | `9233ddfafad8c824f7415f1c6842bf65a9d9e16e08571a4c9e9c500ea9e4e71d` |
 | `docs/codex/BUGFIX_PROMPT_TEMPLATE.md` | `6ad11bd918ea2fdf5052cc769d1ea20dc77d022cd9ff2dcf7fd17df5657a93ff` |
 | `docs/codex/CODEX_FIRST_PROMPT.md` | `e8094b28817a072d74a66e4398514f22525910dae91d6fbd3b54332f3117294c` |
 | `docs/codex/MODEL_ASSIGNMENT.md` | `57d83e35813bb3d10f3851cb060d2bdd252d0a40974f29a2b702a1c39b214f68` |
 | `docs/codex/OFFICIAL_REFERENCES.md` | `3a242d24ea9c14e19e1ab7616a4c4040470ba489a3bbdc58963973aabc0c9c5d` |
 | `docs/codex/REVIEW_PROMPT.md` | `e6b7524f7b2fe99d2af469ef8f0bab7ea162f82528b7d187ec04e45d4ab9823e` |
 | `docs/codex/TASK_PROMPT_TEMPLATE.md` | `af7781dadf39a3735979a11bcc2e2b7e261ed25944f38dbbdcd389637bab9a11` |
-| `docs/design/COMPONENT_INVENTORY.md` | `e41f3e8acbd18303abe911c015e1bfa28e10e88ec5aabc205d16ea27e6b75746` |
+| `docs/design/COMPONENT_INVENTORY.md` | `5fd50ff0685a6f3b86eea40e14356654e99ce4f5ec21fb47cd71af79d7738d39` |
 | `docs/design/DESIGN_DELIVERY_PLAN.md` | `0a18ae111d1b00d045caa3765c7acf65577b9e503f821b26ed7bc7546e1e3754` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `7792228bdffe7b1a0be75d2ba2ee3cac2c33da12ded750b07340d7d08937de1e` |
-| `docs/design/SCREEN_FLOW.md` | `7419bd198f4a9a7f052612cadaa9f9657d288e3c9aea0846af30244735fe6379` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `b9557a6ed9e4f803d532961c70b4fcde1bc7041c8d8f17cf5028d3489c6791a8` |
+| `docs/design/SCREEN_FLOW.md` | `3bd5354c3ad6969ba5681643461cb292fa900c3b6ae50d0934f7f5e8bacf6c25` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `35e86e7b161669fccc3b0c1098f2fa62d882160136caad485ab4089b2dc62202` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -134,21 +145,22 @@
 | `docs/index.md` | `275f0798c83c5a990630ef5ec2051e4a67e8367f0163cf9cc97a44c2990c83b3` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `75cfe193f40ab850bb8b1fe06a6ff0a1be9169712957682158e937c9798b999d` |
-| `docs/plans/active/TASK-000-project-bootstrap.md` | `f2cb9fc1446a1ae986ff6795597ad95eae62d60ae95e514a82eda6ac112c833a` |
+| `docs/plans/TASK_BACKLOG.md` | `f00decf86e1bdc6aac96fb72b30f952a69e853a2ca536dbd3ba20c1c47d09655` |
+| `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
+| `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13fd59739eba465a45dd41c0023bbc86513a95b5239ecc17b312f1b9d68500b3` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `deef6546986563f957f0ddca9b430a6a8b98bbfba943541716b4f9a8604207d8` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `2151f7a60b50885bf76138a8a544146a3bdec05405b014dd439bd906a32bfb9f` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
-| `docs/product/BUSINESS_RULES.md` | `46b2e5fc338d311cdff33bb5fa2e656cd5f87f98d5a2154292a28ef61ee240e6` |
+| `docs/product/BUSINESS_RULES.md` | `3c4c00d8e95cb6cf0f20f244d2874b5fe7ea109910f78380f8e8bdf9cd7ad8a0` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `616502cf2884af2969692fb9110abe347bee8b30be37fa05ad8f81ba277ff2b0` |
-| `docs/project-memory/CURRENT_STATE.md` | `31cb8c2329b1162a6338799e4a83ceaa3d770a5e0a3a75292636f1968a657576` |
-| `docs/project-memory/DECISIONS.md` | `ff9cb13d025f3b8f46cc994f217b3b84ef8f611a8aec33f0fc52ebc2c99d6583` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `f39bca0cce9f7c07f9480533575e814fcf7688bd70581bd723a7aca675cfbcac` |
-| `docs/project-memory/RELEASE_HISTORY.md` | `280b141840e578807f4bd2e80d9be0ea9a3860eb85264cf5f2e2f8aa1e33305e` |
+| `docs/project-memory/CHANGELOG_AI.md` | `ff7946ec3c4761fcb5dfab519bf8400c626b7bf5cd1a871fb28cf56a9886d923` |
+| `docs/project-memory/CURRENT_STATE.md` | `c5f38f309ec9c965a1fc1dced1edaff46cc2fb9eb5a44a52c13536e3a1e3f3e8` |
+| `docs/project-memory/DECISIONS.md` | `a308a9f9aa9a67d1f36620de2726cdaad6eeaadf551881326af9008a60f5228d` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `30dde31a33d282518f61dd783419111939864102d19d0ae53e2c1c69923a5be1` |
+| `docs/project-memory/RELEASE_HISTORY.md` | `7a06e8b1320b5de7166a6f5232e0feb75dbb9b62386af08fa1400c50f8125b5f` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
@@ -161,7 +173,7 @@
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
 | `packages/shared-types/src/index.ts` | `9a9ed0dde440442824d05c80ff155566c7caa75f02dff7d8162dfe2e16c7ce09` |
-| `packages/shared-types/src/openapi.generated.ts` | `a9a6dbcac5feb337ebfb834e53c9dfbeda773d5613548e3c7133608350807ef6` |
+| `packages/shared-types/src/openapi.generated.ts` | `8f97419d0802d3bc85af2c8e2f9b140a27002095afa95084cf14a74a24ddae0b` |
 | `packages/shared-types/tsconfig.build.json` | `f795af963d7ddec6a6d07115e2b60592309fb5b1473ddfe2525c3b0f2d0a0790` |
 | `packages/shared-types/tsconfig.json` | `57977fbaa04c2c31948710502fc8168cd596259bdfab765db00c8ff9851ba7ad` |
 | `packages/ui-tokens/package.json` | `ccddee7125df376f2a8ae9205929c9c33436c31cbcd4673df883c8e111d7e1ad` |
@@ -180,9 +192,9 @@
 | `redocly.yaml` | `a062ecfd66739008367bc281ac89d367e0dcaf39cf35d4b7e5ae82687a3d363e` |
 | `scripts/check-compose.mjs` | `1a9c01c1063ea67035b289ae18e12d9de5eab2112db5a09a5a3ba15177db9b3b` |
 | `scripts/check-docs.sh` | `1fdda331b4bb0669495c10dc16dae32af0b696dac78096550ab2021c60852af3` |
-| `scripts/check-openapi-coverage.mjs` | `2f5b2ec4eeebfd80eaa610ff7890694133b397f7cc84120b5960797461734aa9` |
+| `scripts/check-openapi-coverage.mjs` | `cf29563bdcad95863e38d91fb2608ce94bc3f96a189296827788da3c8fa05b69` |
 | `scripts/generate-manifest.sh` | `6428d16548a0483f808a22359afff526dfa3c87ab579adc956fabb88f99d0c3c` |
-| `scripts/test-db-constraints.sql` | `8f0fd4cf30f83ae046d8765c31cb3358763761c0ee947f51dee3ac58689d6d76` |
+| `scripts/test-db-constraints.sql` | `f3570ace2e25548e517698e2fcf212e76e0bbf93f389a16d91d18960a42ab34a` |
 | `scripts/test-migrations.sh` | `cf5893b5986dee1d1dc3c2a7355e229f6ff13cedbcf9c6ead68950d7827cf760` |
 | `scripts/verify.sh` | `3d7c4a7d8f7c60b8f0ae5a40ee4b7b82f5a0cd19dc6b7014cd75b12c60e3f520` |
 | `tsconfig.base.json` | `06455c25a03e32dc5983bb6b2fbf1e0cb3cce077bf8d687ba0ff7e3efaed5e40` |
