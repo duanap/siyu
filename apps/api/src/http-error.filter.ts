@@ -17,13 +17,31 @@ interface ErrorBody {
   requestId: string;
 }
 
-function errorCode(status: number): string {
+function errorCode(status: number, exception: unknown): string {
+  if (exception instanceof HttpException) {
+    const exceptionResponse = exception.getResponse();
+    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      const code = (exceptionResponse as Record<string, unknown>).code;
+      if (typeof code === 'string') return code;
+    }
+  }
   if (status === HttpStatus.BAD_REQUEST) return 'VALIDATION_FAILED';
   if (status === HttpStatus.UNAUTHORIZED) return 'AUTH_REQUIRED';
   if (status === HttpStatus.FORBIDDEN) return 'PERMISSION_DENIED';
   if (status === HttpStatus.NOT_FOUND) return 'RESOURCE_NOT_FOUND';
   if (status === HttpStatus.TOO_MANY_REQUESTS) return 'RATE_LIMITED';
   return status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_FAILED';
+}
+
+function errorMessage(status: number, exception: unknown): string {
+  if (status >= 500) return '服务器内部错误';
+  if (!(exception instanceof HttpException)) return '请求失败';
+  const exceptionResponse = exception.getResponse();
+  if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+    const message = (exceptionResponse as Record<string, unknown>).message;
+    if (typeof message === 'string') return message;
+  }
+  return exception.message;
 }
 
 function errorDetails(exception: HttpException): Record<string, unknown> {
@@ -43,13 +61,8 @@ export class HttpErrorFilter implements ExceptionFilter {
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     const body: ErrorBody = {
       success: false,
-      code: errorCode(status),
-      message:
-        status >= 500
-          ? '服务器内部错误'
-          : exception instanceof HttpException
-            ? exception.message
-            : '请求失败',
+      code: errorCode(status, exception),
+      message: errorMessage(status, exception),
       details: exception instanceof HttpException ? errorDetails(exception) : {},
       requestId: request.requestId,
     };

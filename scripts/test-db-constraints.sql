@@ -53,11 +53,15 @@ BEGIN
       'salary_records_active_profile_month_key',
       'saving_contributions_user_id_idempotency_key_key',
       'ledgers_one_active_personal_per_owner',
+      'ledgers_owner_idempotency_key_unique',
+      'ledger_invitations_inviter_idempotency_key_unique',
+      'ledger_invitations_one_pending_per_ledger',
+      'ledger_members_one_active_owner_per_ledger',
       'debts_id_user_id_key',
       'salary_profiles_id_user_id_key'
     );
-  IF required_indexes <> 15 THEN
-    RAISE EXCEPTION 'Expected 15 critical unique indexes, found %', required_indexes;
+  IF required_indexes <> 19 THEN
+    RAISE EXCEPTION 'Expected 19 critical unique indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -103,11 +107,13 @@ VALUES
   ('00000000-0000-0000-0000-000000000002', 'task-000-user-2', '测试用户二', CURRENT_TIMESTAMP),
   ('00000000-0000-0000-0000-000000000003', 'task-000-user-3', '分类归属用户', CURRENT_TIMESTAMP),
   ('00000000-0000-0000-0000-000000000004', 'task-000-user-4', '审计归属用户', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000005', 'task-000-user-5', '邀请接受用户', CURRENT_TIMESTAMP);
+  ('00000000-0000-0000-0000-000000000005', 'task-000-user-5', '邀请接受用户', CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000006', 'task-005-user-6', '第三成员测试', CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000007', 'task-005-user-7', '第二账本测试', CURRENT_TIMESTAMP);
 
 SELECT pg_temp.expect_sqlstate(
   $sql$INSERT INTO users (id, qq_open_id, nickname, updated_at)
-       VALUES ('00000000-0000-0000-0000-000000000006', 'task-000-user-1', '重复', CURRENT_TIMESTAMP)$sql$,
+       VALUES ('00000000-0000-0000-0000-000000000008', 'task-000-user-1', '重复', CURRENT_TIMESTAMP)$sql$,
   '23505', 'users qq_open_id unique'
 );
 
@@ -134,6 +140,31 @@ SELECT pg_temp.expect_sqlstate(
   '23505', 'ledger member unique'
 );
 
+INSERT INTO ledger_members (id, ledger_id, user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000024', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'MEMBER');
+SELECT pg_temp.expect_sqlstate(
+  $sql$INSERT INTO ledger_members (id, ledger_id, user_id, role)
+       VALUES ('00000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000011',
+               '00000000-0000-0000-0000-000000000006', 'MEMBER')$sql$,
+  '23514', 'couple ledger maximum two active members'
+);
+SELECT pg_temp.expect_sqlstate(
+  $sql$UPDATE ledger_members SET role = 'OWNER'
+       WHERE id = '00000000-0000-0000-0000-000000000024'$sql$,
+  '23505', 'couple ledger one active owner'
+);
+
+INSERT INTO ledgers (id, type, name, owner_user_id, status, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000015', 'COUPLE', '第二情侣账本', '00000000-0000-0000-0000-000000000007', 'ACTIVE', CURRENT_TIMESTAMP);
+INSERT INTO ledger_members (id, ledger_id, user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000026', '00000000-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000007', 'OWNER');
+SELECT pg_temp.expect_sqlstate(
+  $sql$INSERT INTO ledger_members (id, ledger_id, user_id, role)
+       VALUES ('00000000-0000-0000-0000-000000000027', '00000000-0000-0000-0000-000000000015',
+               '00000000-0000-0000-0000-000000000002', 'MEMBER')$sql$,
+  '23514', 'user maximum one active couple ledger'
+);
+
 INSERT INTO ledger_invitations (
   id, ledger_id, inviter_user_id, token_hash, expires_at, accepted_by_user_id
 ) VALUES (
@@ -146,6 +177,12 @@ SELECT pg_temp.expect_sqlstate(
        VALUES ('00000000-0000-0000-0000-000000000023', '00000000-0000-0000-0000-000000000011',
                '00000000-0000-0000-0000-000000000001', 'task-000-token', CURRENT_TIMESTAMP + INTERVAL '1 day')$sql$,
   '23505', 'invitation token unique'
+);
+SELECT pg_temp.expect_sqlstate(
+  $sql$INSERT INTO ledger_invitations (id, ledger_id, inviter_user_id, token_hash, expires_at)
+       VALUES ('00000000-0000-0000-0000-000000000028', '00000000-0000-0000-0000-000000000011',
+               '00000000-0000-0000-0000-000000000001', 'second-pending-token', CURRENT_TIMESTAMP + INTERVAL '1 day')$sql$,
+  '23505', 'one pending invitation per ledger'
 );
 
 INSERT INTO categories (id, owner_user_id, type, name, is_system, updated_at)

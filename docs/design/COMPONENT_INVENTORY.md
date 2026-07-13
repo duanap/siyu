@@ -33,6 +33,7 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | RecurringBillCard | 首页、周期列表 |
 | SavingGoalCard | 首页、目标列表 |
 | CoupleMemberSummary | 情侣首页、统计 |
+| CoupleLedgerManager | 情侣账本创建、邀请、成员、所有权和解散 |
 | SalaryItemEditor | 月度工资 |
 | SalaryAnnualSummary | 年度工资 |
 | NotificationItem | 消息中心 |

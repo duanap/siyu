@@ -170,13 +170,156 @@ async function main() {
     .set('authorization', `Bearer ${adminLogin.body.data.accessToken}`)
     .expect(200);
 
+  const resetRegisterLimit = new IORedis(readConfig().redisUrl);
+  const registerRateKeys = await resetRegisterLimit.keys('rate:auth:register:*');
+  if (registerRateKeys.length > 0) await resetRegisterLimit.del(...registerRateKeys);
+  await resetRegisterLimit.quit();
+
+  async function registerCoupleUser(label) {
+    const result = await request(server)
+      .post('/api/v1/auth/register')
+      .send({
+        email: `${label}-${suffix}@example.com`,
+        password: 'couple-password-1234',
+        nickname: `情侣测试${label}`,
+      })
+      .expect(201);
+    return { accessToken: result.body.data.accessToken, user: result.body.data.user };
+  }
+
+  const ownerAccess = userLogin.body.data.accessToken;
+  const partner = await registerCoupleUser('partner');
+  const outsider = await registerCoupleUser('outsider');
+  const ledgerKey = `ledger-${suffix}`;
+  const createdCouple = await request(server)
+    .post('/api/v1/couple-ledgers')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ name: '朝暮同笺测试', idempotencyKey: ledgerKey })
+    .expect(201);
+  const coupleLedgerId = createdCouple.body.data.id;
+  assert.equal(createdCouple.body.data.members.length, 1);
+  assert.equal(createdCouple.body.data.members[0].role, 'OWNER');
+  assert.equal(JSON.stringify(createdCouple.body).includes('idempotencyKey'), false);
+
+  const replayedCouple = await request(server)
+    .post('/api/v1/couple-ledgers')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ name: '朝暮同笺测试', idempotencyKey: ledgerKey })
+    .expect(201);
+  assert.equal(replayedCouple.body.data.id, coupleLedgerId);
+  const idempotencyConflict = await request(server)
+    .post('/api/v1/couple-ledgers')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ name: '不同名称', idempotencyKey: ledgerKey })
+    .expect(409);
+  assert.equal(idempotencyConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+
+  const invitationKey = `invite-${suffix}`;
+  const invitation = await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/invitations`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ idempotencyKey: invitationKey })
+    .expect(201);
+  const invitationToken = invitation.body.data.token;
+  assert.equal(typeof invitationToken, 'string');
+  assert.equal(JSON.stringify(invitation.body).includes('tokenHash'), false);
+  const replayedInvitation = await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/invitations`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ idempotencyKey: invitationKey })
+    .expect(201);
+  assert.equal(replayedInvitation.body.data.token, invitationToken);
+
+  const selfAccept = await request(server)
+    .post('/api/v1/couple-invitations/accept')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ token: invitationToken })
+    .expect(409);
+  assert.equal(selfAccept.body.code, 'INVITATION_SELF_ACCEPT');
+
+  const accepted = await request(server)
+    .post('/api/v1/couple-invitations/accept')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ token: invitationToken })
+    .expect(200);
+  assert.equal(accepted.body.data.members.length, 2);
+  await request(server)
+    .get(`/api/v1/ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  const fullInvite = await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/invitations`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ idempotencyKey: `invite-full-${suffix}` })
+    .expect(409);
+  assert.equal(fullInvite.body.code, 'COUPLE_LEDGER_FULL');
+
+  const ownerLeave = await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(403);
+  assert.equal(ownerLeave.body.code, 'COUPLE_OWNER_MUST_TRANSFER');
+
+  const transferred = await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/transfer-ownership`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ targetUserId: partner.user.id })
+    .expect(200);
+  assert.equal(transferred.body.data.ownerUserId, partner.user.id);
+  assert.equal(
+    transferred.body.data.members.find((member) => member.userId === partner.user.id).role,
+    'OWNER',
+  );
+
+  await request(server)
+    .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  await request(server)
+    .get(`/api/v1/ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  await request(server)
+    .get(`/api/v1/ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+
+  await request(server)
+    .delete(`/api/v1/couple-ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  await request(server)
+    .get(`/api/v1/ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(404);
+  assert.equal(
+    await prisma.ledger.count({ where: { id: coupleLedgerId, status: 'DISSOLVED' } }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        targetId: coupleLedgerId,
+        action: {
+          in: [
+            'COUPLE_LEDGER_CREATED',
+            'COUPLE_MEMBER_LEFT',
+            'COUPLE_OWNERSHIP_TRANSFERRED',
+            'COUPLE_LEDGER_DISSOLVED',
+          ],
+        },
+      },
+    }),
+    4,
+  );
+
   await request(server)
     .post('/api/v1/auth/logout')
     .set('cookie', String(adminLogin.headers['set-cookie'][0]).split(';')[0])
     .expect(200);
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
-  console.log('API health and authentication E2E passed.');
+  console.log('API health, authentication, and couple ledger E2E passed.');
 }
 
 main().catch(async (error) => {

@@ -256,6 +256,7 @@ model Ledger {
   type        LedgerType
   name        String
   ownerUserId String   @map("owner_user_id") @db.Uuid
+  idempotencyKey String? @map("idempotency_key")
   status      LedgerStatus @default(ACTIVE)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
@@ -294,6 +295,7 @@ model LedgerInvitation {
   ledgerId         String @map("ledger_id") @db.Uuid
   inviterUserId    String @map("inviter_user_id") @db.Uuid
   tokenHash        String @unique @map("token_hash")
+  idempotencyKey   String? @map("idempotency_key")
   status           InvitationStatus @default(PENDING)
   expiresAt        DateTime @map("expires_at") @db.Timestamptz
   acceptedByUserId String? @map("accepted_by_user_id") @db.Uuid

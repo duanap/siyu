@@ -35,7 +35,7 @@ ORM：Prisma
 
 ### ledgers
 
-`id, type, name, owner_user_id, status, created_at, updated_at, deleted_at`
+`id, type, name, owner_user_id, idempotency_key, status, created_at, updated_at, deleted_at`
 
 - `type`：PERSONAL / COUPLE
 - 每位用户仅一个有效个人账本。
@@ -50,10 +50,12 @@ ORM：Prisma
 
 ### ledger_invitations
 
-`id, ledger_id, inviter_user_id, token_hash, status, expires_at, accepted_by_user_id, accepted_at`
+`id, ledger_id, inviter_user_id, token_hash, idempotency_key, status, expires_at, accepted_by_user_id, accepted_at`
 
 - `token_hash` 唯一
 - 不明文保存邀请码凭证
+- `inviter_user_id + idempotency_key` 在幂等键非空时唯一
+- 每个账本最多一个 `PENDING` 邀请
 
 ### categories
 
@@ -145,6 +147,8 @@ Prisma 不能直接表达的约束由 SQL migration 补充：
 - `remaining_cent >= 0`
 - `pay_day BETWEEN 1 AND 31`
 - 情侣有效成员不超过两名需事务锁与服务校验
+- 情侣账本每个用户最多一个有效关系、每个账本最多两名有效成员，由事务级 advisory lock、服务复查和数据库触发器共同保证
+- 每个账本最多一个有效 OWNER 成员，由部分唯一索引保证；所有权转移在同一事务内更新成员角色和 `owner_user_id`
 
 ## 工程基线
 

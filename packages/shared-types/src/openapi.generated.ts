@@ -320,6 +320,25 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/couple-ledgers/{id}/transfer-ownership': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 将所有权转移给另一名有效成员 */
+    post: operations['transferCoupleLedgerOwnership'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/categories': {
     parameters: {
       query?: never;
@@ -1000,6 +1019,26 @@ export interface components {
       ownerUserId: string;
       /** @enum {string} */
       status: 'ACTIVE' | 'DISSOLVED';
+      members: components['schemas']['LedgerMember'][];
+    };
+    LedgerMember: {
+      /** Format: uuid */
+      userId: string;
+      /** @enum {string} */
+      role: 'OWNER' | 'MEMBER';
+      joinedAt: components['schemas']['Timestamp'];
+      nickname: string;
+      /** Format: uri */
+      avatarUrl?: string | null;
+    };
+    CoupleInvitation: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      ledgerId: string;
+      /** @enum {string} */
+      status: 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
+      expiresAt: components['schemas']['Timestamp'];
     };
     Category: {
       /** Format: uuid */
@@ -1169,6 +1208,15 @@ export interface components {
       data: components['schemas']['DomainResource'];
       requestId: string;
     };
+    InvitationCreatedResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        invitation: components['schemas']['CoupleInvitation'];
+        token: string;
+      };
+      requestId: string;
+    };
     ResourceListResponse: {
       /** @constant */
       success: true;
@@ -1251,12 +1299,20 @@ export interface components {
     CreateCoupleLedgerRequest: {
       /** @default 朝暮同笺 */
       name: string;
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateCoupleLedgerRequest: {
       name: string;
     };
     AcceptInvitationRequest: {
       token: string;
+    };
+    CreateCoupleInvitationRequest: {
+      idempotencyKey: components['schemas']['IdempotencyKey'];
+    };
+    TransferCoupleOwnershipRequest: {
+      /** Format: uuid */
+      targetUserId: string;
     };
     CreateCategoryRequest: {
       type: components['schemas']['EntryType'];
@@ -1434,6 +1490,16 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['ResourceResponse'];
+      };
+    };
+    /** @description 邀请创建成功；明文凭证只在本响应中返回 */
+    InvitationCreated: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['InvitationCreatedResponse'];
       };
     };
     /** @description 分页查询成功 */
@@ -1861,9 +1927,13 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateCoupleInvitationRequest'];
+      };
+    };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['InvitationCreated'];
       403: components['responses']['Forbidden'];
       409: components['responses']['Conflict'];
     };
@@ -1900,6 +1970,28 @@ export interface operations {
       200: components['responses']['ActionOk'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+    };
+  };
+  transferCoupleLedgerOwnership: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TransferCoupleOwnershipRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
     };
   };
   listCategories: {

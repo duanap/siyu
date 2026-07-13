@@ -1,69 +1,42 @@
-# TASK-004 验证报告
+# TASK-005 验证报告
 
-日期：2026-07-12
+日期：2026-07-14
 
 ## 结论
 
-TASK-004 身份认证与用户基础能力实现和本地最终验收通过。未开始 TASK-002、TASK-003 或其他业务
-任务。正式 QQ 凭据和生产邮件提供方未配置，因此未将线上联调写成已完成。
+TASK-005 情侣账本邀请、成员和权限能力已完成实现。QQ 互联申请已通过，按负责人指示取消临时审核页
+制作与部署；正式 OAuth 凭据仍只允许由部署环境提供。
 
-## 数据库验收
+## 数据库与并发
 
-- 从 tmpfs 空库顺序应用 `20260711000000_init` 和
-  `20260712000000_authentication_foundation`：通过。
-- `prisma migrate status`：数据库最新；`prisma migrate diff --exit-code`：无差异。
-- `prisma db pull --print`：introspection 得到 25 个应用模型，并识别受审迁移中的 CHECK。
-- 用户邮箱、QQ OpenID、角色权限、Refresh/Reset Token 唯一约束：通过。
-- 状态/时间 CHECK、复合归属外键以及 RESTRICT/CASCADE 删除策略：通过。
-- 既有财务基线的部分唯一索引、CHECK、归属外键和并发幂等回归：通过。
+- 三条迁移从 tmpfs 空库顺序回放：通过；migrate status 最新、diff 零差异、introspection 25 模型。
+- 19 个关键唯一索引、单活邀请、单活所有者、每账本最多两名成员、每用户最多一个情侣账本：通过。
+- Prisma 与服务层共同使用事务和 advisory lock；重复成员保留既有唯一约束错误语义。
 
-## 认证与权限验收
+## API、权限与隐私
 
-- 邮箱规范化、Argon2id、密码 12–128 字符、JWT、配置校验和前端认证状态单元测试：通过。
-- 注册事务同时创建 User、UserCredential、唯一 PERSONAL Ledger、OWNER LedgerMember 和 USER 角色。
-- 重复注册和并发同邮箱注册：恰好一个成功；失败不会留下部分用户或账本。
-- 登录未知邮箱与错误密码使用相同 401 响应；响应和日志不含密码哈希或原始 Token。
-- Access Token、`GET/PATCH /users/me`、USER/ADMIN 服务端 Guard：通过。
-- Refresh 正常轮换、旧令牌失效、重放撤销令牌族、并发消费条件更新：通过。
-- 改密轮换当前会话并撤销其他会话；重置令牌一次性使用并撤销全部会话：通过。
-- Logout 幂等；Redis 限流和一次性 QQ OAuth state 的隔离测试通过。
-- 邮件 Job 使用固定 ID；测试传输器由 Worker 消费并写入隔离邮箱；未配置生产 Provider 时明确失败。
+- 创建、查询、改名、邀请、接受、退出、转移、解散：通过。
+- 创建账本和邀请幂等重放、不同载荷冲突、自邀拒绝、已满拒绝、非成员不可见：通过。
+- 所有者不能直接退出；所有权原子转移后原所有者可退出；解散后双方不可访问且历史记录保留。
+- 邀请数据库仅保存摘要，响应不暴露摘要，账本响应不暴露幂等键；关系变化写审计。
+- OpenAPI/API_CONTRACT 72/72，生成共享类型成功。
 
-## 容器与服务链路
+## 前端
 
-- `siyu-postgres`、`siyu-redis`、`siyu-api`、`siyu-worker`、`siyu-nginx`：全部 running/healthy。
-- `http://localhost:8080/health`、移动端 `/`、后台 `/admin/`、PostgreSQL、Redis、API、Worker、Nginx
-  链路：通过。
-- 经 Nginx 实测注册、当前用户、刷新、USER 访问管理端 403、忘记密码 Worker 消费、QQ 未配置 503、
-  两次退出 200：通过。
-- API 与 Worker 同时重启后恢复 healthy，重启前 Cookie 可继续刷新会话：通过。
-- 五个容器完整日志已检查；API 重启窗口内 Nginx healthcheck 出现一次预期 502，API healthy 后自动恢复
-  200，无持续应用异常。Redis 的 `vm.overcommit_memory=0` 环境提示记录为 KI-016。
+- “朝暮同笺”页面覆盖加载、空、错误、无权限、正常和提交中状态。
+- 创建、接受、成员展示、改名、邀请复制、所有权转移、退出和解散均有真实 API 调用。
+- 危险操作二次确认、提交防重复、44px 控件和主题 Token 已实现。
+- 7 项移动端 API/组件测试通过。浏览器插件受 WSL 路径兼容问题影响，且环境无无头 Chromium；
+  320/375/480px 与日夜主题的真浏览器自动检查未执行，不能声明视觉实测通过。
 
-## 前端验收
+## 质量门
 
-- 移动端登录、注册、忘记/重置密码、OAuth 回调、无权限和受保护占位页：通过。
-- 管理端登录、启动恢复、路由 Guard、USER 无权限和 ADMIN 登录：通过。
-- Chrome 150 DevTools 设备指标实测 320/375/480px：`scrollWidth` 分别等于视口宽度，无横向溢出；
-  卡片宽度为 288/343/420px。
-- 日夜主题切换和 localStorage 持久化通过；控件最小点击高度 44px。
-- Browser 插件与 Playwright 在环境中不可用，按前端测试技能降级使用本机 Chrome DevTools Protocol；
-  控制台仅有未登录启动恢复的预期 401 网络记录，无页面脚本异常。
+- Prisma validate、迁移回放、数据库约束、API E2E、OpenAPI lint/类型生成：通过。
+- `pnpm verify`：通过；包含格式、lint、typecheck、26 项单元/组件测试、Prisma、OpenAPI、健康 E2E 和 build。
+- 隔离 `siyu_test` 下的认证与情侣账本完整 E2E 另行运行并通过。
 
-## 全量质量门禁
+## 已知边界
 
-- `pnpm format`、`pnpm lint`、`pnpm typecheck`、`pnpm test`、`pnpm build`：通过。
-- 22 项单元/组件测试与隔离 PostgreSQL 认证 E2E：通过。
-- Prisma validate、空库迁移回放、OpenAPI lint/覆盖/类型生成、Compose 检查：通过。
-- OpenAPI 覆盖 71/71 个批准操作；应用 Schema 与文档镜像一致。
-- `pnpm audit`：无已知漏洞。
-- `pnpm verify`、MANIFEST、秘密扫描和 `git diff --check`：通过。
-
-## 配置边界和已知项
-
-- QQ App ID/App Key/正式回调地址未提供；Provider 实现按官方 Authorization Code 流程隔离验证，
-  本地接口准确返回“服务未配置”。
-- 生产邮件提供方未配置；本任务交付真实队列、测试传输器和明确失败码，不承诺生产邮件已发送。
-- Docker 构建默认仍使用官方 npm registry；因本地官方 registry 多次超时，本次镜像验收通过显式
-  `PNPM_REGISTRY=https://registry.npmmirror.com` 构建参数完成，锁文件完整性仍由 pnpm 校验。
-- 未写入 `.env`、真实密钥、Token、密码、生产数据、构建产物、日志或截图。
+- 分类作用域规则已冻结，分类数据模型与 CRUD 由 TASK-006 实现。
+- 正式 QQ 凭据和生产邮件提供方尚未进入部署环境。
+- 本机占用 6379 的 Redis 为 6.0.16，E2E 通过但 BullMQ 输出建议升级到 6.2+；项目 Compose 固定 Redis 7.4。

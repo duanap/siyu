@@ -90,7 +90,12 @@
 - `POST /couple-ledgers/:id/invitations`
 - `POST /couple-invitations/accept`
 - `POST /couple-ledgers/:id/leave`
+- `POST /couple-ledgers/:id/transfer-ownership`
 - `DELETE /couple-ledgers/:id`
+
+创建情侣账本和邀请必须携带 `idempotencyKey`。邀请创建响应返回邀请元数据和一次性明文 `token`；
+数据库、日志和审计只保存摘要或非敏感元数据。邀请默认 7 天有效，同一账本新邀请会撤销旧待处理邀请。
+所有权转移请求使用 `targetUserId`，目标必须是同一账本的另一名有效普通成员。
 
 ### 分类和账目
 
@@ -183,6 +188,6 @@
 - DTO 对金额、日期、枚举和文本长度严格校验。
 - 业务冲突返回 409；无权限返回 403；资源不可见可按安全策略返回 404。
 - 新增或修改接口同步更新 OpenAPI。
-- `openapi.yaml` 必须覆盖本文件列出的 65 个已批准操作；`scripts/check-openapi-coverage.mjs`
+- `openapi.yaml` 必须覆盖本文件列出的 72 个已批准操作；`scripts/check-openapi-coverage.mjs`
   负责阻止遗漏或未批准的新增路径。
 - TASK-000 只固化契约与生成共享类型，不实现上述业务接口。

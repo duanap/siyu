@@ -265,8 +265,13 @@ paths:
       tags: [Ledgers]
       operationId: createCoupleInvitation
       summary: 创建有时效的情侣邀请
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCoupleInvitationRequest' }
       responses:
-        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '201': { $ref: '#/components/responses/InvitationCreated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
   /couple-invitations/accept:
@@ -294,6 +299,24 @@ paths:
         '200': { $ref: '#/components/responses/ActionOk' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /couple-ledgers/{id}/transfer-ownership:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Ledgers]
+      operationId: transferCoupleLedgerOwnership
+      summary: 将所有权转移给另一名有效成员
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransferCoupleOwnershipRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /categories:
     get:
       tags: [Categories]
@@ -970,6 +993,13 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ResourceResponse' }
+    InvitationCreated:
+      description: 邀请创建成功；明文凭证只在本响应中返回
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/InvitationCreatedResponse' }
     ResourceListOk:
       description: 分页查询成功
       headers:
@@ -1094,13 +1124,34 @@ components:
           items: { type: string }
     Ledger:
       type: object
-      required: [id, type, name, ownerUserId, status]
+      required: [id, type, name, ownerUserId, status, members]
       properties:
         id: { type: string, format: uuid }
         type: { type: string, enum: [PERSONAL, COUPLE] }
         name: { type: string, minLength: 1, maxLength: 100 }
         ownerUserId: { type: string, format: uuid }
         status: { type: string, enum: [ACTIVE, DISSOLVED] }
+        members:
+          type: array
+          maxItems: 2
+          items: { $ref: '#/components/schemas/LedgerMember' }
+    LedgerMember:
+      type: object
+      required: [userId, role, joinedAt, nickname]
+      properties:
+        userId: { type: string, format: uuid }
+        role: { type: string, enum: [OWNER, MEMBER] }
+        joinedAt: { $ref: '#/components/schemas/Timestamp' }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        avatarUrl: { type: [string, 'null'], format: uri }
+    CoupleInvitation:
+      type: object
+      required: [id, ledgerId, status, expiresAt]
+      properties:
+        id: { type: string, format: uuid }
+        ledgerId: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, ACCEPTED, EXPIRED, REVOKED] }
+        expiresAt: { $ref: '#/components/schemas/Timestamp' }
     Category:
       type: object
       required: [id, type, name, isSystem, isEnabled]
@@ -1262,6 +1313,18 @@ components:
         success: { const: true }
         data: { $ref: '#/components/schemas/DomainResource' }
         requestId: { type: string }
+    InvitationCreatedResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [invitation, token]
+          properties:
+            invitation: { $ref: '#/components/schemas/CoupleInvitation' }
+            token: { type: string, minLength: 32, maxLength: 256, writeOnly: true }
+        requestId: { type: string }
     ResourceListResponse:
       type: object
       required: [success, data, requestId]
@@ -1372,10 +1435,11 @@ components:
         timezone: { type: string, minLength: 1, maxLength: 64 }
     CreateCoupleLedgerRequest:
       type: object
-      required: [name]
+      required: [name, idempotencyKey]
       additionalProperties: false
       properties:
         name: { type: string, minLength: 1, maxLength: 100, default: 朝暮同笺 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     UpdateCoupleLedgerRequest:
       type: object
       required: [name]
@@ -1387,7 +1451,19 @@ components:
       required: [token]
       additionalProperties: false
       properties:
-        token: { type: string, minLength: 8, maxLength: 256 }
+        token: { type: string, minLength: 32, maxLength: 256 }
+    CreateCoupleInvitationRequest:
+      type: object
+      required: [idempotencyKey]
+      additionalProperties: false
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    TransferCoupleOwnershipRequest:
+      type: object
+      required: [targetUserId]
+      additionalProperties: false
+      properties:
+        targetUserId: { type: string, format: uuid }
     CreateCategoryRequest:
       type: object
       required: [type, name]
