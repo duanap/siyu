@@ -10,6 +10,7 @@ const auth = useAuthStore();
 const route = useRoute();
 const ledger = ref<Ledger>();
 const loading = ref(true);
+const loadFailed = ref(false);
 const submitting = ref(false);
 const forbidden = ref(false);
 const error = ref('');
@@ -30,6 +31,7 @@ function handleError(cause: unknown): void {
 
 async function load(): Promise<void> {
   loading.value = true;
+  loadFailed.value = false;
   forbidden.value = false;
   error.value = '';
   try {
@@ -39,6 +41,7 @@ async function load(): Promise<void> {
     if (ledger.value) name.value = ledger.value.name;
   } catch (cause) {
     handleError(cause);
+    loadFailed.value = !forbidden.value;
   } finally {
     loading.value = false;
   }
@@ -135,7 +138,7 @@ onMounted(load);
 <template>
   <main class="couple-shell">
     <header>
-      <RouterLink to="/account">返回账号</RouterLink>
+      <RouterLink class="back-link" to="/account">返回账号</RouterLink>
       <span>朝暮同笺</span>
     </header>
 
@@ -150,7 +153,7 @@ onMounted(load);
       <button type="button" @click="load">重新检查</button>
     </section>
 
-    <section v-else-if="error && !ledger" class="state">
+    <section v-else-if="loadFailed && !ledger" class="state">
       <strong>加载失败</strong>
       <p role="alert">{{ error }}</p>
       <button type="button" @click="load">重试</button>
@@ -227,7 +230,9 @@ onMounted(load);
       </form>
     </section>
 
-    <p v-if="error && ledger" class="message error" role="alert">{{ error }}</p>
+    <p v-if="error && !loadFailed && !forbidden" class="message error" role="alert">
+      {{ error }}
+    </p>
     <p v-if="success" class="message success" role="status">{{ success }}</p>
   </main>
 </template>
@@ -249,6 +254,9 @@ header {
   justify-content: space-between;
 }
 header a {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
   color: var(--siyu-primary);
   text-decoration: none;
 }
@@ -293,7 +301,9 @@ li {
 }
 li > span:last-child {
   display: grid;
+  min-width: 0;
   gap: 3px;
+  overflow-wrap: anywhere;
 }
 small,
 .card p,
@@ -305,6 +315,7 @@ small,
   display: grid;
   width: 44px;
   height: 44px;
+  flex: 0 0 44px;
   place-items: center;
   border-radius: 50%;
   background: var(--siyu-primary-soft);
@@ -341,6 +352,12 @@ button {
 }
 button:disabled {
   opacity: 0.6;
+}
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--siyu-primary-soft);
+  outline-offset: 2px;
 }
 .danger-zone {
   display: grid;

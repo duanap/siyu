@@ -15,7 +15,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `605dea767a04e89b4846a1aed5555b6821005794b7e8efecb0e1de7d102a1ea7` |
-| `VALIDATION_REPORT.md` | `909269fcbcb3e5da250e2ec4aa85c4bb7f0fea485a6e29fb38751af1f4954e05` |
+| `VALIDATION_REPORT.md` | `69151c23b3743875eb6ea40e82e4872f8b29936d9bb878744fb64451101a75e1` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -91,8 +91,8 @@
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
-| `apps/mobile-web/src/views/CoupleLedgerView.test.ts` | `1cd6eed4991a9d46846e49242e0fc1cf9742a4f74823324220966d68bf12b7a3` |
-| `apps/mobile-web/src/views/CoupleLedgerView.vue` | `0e0ea67126d36bc7c072938c1672d0c29316218cee6afd2ac02ab41218a1ee13` |
+| `apps/mobile-web/src/views/CoupleLedgerView.test.ts` | `78bebca1b9c3a177eb6304f2dc38e42af5d789cd8b697abda2125940d1688c06` |
+| `apps/mobile-web/src/views/CoupleLedgerView.vue` | `1e9e275df0bd81d58ad36864780b8ae59b7c4a0cdbaf514c9be8cfcefa7d6f7d` |
 | `apps/mobile-web/src/views/ForbiddenView.vue` | `f93d19979857c91275b914de20070ac2479f70697527ff37634aa9d6753dd886` |
 | `apps/mobile-web/src/views/HomeView.vue` | `39c07c888fc362ef94c6b5b4e0d322f404f8018be949f3d58bc023417d894824` |
 | `apps/mobile-web/src/views/LegalView.vue` | `d9bf2c187c2172ad5392ca1561164857356b7786e284f317f9f12d66c3e06877` |
@@ -148,7 +148,7 @@
 | `docs/plans/TASK_BACKLOG.md` | `f00decf86e1bdc6aac96fb72b30f952a69e853a2ca536dbd3ba20c1c47d09655` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
-| `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `d9a9ad3ce0cc3da7c6d5256a38f9115ac23acbec981fd8b8a36e74dbb363aee6` |
+| `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13fd59739eba465a45dd41c0023bbc86513a95b5239ecc17b312f1b9d68500b3` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `2151f7a60b50885bf76138a8a544146a3bdec05405b014dd439bd906a32bfb9f` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -156,10 +156,10 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `84768acd9e712d8440dfcb1ecff590993f140b00e377e5a65a0cf03e449342ad` |
-| `docs/project-memory/CURRENT_STATE.md` | `2bd5c538b0da0165221ecca6347faf5d4c0cf018a6bf71063d0f84b9eb5639b1` |
+| `docs/project-memory/CHANGELOG_AI.md` | `ff7946ec3c4761fcb5dfab519bf8400c626b7bf5cd1a871fb28cf56a9886d923` |
+| `docs/project-memory/CURRENT_STATE.md` | `c5f38f309ec9c965a1fc1dced1edaff46cc2fb9eb5a44a52c13536e3a1e3f3e8` |
 | `docs/project-memory/DECISIONS.md` | `a308a9f9aa9a67d1f36620de2726cdaad6eeaadf551881326af9008a60f5228d` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `a66a9c11432d49f74fc3eb9c3fc0482a53d4406904549371e20c15045ab5c188` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `30dde31a33d282518f61dd783419111939864102d19d0ae53e2c1c69923a5be1` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `7a06e8b1320b5de7166a6f5232e0feb75dbb9b62386af08fa1400c50f8125b5f` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |

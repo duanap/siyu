@@ -13,6 +13,13 @@ function response(data: unknown): Response {
   });
 }
 
+function errorResponse(message: string, status = 400): Response {
+  return new Response(
+    JSON.stringify({ success: false, code: 'INVITATION_INVALID', message, requestId: 'req_test' }),
+    { status },
+  );
+}
+
 describe('CoupleLedgerView', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -41,6 +48,32 @@ describe('CoupleLedgerView', () => {
     expect(wrapper.text()).toContain('尚未加入朝暮同笺');
     expect(wrapper.text()).toContain('创建情侣账本');
     expect(wrapper.text()).toContain('接受邀请');
+    expect(wrapper.find('.back-link').exists()).toBe(true);
+  });
+
+  it('keeps the empty forms available when accepting an invalid invitation fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(response({ items: [], page: 1, pageSize: 1, total: 0 }))
+        .mockResolvedValueOnce(errorResponse('邀请码无效或已失效')),
+    );
+    const wrapper = mount(CoupleLedgerView, {
+      global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } },
+    });
+    await flushPromises();
+
+    await wrapper.find('input[minlength="32"]').setValue('x'.repeat(32));
+    const acceptForm = wrapper.findAll('form').at(1);
+    expect(acceptForm).toBeDefined();
+    await acceptForm!.trigger('submit');
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('邀请码无效或已失效');
+    expect(wrapper.text()).toContain('创建情侣账本');
+    expect(wrapper.text()).toContain('接受邀请');
+    expect(wrapper.text()).not.toContain('加载失败');
   });
 
   it('renders members and owner-only controls for an active couple ledger', async () => {
