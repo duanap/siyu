@@ -25,6 +25,9 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | LedgerSwitcher | 首页、明细、统计 |
 | EntryAmountInput | 记一笔 |
 | CategoryGrid | 记一笔、筛选 |
+| CategoryManager | 分类管理的账本/类型切换、启停分组和服务端能力呈现 |
+| CategoryEditorDrawer | 自定义分类名称、固定图标和颜色选择 |
+| CategoryOrderControls | OWNER 使用的 44px 上移/下移完整排序控件 |
 | EntryListItem | 明细、首页最近账目 |
 | MonthlySummaryCard | 首页 |
 | SalaryBalanceCard | 个人首页、工资首页 |

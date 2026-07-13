@@ -1,12 +1,12 @@
 # 当前项目状态
 
 更新时间：2026-07-14
-文档版本：v1.3.2
-代码状态：TASK-005 已通过 PR #2 合并 main 并正式关闭
+文档版本：v1.4.0
+代码状态：TASK-006 已在 `task/TASK-006-category-module` 完成实现与本地验收，尚未创建 PR
 
 ## 当前阶段
 
-M2：身份认证、个人账本初始化和情侣账本关系能力已建立。M3 分类、普通记账和统计尚未开始。
+M3：身份认证、账本关系和账本级分类能力已建立；普通记账和统计尚未开始。
 
 ## 已完成
 
@@ -28,31 +28,37 @@ M2：身份认证、个人账本初始化和情侣账本关系能力已建立。
 - 情侣成员和所有者权限、退出/转移/解散审计，以及移动端“朝暮同笺”管理页面完整状态。
 - PR #2 已以 Squash merge 合入 main，提交为 `6ebb13537dc0246a4a6a165bd348b88582c4dbbe`。
 - TASK-002 设计 Token/基础组件和 TASK-003 PostgreSQL/Prisma 基线已确认吸收进 TASK-000。
+- 默认分类全局模板与账本内实例、16 个版本 1 默认分类、注册/QQ/情侣账本事务初始化。
+- 分类创建、更新、稳定排序、启停、幂等、审计和 OWNER/MEMBER 权限 API；OpenAPI 74/74。
+- 分类、Entry 和 RecurringRule 的账本/类型复合归属外键，停用分类新引用拒绝与历史引用保留。
+- 移动端 `/categories` 页面：账本/类型 URL 恢复、启停分组、图标/颜色、上下排序和服务端能力字段。
 
 ## 明确未实现
 
-分类、普通记账、借贷、周期、工资、攒钱、统计、通知、导出和后台业务管理均未实现；
-除认证、用户资料、账本查询和情侣关系接口外，其余 OpenAPI 路径覆盖只表示契约完整，不表示接口已经上线。
+普通记账、借贷、周期、工资、攒钱、统计、通知、导出和后台业务管理均未实现；
+除认证、用户资料、账本关系和分类接口外，其余 OpenAPI 路径覆盖只表示契约完整，不表示接口已经上线。
 
 ## 当前验证状态
 
 - `pnpm verify`：通过，包含 Docker Compose daemon 配置校验。
 - main push CI Run `29275012134`：`quality`、`database`、`secret-scan` 全部通过，无失败或跳过步骤。
 - Prisma validate：通过；Prisma CLI 与 Client 均为 7.8.0。
-- OpenAPI lint：通过，API_CONTRACT 覆盖 72/72，生成类型成功。
-- 单元/组件测试：27 项通过；隔离 PostgreSQL 认证与情侣账本 E2E 全流程通过。
+- OpenAPI lint：通过，API_CONTRACT 覆盖 74/74，生成类型成功。
+- 单元/API/组件测试：全仓 35 项通过（移动端 16 项）；隔离 PostgreSQL 认证、情侣账本和分类 E2E 全流程通过。
 - Windows Chrome 150.0.7871.101 真浏览器覆盖 `/login`、`/account`、`/couple/invite`：
   320px、375px、480px 均无横向溢出，44px 点击区、Tab 焦点、日间/暗色和长文本通过。
 - 依赖审计：无已知漏洞。
 - 空库初始迁移、Prisma migrate status/diff/introspection、PostgreSQL 特殊约束和并发幂等实测：通过。
 - 25 模型三迁移空库回放、Prisma status/diff/introspection、19 个关键唯一索引、情侣成员触发器和并发验证：通过。
+- 25 模型四迁移回放、24 个关键索引、分类复合归属、既有分类迁移、默认补齐和重名策略：通过。
 - `siyu-postgres`、`siyu-redis`、`siyu-api`、`siyu-worker`、`siyu-nginx`：验收时全部 running/healthy。
 - PostgreSQL、Redis、API、BullMQ Worker、Nginx 服务链路和 `http://localhost:8080/health`：通过。
 - API 与 Worker 同时重启后连接恢复：通过；Nginx 使用 Docker DNS 动态解析 API 地址，无需随 API 重启。
 
 ## 下一项动作
 
-TASK-005 已正式关闭。下一条依赖链为 TASK-006 分类模块，未获负责人确认前不得自行开始。
+TASK-006 任务分支已达到本地完成定义；按负责人要求仅提交并推送任务分支，不创建 PR、不合并 main、
+不开始 TASK-007。
 
 ## 待负责人确认
 

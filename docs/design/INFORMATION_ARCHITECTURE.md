@@ -35,6 +35,7 @@ flowchart TB
     ME --> NOTICE[通知]
     ME --> EXPORT[导出]
     ME --> COUPLE_MGMT[情侣账本管理]
+    ME --> CATEGORY_MGMT[分类管理]
 ```
 
 ## 页面路由
@@ -44,6 +45,7 @@ flowchart TB
 - `/entries`
 - `/entries/new`
 - `/entries/:id`
+- `/categories`
 - `/statistics`
 - `/debts`
 - `/debts/new`

@@ -125,7 +125,7 @@ model User {
   memberships    LedgerMember[]
   sentInvitations LedgerInvitation[] @relation("InvitationInviter")
   acceptedInvitations LedgerInvitation[] @relation("InvitationAcceptor")
-  categories     Category[]
+  createdCategories Category[]
   createdEntries Entry[]
   debts          Debt[]
   debtTransactions DebtTransaction[]
@@ -265,6 +265,7 @@ model Ledger {
   owner          User @relation("LedgerOwner", fields: [ownerUserId], references: [id])
   members        LedgerMember[]
   invitations    LedgerInvitation[]
+  categories     Category[]
   entries        Entry[]
   recurringRules RecurringRule[]
   savingGoals    SavingGoal[]
@@ -311,22 +312,31 @@ model LedgerInvitation {
 }
 
 model Category {
-  id          String @id @default(uuid()) @db.Uuid
-  ownerUserId String? @map("owner_user_id") @db.Uuid
-  type        EntryType
-  name        String
-  icon        String?
-  sortOrder   Int @default(0) @map("sort_order")
-  isSystem    Boolean @default(false) @map("is_system")
-  isEnabled   Boolean @default(true) @map("is_enabled")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id              String @id @default(uuid()) @db.Uuid
+  ledgerId        String @map("ledger_id") @db.Uuid
+  creatorUserId   String? @map("creator_user_id") @db.Uuid
+  type            EntryType
+  name            String
+  icon            String
+  color           String
+  sortOrder       Int @default(0) @map("sort_order")
+  isSystem        Boolean @default(false) @map("is_system")
+  isEnabled       Boolean @default(true) @map("is_enabled")
+  templateKey     String? @map("template_key")
+  templateVersion Int? @map("template_version")
+  idempotencyKey  String? @map("idempotency_key")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  entries        Entry[]
-  recurringRules RecurringRule[]
-  owner          User? @relation(fields: [ownerUserId], references: [id])
+  entries        Entry[] @relation("EntryCategoryScope")
+  recurringRules RecurringRule[] @relation("RecurringCategoryScope")
+  ledger         Ledger @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
+  creator        User? @relation(fields: [creatorUserId], references: [id], onDelete: Restrict)
 
-  @@index([ownerUserId, type, isEnabled])
+  @@unique([ledgerId, templateKey])
+  @@unique([creatorUserId, idempotencyKey])
+  @@unique([id, ledgerId, type])
+  @@index([ledgerId, type, isEnabled, sortOrder, id])
   @@map("categories")
 }
 
@@ -349,7 +359,7 @@ model Entry {
 
   ledger   Ledger @relation(fields: [ledgerId], references: [id])
   creator  User @relation(fields: [creatorUserId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  category Category @relation("EntryCategoryScope", fields: [categoryId, ledgerId, type], references: [id, ledgerId, type], onDelete: Restrict)
   debtTransaction DebtTransaction?
   recurringRun RecurringRun?
   salaryRecord SalaryRecord?
@@ -432,7 +442,7 @@ model RecurringRule {
 
   ledger   Ledger @relation(fields: [ledgerId], references: [id])
   owner    User @relation(fields: [ownerUserId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  category Category @relation("RecurringCategoryScope", fields: [categoryId, ledgerId, entryType], references: [id, ledgerId, type], onDelete: Restrict)
   runs     RecurringRun[]
 
   @@index([status, nextRunDate])

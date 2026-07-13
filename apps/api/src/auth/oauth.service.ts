@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import IORedis from 'ioredis';
 
+import { initializeDefaultCategories } from '../categories/category-defaults';
 import { readConfig } from '../config';
 import { PrismaService } from '../database/prisma.service';
 import { USER_ROLE_ID } from './auth.constants';
@@ -115,6 +116,7 @@ export class OAuthService implements OnModuleDestroy {
       await tx.ledgerMember.create({
         data: { ledgerId: ledger.id, userId: user.id, role: 'OWNER' },
       });
+      await initializeDefaultCategories(tx, ledger.id);
       await tx.auditLog.create({
         data: {
           actorUserId: user.id,
