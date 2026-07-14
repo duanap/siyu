@@ -42,4 +42,6 @@ PR #4 已以 Squash merge 合入 main，提交 `25dcad0a29951ba4269e318423d5ebbf
 内容：实现普通手工账目的查询、创建、详情、修改和软删除，包含不可变创建请求哈希、乐观锁、
 账本权限、来源维护边界、审计、数据库约束和具体 OpenAPI/共享类型。
 状态：五迁移、数据库约束、认证/情侣/分类/Entry E2E、OpenAPI 74/74、Compose 五服务和 Nginx 真实
-业务链路已在任务分支通过；尚未创建 PR 或合入 main，不包含 TASK-008 客户端页面。
+业务链路已通过；PR #6 已以 Squash merge 合入 main，提交
+`f6e579957535ccb5ea4ce06d9d4bb8368d7c994c` 的 push CI Run `29305065285` 全部通过，TASK-007
+已正式关闭。KI-006 仍未解决，不包含 TASK-008 客户端页面。
