@@ -2,7 +2,7 @@
 
 ## 状态
 
-已完成（任务分支待 PR）
+已完成（已合入 main）
 
 ## 模型与推理
 
@@ -152,6 +152,8 @@ git diff --check
 - 2026-07-14：Windows 原生 Tab/Enter、既有分类迁移、Compose 五服务和完整数据库约束验证通过；临时产物已清理。
 - 2026-07-14：最终质量审查补强旧分类确定性迁移 ID 的 UUID v4/variant 位，并通过完整迁移回放与断言。
 - 2026-07-14：`pnpm verify`、全仓 35 项测试、`pnpm audit` 和 `git diff --check` 通过。
+- 2026-07-14：PR #4 以 Squash merge 合入 main，功能提交为
+  `25dcad0a29951ba4269e318423d5ebbf301857b3`；main push CI Run `29298535552` 三个 Job 全部成功。
 
 ## 决策记录
 
@@ -161,6 +163,6 @@ git diff --check
 
 ## 完成结果
 
-分类模块实现与本地验收完成：默认模板按账本实例化，OWNER/MEMBER 权限、幂等、排序、启停、审计、
-迁移、API、移动端和文档均已交付，任务分支已通过最终审查并按计划提交、推送。未创建 PR、未合并
-main、未开始 TASK-007；本 ExecPlan 关闭。
+分类模块实现、验收与主线闭环完成：默认模板按账本实例化，OWNER/MEMBER 权限、幂等、排序、启停、
+审计、迁移、API、移动端和文档均已交付。PR #4 已以 Squash merge 合入 main，功能合并后的 main CI
+全部通过；远程任务分支保留，TASK-007 尚未开始，本 ExecPlan 正式关闭。

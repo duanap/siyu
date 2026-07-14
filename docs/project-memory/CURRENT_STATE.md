@@ -1,8 +1,8 @@
 # 当前项目状态
 
 更新时间：2026-07-14
-文档版本：v1.4.0
-代码状态：TASK-006 已在 `task/TASK-006-category-module` 完成实现与本地验收，尚未创建 PR
+文档版本：v1.4.1
+代码状态：TASK-006 已通过 PR #4 以 Squash merge 合入 main 并完成主线 CI，任务正式关闭
 
 ## 当前阶段
 
@@ -32,6 +32,7 @@ M3：身份认证、账本关系和账本级分类能力已建立；普通记账
 - 分类创建、更新、稳定排序、启停、幂等、审计和 OWNER/MEMBER 权限 API；OpenAPI 74/74。
 - 分类、Entry 和 RecurringRule 的账本/类型复合归属外键，停用分类新引用拒绝与历史引用保留。
 - 移动端 `/categories` 页面：账本/类型 URL 恢复、启停分组、图标/颜色、上下排序和服务端能力字段。
+- PR #4 已以 Squash merge 合入 main，功能提交为 `25dcad0a29951ba4269e318423d5ebbf301857b3`。
 
 ## 明确未实现
 
@@ -41,11 +42,12 @@ M3：身份认证、账本关系和账本级分类能力已建立；普通记账
 ## 当前验证状态
 
 - `pnpm verify`：通过，包含 Docker Compose daemon 配置校验。
-- main push CI Run `29275012134`：`quality`、`database`、`secret-scan` 全部通过，无失败或跳过步骤。
+- main push CI Run [`29298535552`](https://github.com/duanap/siyu/actions/runs/29298535552)：`quality`、
+  `database`、`secret-scan` 全部通过，无失败或跳过步骤。
 - Prisma validate：通过；Prisma CLI 与 Client 均为 7.8.0。
 - OpenAPI lint：通过，API_CONTRACT 覆盖 74/74，生成类型成功。
 - 单元/API/组件测试：全仓 35 项通过（移动端 16 项）；隔离 PostgreSQL 认证、情侣账本和分类 E2E 全流程通过。
-- Windows Chrome 150.0.7871.101 真浏览器覆盖 `/login`、`/account`、`/couple/invite`：
+- Windows Chrome 150.0.7871.101 真浏览器覆盖 `/login`、`/account`、`/couple/invite`、`/categories`：
   320px、375px、480px 均无横向溢出，44px 点击区、Tab 焦点、日间/暗色和长文本通过。
 - 依赖审计：无已知漏洞。
 - 空库初始迁移、Prisma migrate status/diff/introspection、PostgreSQL 特殊约束和并发幂等实测：通过。
@@ -57,8 +59,7 @@ M3：身份认证、账本关系和账本级分类能力已建立；普通记账
 
 ## 下一项动作
 
-TASK-006 任务分支已达到本地完成定义；按负责人要求仅提交并推送任务分支，不创建 PR、不合并 main、
-不开始 TASK-007。
+下一项计划任务为 TASK-007 普通账目 API；尚未创建分支、ExecPlan 或代码变更，当前不得视为已开始。
 
 ## 待负责人确认
 
