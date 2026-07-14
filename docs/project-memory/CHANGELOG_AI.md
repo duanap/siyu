@@ -196,7 +196,11 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 - Chrome 150.0.7871.101 覆盖 320×800、375×812、480×900 日间/暗色；无横向溢出和小于 44px
   的可见交互控件，抽屉、确认、错误、长文本、重复提交与 MEMBER 权限通过。
 - Windows 原生 Tab 从返回链接移动到账本选择器，Enter 成功切换收支类型；临时截图、脚本和浏览器目录已清理。
+- PR #4 按预期 Head SHA `094588dae9b69c554f3edeb87a31372e9b1264be` 以 Squash merge 合入 main，
+  功能提交为 `25dcad0a29951ba4269e318423d5ebbf301857b3`。
+- main push CI Run `29298535552` 的 `quality`、`database`、`secret-scan` 全部成功，无失败或跳过步骤；
+  Node.js 20 弃用 annotation 仅作为非阻断工具链提示记录。
 
-### 未完成
+### 闭环状态
 
-- 未创建 PR、未合并 main，未开始普通账目 API、TASK-007 或其他业务模块。
+- TASK-006 已正式关闭；下一项计划任务为 TASK-007，但尚未开始普通账目 API 或其他业务模块。

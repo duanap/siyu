@@ -4,9 +4,10 @@
 
 ## 结论
 
-TASK-006 分类模块已在 `task/TASK-006-category-module` 完成数据库、API、移动端与真实 Chrome 验收，
-达到任务分支完成定义。按负责人要求，本轮只提交并推送任务分支，不创建 PR、不合并 main、不开始
-TASK-007；因此“实现完成”不等同于“已进入 main”。
+TASK-006 分类模块已完成数据库、API、移动端与真实 Chrome 验收。PR #4 已按预期 Head SHA
+`094588dae9b69c554f3edeb87a31372e9b1264be` 以 Squash merge 合入 main，功能提交为
+`25dcad0a29951ba4269e318423d5ebbf301857b3`；main push CI Run
+[`29298535552`](https://github.com/duanap/siyu/actions/runs/29298535552) 全部通过，TASK-006 正式关闭。
 
 ## 业务、权限与隐私
 
@@ -58,9 +59,12 @@ TASK-007；因此“实现完成”不等同于“已进入 main”。
 - Compose PostgreSQL、Redis 7.4、API、Worker、Nginx 五服务：构建成功并全部 healthy。
 - `pnpm verify`：通过，包含文档/Manifest、格式、lint、类型、35 项测试、Prisma、OpenAPI、E2E 和构建。
 - `pnpm audit`：无已知漏洞；`git diff --check`：通过。
+- PR #4 CI Run `29296125431` 与功能合并后的 main push CI Run `29298535552`：`quality`、`database`、
+  `secret-scan` 全部成功，Failed=0、Skipped=0。
+- Node.js 20 弃用 annotation 是 GitHub Actions 工具链提示；运行时已使用 Node.js 24，不阻断 TASK-006。
 
 ## 范围边界
 
 - 未实现普通账目 API、明细、统计、预算、周期记账、工资、攒钱目标或 TASK-007。
-- 未创建 PR、未合并 main、未删除任务分支。
+- PR #4 已合并；远程任务分支保留，TASK-007 尚未开始。
 - 正式 QQ 凭据和生产邮件提供方仍只允许由部署环境提供。
