@@ -2,7 +2,7 @@
 
 ## 状态
 
-已完成（任务分支，待 PR）
+已完成（PR #6 已合并，主线 CI 通过，正式关闭）
 
 ## 模型与推理
 
@@ -134,8 +134,14 @@ git diff --check
   Nginx 注册、账本/分类、Entry 创建与回读真实链路通过；本机 Redis 恢复 PONG。
 - 2026-07-14：最终 `pnpm verify`、`pnpm audit`、`git diff --check` 和敏感产物审查通过；
   仅提交并推送 TASK-007 任务分支，不创建 PR。
+- 2026-07-14：PR #6 以 Squash merge 合入 main；合并时 Head SHA 为
+  `aa9ea3bccc5d5bd48ed2bb5e98506d7e34df6be7`，功能提交为
+  `f6e579957535ccb5ea4ce06d9d4bb8368d7c994c`。main CI Run
+  [`29305065285`](https://github.com/duanap/siyu/actions/runs/29305065285) 的 `quality`、`database`、
+  `secret-scan` 全部成功，Failed=0、Skipped=0。
 
 ## 完成结果
 
 普通账目 API 的数据库、权限、幂等、并发、软删除、来源边界、审计、契约和自动化验收已完成。
-任务分支达到本地完成定义；未实现客户端页面或来源业务，尚未创建 PR、合并 main 或开始 TASK-008。
+PR #6 已合入 main 且主线 CI 全绿，TASK-007 正式关闭。未实现客户端页面或来源业务；KI-006 仍未解决，
+TASK-008 尚未开始。

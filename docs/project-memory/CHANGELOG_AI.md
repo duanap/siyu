@@ -241,5 +241,8 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 
 ### 交付状态
 
-- TASK-007 任务分支达到本地完成定义，尚未创建 PR 或合入 main。
-- 未实现 TASK-008 页面、统计或任何来源业务流程。
+- PR #6 按 Head SHA `aa9ea3bccc5d5bd48ed2bb5e98506d7e34df6be7` 以 Squash merge 合入 main，
+  功能提交为 `f6e579957535ccb5ea4ce06d9d4bb8368d7c994c`。
+- main push CI Run `29305065285` 的 `quality`、`database`、`secret-scan` 全部成功，无失败或跳过步骤；
+  Node.js 20、Redis 版本和 `pg` 弃用提示仅作为非阻断工具链信息记录。
+- TASK-007 已正式关闭；KI-006 仍未解决。下一项计划任务为 TASK-008，但尚未开始。
