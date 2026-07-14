@@ -1,12 +1,12 @@
 # 当前项目状态
 
 更新时间：2026-07-14
-文档版本：v1.4.1
-代码状态：TASK-006 已通过 PR #4 以 Squash merge 合入 main 并完成主线 CI，任务正式关闭
+文档版本：v1.5.0
+代码状态：TASK-007 普通账目 API 已在任务分支完成实现与本地验收，尚未创建 PR 或合入 main
 
 ## 当前阶段
 
-M3：身份认证、账本关系和账本级分类能力已建立；普通记账和统计尚未开始。
+M3：身份认证、账本关系、账本级分类和普通账目后端 API 已建立；记账客户端与统计尚未开始。
 
 ## 已完成
 
@@ -33,11 +33,15 @@ M3：身份认证、账本关系和账本级分类能力已建立；普通记账
 - 分类、Entry 和 RecurringRule 的账本/类型复合归属外键，停用分类新引用拒绝与历史引用保留。
 - 移动端 `/categories` 页面：账本/类型 URL 恢复、启停分组、图标/颜色、上下排序和服务端能力字段。
 - PR #4 已以 Squash merge 合入 main，功能提交为 `25dcad0a29951ba4269e318423d5ebbf301857b3`。
+- 普通手工账目查询、创建、详情、修改和软删除 API，以及服务端 OWNER/MEMBER 能力字段。
+- Entry 不可变 SHA-256 创建请求哈希、用户/操作幂等、整数版本乐观锁和权限优先软删除重试。
+- 受控支付方式、创建人成员复合归属、有效创建人触发器、四个未删除记录部分查询索引和安全审计。
+- TASK-007 五迁移历史升级、异常归属 fail-closed、Entry/认证/情侣/分类 E2E 和 OpenAPI 74/74。
 
 ## 明确未实现
 
-普通记账、借贷、周期、工资、攒钱、统计、通知、导出和后台业务管理均未实现；
-除认证、用户资料、账本关系和分类接口外，其余 OpenAPI 路径覆盖只表示契约完整，不表示接口已经上线。
+记账与明细客户端、借贷、周期、工资、攒钱、统计、通知、导出和后台业务管理均未实现；
+除认证、用户资料、账本关系、分类和普通账目接口外，其余 OpenAPI 路径覆盖只表示契约完整，不表示接口已经上线。
 
 ## 当前验证状态
 
@@ -46,20 +50,22 @@ M3：身份认证、账本关系和账本级分类能力已建立；普通记账
   `database`、`secret-scan` 全部通过，无失败或跳过步骤。
 - Prisma validate：通过；Prisma CLI 与 Client 均为 7.8.0。
 - OpenAPI lint：通过，API_CONTRACT 覆盖 74/74，生成类型成功。
-- 单元/API/组件测试：全仓 35 项通过（移动端 16 项）；隔离 PostgreSQL 认证、情侣账本和分类 E2E 全流程通过。
+- 单元/API/组件测试：全仓 35 项通过（移动端 16 项）；隔离 PostgreSQL 认证、情侣账本、分类和 Entry E2E 全流程通过。
 - Windows Chrome 150.0.7871.101 真浏览器覆盖 `/login`、`/account`、`/couple/invite`、`/categories`：
   320px、375px、480px 均无横向溢出，44px 点击区、Tab 焦点、日间/暗色和长文本通过。
 - 依赖审计：无已知漏洞。
 - 空库初始迁移、Prisma migrate status/diff/introspection、PostgreSQL 特殊约束和并发幂等实测：通过。
 - 25 模型三迁移空库回放、Prisma status/diff/introspection、19 个关键唯一索引、情侣成员触发器和并发验证：通过。
 - 25 模型四迁移回放、24 个关键索引、分类复合归属、既有分类迁移、默认补齐和重名策略：通过。
+- 25 模型五迁移回放、28 个关键索引、Entry 创建哈希/版本/成员/来源/支付约束、合法 OWNER 修复、
+  异常非 OWNER 归属拒绝和并发幂等：通过。
 - `siyu-postgres`、`siyu-redis`、`siyu-api`、`siyu-worker`、`siyu-nginx`：验收时全部 running/healthy。
 - PostgreSQL、Redis、API、BullMQ Worker、Nginx 服务链路和 `http://localhost:8080/health`：通过。
 - API 与 Worker 同时重启后连接恢复：通过；Nginx 使用 Docker DNS 动态解析 API 地址，无需随 API 重启。
 
 ## 下一项动作
 
-下一项计划任务为 TASK-007 普通账目 API；尚未创建分支、ExecPlan 或代码变更，当前不得视为已开始。
+TASK-007 任务分支已达到本地完成定义，下一步仅是负责人确认后创建 PR；本轮不得开始 TASK-008。
 
 ## 待负责人确认
 

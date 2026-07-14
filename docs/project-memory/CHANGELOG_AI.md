@@ -204,3 +204,42 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 ### 闭环状态
 
 - TASK-006 已正式关闭；下一项计划任务为 TASK-007，但尚未开始普通账目 API 或其他业务模块。
+
+## 2026-07-14 / TASK-007
+
+### 任务
+
+实现普通账目后端 API、数据库约束、OpenAPI/共享类型和自动化验证，不包含客户端页面。
+
+### 修改内容
+
+- 新增 Entries Controller/Service/Repository，完成列表、创建、详情、修改和软删除五个既有操作。
+- 实现个人/情侣 OWNER/MEMBER 权限、防枚举、服务端 `canEdit/canDelete` 和禁用操作者写保护。
+- 创建以版本化规范载荷 SHA-256 `createRequestHash` 判断幂等；PATCH/DELETE 使用整数版本乐观锁。
+- 普通 API 拒绝维护非 MANUAL 来源账目；软删除重试完整重验权限、来源和墓碑版本。
+- 列表支持月份、类型、分类、创建人、备注关键词和分页，并返回最小创建人/分类摘要。
+
+### 数据库变化
+
+新增迁移 `20260714040000_entry_api`：受控支付方式枚举、Entry version、不可变创建请求哈希、
+成员复合外键、有效创建人和哈希不可变触发器、备注/幂等/UUID/CHECK，以及四个
+`WHERE deleted_at IS NULL` 查询部分索引。迁移只修复可证明合法的 OWNER 成员缺失，其他异常历史
+归属 fail-closed；既有 Entry 使用 legacy hash 命名空间。
+
+### API 变化
+
+实现已批准的 5 个 Entry 操作，路径和 operationId 不变；OpenAPI 继续保持 74/74。PATCH body 必填
+`expectedVersion`，DELETE 使用查询参数；新增具体 Entry、分页、删除响应和受控支付共享类型。
+
+### 验证
+
+- 五迁移空库回放、四迁移升级、合法 OWNER 修复、异常非 OWNER 拒绝、零 diff、25 模型 introspection：通过。
+- 28 个关键索引、Entry 金额/版本/UUID/哈希/成员/分类/来源/支付/幂等约束与并发：通过。
+- 认证、情侣账本、分类和 Entry E2E：通过；覆盖请求哈希重放、版本冲突、权限、来源和软删除。
+- OpenAPI 74/74、35 项全仓测试、构建、依赖审计和完整质量门：通过。
+- Compose 五服务健康；经 Nginx 完成注册、账本/分类查询、Entry 创建和列表真实链路；本机 Redis 恢复 PONG。
+
+### 交付状态
+
+- TASK-007 任务分支达到本地完成定义，尚未创建 PR 或合入 main。
+- 未实现 TASK-008 页面、统计或任何来源业务流程。

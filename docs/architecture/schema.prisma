@@ -57,6 +57,14 @@ enum EntrySourceType {
   RECURRING_RUN
 }
 
+enum EntryPaymentMethod {
+  CASH
+  WECHAT
+  ALIPAY
+  BANK_CARD
+  OTHER
+}
+
 enum DebtDirection {
   BORROWED
   LENT
@@ -349,10 +357,12 @@ model Entry {
   categoryId     String @map("category_id") @db.Uuid
   businessDate   DateTime @map("business_date") @db.Date
   note           String?
-  paymentMethod  String? @map("payment_method")
+  paymentMethod  EntryPaymentMethod? @map("payment_method")
   sourceType     EntrySourceType @default(MANUAL) @map("source_type")
   sourceId       String? @map("source_id") @db.Uuid
   idempotencyKey String @map("idempotency_key")
+  createRequestHash String @map("create_request_hash")
+  version        Int @default(1)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
@@ -364,10 +374,6 @@ model Entry {
   recurringRun RecurringRun?
   salaryRecord SalaryRecord?
 
-  @@index([ledgerId, businessDate])
-  @@index([ledgerId, type, businessDate])
-  @@index([ledgerId, categoryId, businessDate])
-  @@index([ledgerId, creatorUserId, businessDate])
   @@unique([creatorUserId, idempotencyKey])
   @@map("entries")
 }

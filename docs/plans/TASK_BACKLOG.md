@@ -8,8 +8,8 @@
 | TASK-003 | 已吸收进 TASK-000（PostgreSQL/Prisma 模型、迁移和约束基线已验收） | M1 | — | — | TASK-000 |
 | TASK-004 | 邮箱密码与 QQ 认证、用户和个人账本初始化 | M2 | Sol | High | TASK-000 |
 | TASK-005 | 情侣账本邀请和权限 | M2 | Sol | Extra High | TASK-004 |
-| TASK-006 | 分类模块（任务分支实现与验收完成，待 PR） | M3 | Terra | Medium | TASK-003 |
-| TASK-007 | 普通账目 API | M3 | Sol | High | TASK-005,TASK-006 |
+| TASK-006 | 分类模块（已合并并正式关闭） | M3 | Terra | Medium | TASK-003 |
+| TASK-007 | 普通账目 API（任务分支实现与验收完成，待 PR） | M3 | Sol | High | TASK-005,TASK-006 |
 | TASK-008 | 记账页面与明细列表 | M3 | Terra | Medium | TASK-002,TASK-007 |
 | TASK-009 | 首页与基础统计 | M3 | Terra | Medium | TASK-007,TASK-008 |
 | TASK-010 | 借贷数据和 API | M4 | Sol | High | TASK-007 |

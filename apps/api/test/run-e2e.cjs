@@ -495,6 +495,406 @@ async function main() {
     .expect(409);
   assert.equal(fullInvite.body.code, 'COUPLE_LEDGER_FULL');
 
+  const personalExpenseCategory = await prisma.category.findFirstOrThrow({
+    where: { ledgerId: personalLedger.id, type: 'EXPENSE', isEnabled: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+  const personalIncomeCategory = await prisma.category.findFirstOrThrow({
+    where: { ledgerId: personalLedger.id, type: 'INCOME', isEnabled: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+  const expensePayload = {
+    ledgerId: personalLedger.id,
+    type: 'EXPENSE',
+    amountCent: 12345,
+    categoryId: personalExpenseCategory.id,
+    businessDate: '2026-07-14',
+    note: '  请求哈希原始备注  ',
+    paymentMethod: 'WECHAT',
+    idempotencyKey: `entry-expense-${suffix}`,
+  };
+  const personalExpense = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(expensePayload)
+    .expect(201);
+  const personalExpenseId = personalExpense.body.data.id;
+  assert.equal(personalExpense.body.data.note, '请求哈希原始备注');
+  assert.equal(personalExpense.body.data.amountCent, 12345);
+  assert.equal(personalExpense.body.data.sourceType, 'MANUAL');
+  assert.equal(personalExpense.body.data.version, 1);
+  assert.equal(personalExpense.body.data.canEdit, true);
+  assert.deepEqual(Object.keys(personalExpense.body.data.creator).sort(), [
+    'avatarUrl',
+    'id',
+    'nickname',
+  ]);
+  assert.equal(JSON.stringify(personalExpense.body).includes('createRequestHash'), false);
+
+  const replayedExpense = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(expensePayload)
+    .expect(201);
+  assert.equal(replayedExpense.body.data.id, personalExpenseId);
+  const hashBeforeUpdate = await prisma.entry.findUniqueOrThrow({
+    where: { id: personalExpenseId },
+    select: { createRequestHash: true },
+  });
+
+  const changedExpense = await request(server)
+    .patch(`/api/v1/entries/${personalExpenseId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 1, note: '修改后的备注' })
+    .expect(200);
+  assert.equal(changedExpense.body.data.version, 2);
+  assert.equal(changedExpense.body.data.note, '修改后的备注');
+  const replayAfterMutableUpdate = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(expensePayload)
+    .expect(201);
+  assert.equal(replayAfterMutableUpdate.body.data.id, personalExpenseId);
+  assert.equal(replayAfterMutableUpdate.body.data.note, '修改后的备注');
+  assert.deepEqual(
+    await prisma.entry.findUniqueOrThrow({
+      where: { id: personalExpenseId },
+      select: { createRequestHash: true },
+    }),
+    hashBeforeUpdate,
+  );
+  const differentReplay = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, amountCent: 12346 })
+    .expect(409);
+  assert.equal(differentReplay.body.code, 'IDEMPOTENCY_CONFLICT');
+
+  const noChangeAuditBefore = await prisma.auditLog.count({
+    where: { targetType: 'ENTRY', targetId: personalExpenseId, action: 'ENTRY_UPDATED' },
+  });
+  const noChange = await request(server)
+    .patch(`/api/v1/entries/${personalExpenseId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 2, note: '修改后的备注' })
+    .expect(200);
+  assert.equal(noChange.body.data.version, 2);
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { targetType: 'ENTRY', targetId: personalExpenseId, action: 'ENTRY_UPDATED' },
+    }),
+    noChangeAuditBefore,
+  );
+
+  const personalIncome = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: personalLedger.id,
+      type: 'INCOME',
+      amountCent: Number.MAX_SAFE_INTEGER,
+      categoryId: personalIncomeCategory.id,
+      businessDate: '2026-07-13',
+      note: '安全整数上限收入',
+      paymentMethod: 'BANK_CARD',
+      idempotencyKey: `entry-income-${suffix}`,
+    })
+    .expect(201);
+  assert.equal(personalIncome.body.data.amountCent, Number.MAX_SAFE_INTEGER);
+
+  const concurrentEntryPayload = {
+    ...expensePayload,
+    amountCent: 777,
+    note: '并发重复创建',
+    idempotencyKey: `concurrent-entry-${suffix}`,
+  };
+  const concurrentEntries = await Promise.all([
+    request(server)
+      .post('/api/v1/entries')
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(concurrentEntryPayload),
+    request(server)
+      .post('/api/v1/entries')
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(concurrentEntryPayload),
+  ]);
+  assert.deepEqual(
+    concurrentEntries.map((response) => response.status),
+    [201, 201],
+  );
+  assert.equal(concurrentEntries[0].body.data.id, concurrentEntries[1].body.data.id);
+  assert.equal(
+    await prisma.entry.count({
+      where: { creatorUserId: user.id, idempotencyKey: concurrentEntryPayload.idempotencyKey },
+    }),
+    1,
+  );
+
+  for (const amountCent of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+    await request(server)
+      .post('/api/v1/entries')
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send({ ...expensePayload, amountCent, idempotencyKey: `invalid-${amountCent}-${suffix}` })
+      .expect(400);
+  }
+  await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, businessDate: '2026-02-30', idempotencyKey: `date-${suffix}` })
+    .expect(400);
+  await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, paymentMethod: 'CRYPTO', idempotencyKey: `payment-${suffix}` })
+    .expect(400);
+  await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, note: '长'.repeat(501), idempotencyKey: `note-${suffix}` })
+    .expect(400);
+  await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, creatorUserId: outsider.user.id, sourceType: 'SALARY' })
+    .expect(400);
+  const crossLedgerCategory = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...expensePayload,
+      categoryId: systemCategoryId,
+      idempotencyKey: `cross-category-${suffix}`,
+    })
+    .expect(400);
+  assert.equal(crossLedgerCategory.body.code, 'ENTRY_CATEGORY_INVALID');
+
+  await request(server)
+    .post(`/api/v1/categories/${personalExpenseCategory.id}/disable`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const disabledCategory = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...expensePayload, idempotencyKey: `disabled-category-${suffix}` })
+    .expect(409);
+  assert.equal(disabledCategory.body.code, 'CATEGORY_DISABLED');
+  await request(server)
+    .post(`/api/v1/categories/${personalExpenseCategory.id}/enable`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+
+  const filteredPersonal = await request(server)
+    .get('/api/v1/entries')
+    .query({
+      ledgerId: personalLedger.id,
+      month: '2026-07',
+      type: 'EXPENSE',
+      categoryId: personalExpenseCategory.id,
+      creatorUserId: user.id,
+      keyword: '修改后的',
+      page: 1,
+      pageSize: 1,
+    })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(filteredPersonal.body.data.items.length, 1);
+  assert.equal(filteredPersonal.body.data.items[0].id, personalExpenseId);
+  assert.equal(filteredPersonal.body.data.total, 1);
+  assert.equal(filteredPersonal.body.data.hasNext, false);
+  const pagedPersonal = await request(server)
+    .get('/api/v1/entries')
+    .query({ ledgerId: personalLedger.id, month: '2026-07', page: 1, pageSize: 1 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(pagedPersonal.body.data.total >= 2, true);
+  assert.equal(pagedPersonal.body.data.hasNext, true);
+  assert.equal(pagedPersonal.body.data.items[0].businessDate, '2026-07-14');
+
+  const ownerCoupleEntry = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      amountCent: 200,
+      categoryId: systemCategoryId,
+      businessDate: '2026-07-14',
+      note: 'OWNER 共同账目',
+      paymentMethod: 'ALIPAY',
+      idempotencyKey: `owner-couple-entry-${suffix}`,
+    })
+    .expect(201);
+  const memberPayload = {
+    ledgerId: coupleLedgerId,
+    type: 'EXPENSE',
+    amountCent: 300,
+    categoryId: memberCategory.body.data.id,
+    businessDate: '2026-07-14',
+    note: 'MEMBER 共同账目',
+    paymentMethod: 'CASH',
+    idempotencyKey: `member-couple-entry-${suffix}`,
+  };
+  const memberCoupleEntry = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send(memberPayload)
+    .expect(201);
+  const memberEntryId = memberCoupleEntry.body.data.id;
+  assert.equal(memberCoupleEntry.body.data.canEdit, true);
+
+  const coupleListForMember = await request(server)
+    .get('/api/v1/entries')
+    .query({ ledgerId: coupleLedgerId, month: '2026-07' })
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.equal(coupleListForMember.body.data.total, 2);
+  assert.equal(
+    coupleListForMember.body.data.items.find((item) => item.id === ownerCoupleEntry.body.data.id)
+      .canEdit,
+    false,
+  );
+  const memberEditOther = await request(server)
+    .patch(`/api/v1/entries/${ownerCoupleEntry.body.data.id}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ expectedVersion: 1, note: '越权修改' })
+    .expect(403);
+  assert.equal(memberEditOther.body.code, 'ENTRY_PERMISSION_DENIED');
+  await request(server)
+    .delete(`/api/v1/entries/${ownerCoupleEntry.body.data.id}`)
+    .query({ expectedVersion: 1 })
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(403);
+
+  const memberOwnUpdate = await request(server)
+    .patch(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ expectedVersion: 1, amountCent: 301 })
+    .expect(200);
+  assert.equal(memberOwnUpdate.body.data.version, 2);
+  const concurrentWinner = await request(server)
+    .patch(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 2, note: 'OWNER 管理成员账目' })
+    .expect(200);
+  assert.equal(concurrentWinner.body.data.version, 3);
+  const concurrentLoser = await request(server)
+    .patch(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ expectedVersion: 2, note: '过期写入' })
+    .expect(409);
+  assert.equal(concurrentLoser.body.code, 'ENTRY_VERSION_CONFLICT');
+
+  await prisma.user.update({ where: { id: partner.user.id }, data: { status: 'DISABLED' } });
+  const ownerViewsDisabledCreator = await request(server)
+    .get(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(ownerViewsDisabledCreator.body.data.canEdit, true);
+  const disabledActorView = await request(server)
+    .get(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.equal(disabledActorView.body.data.canEdit, false);
+  await request(server)
+    .patch(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ expectedVersion: 3, note: '禁用用户写入' })
+    .expect(403);
+  await request(server)
+    .patch(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 3, note: 'OWNER 仍可管理' })
+    .expect(200);
+  await prisma.user.update({ where: { id: partner.user.id }, data: { status: 'ACTIVE' } });
+
+  await request(server)
+    .get('/api/v1/entries')
+    .query({ ledgerId: coupleLedgerId, month: '2026-07' })
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  await request(server)
+    .get(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+
+  const managedEntryId = randomUUID();
+  await prisma.entry.create({
+    data: {
+      id: managedEntryId,
+      ledgerId: coupleLedgerId,
+      creatorUserId: user.id,
+      type: 'EXPENSE',
+      amountCent: 400n,
+      categoryId: systemCategoryId,
+      businessDate: new Date('2026-07-14T00:00:00.000Z'),
+      sourceType: 'RECURRING_RUN',
+      sourceId: randomUUID(),
+      idempotencyKey: `managed-entry-${suffix}`,
+      createRequestHash: '8'.repeat(64),
+    },
+  });
+  const managedDetail = await request(server)
+    .get(`/api/v1/entries/${managedEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(managedDetail.body.data.canEdit, false);
+  const managedUpdate = await request(server)
+    .patch(`/api/v1/entries/${managedEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 1, note: '普通接口不可改' })
+    .expect(409);
+  assert.equal(managedUpdate.body.code, 'ENTRY_SOURCE_MANAGED');
+  const managedDelete = await request(server)
+    .delete(`/api/v1/entries/${managedEntryId}`)
+    .query({ expectedVersion: 1 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(409);
+  assert.equal(managedDelete.body.code, 'ENTRY_SOURCE_MANAGED');
+
+  const deleteResult = await request(server)
+    .delete(`/api/v1/entries/${memberEntryId}`)
+    .query({ expectedVersion: 4 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.deepEqual(deleteResult.body.data, { id: memberEntryId, deleted: true, version: 5 });
+  await request(server)
+    .delete(`/api/v1/entries/${memberEntryId}`)
+    .query({ expectedVersion: 4 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  await request(server)
+    .delete(`/api/v1/entries/${memberEntryId}`)
+    .query({ expectedVersion: 4 })
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  const deletedVersionConflict = await request(server)
+    .delete(`/api/v1/entries/${memberEntryId}`)
+    .query({ expectedVersion: 3 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(409);
+  assert.equal(deletedVersionConflict.body.code, 'ENTRY_VERSION_CONFLICT');
+  await request(server)
+    .get(`/api/v1/entries/${memberEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  const replayDeleted = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send(memberPayload)
+    .expect(409);
+  assert.equal(replayDeleted.body.code, 'IDEMPOTENCY_CONFLICT');
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { targetType: 'ENTRY', targetId: memberEntryId, action: 'ENTRY_DELETED' },
+    }),
+    1,
+  );
+  const entryAuditJson = JSON.stringify(
+    await prisma.auditLog.findMany({ where: { targetType: 'ENTRY' } }),
+  );
+  assert.equal(entryAuditJson.includes('请求哈希原始备注'), false);
+  assert.equal(entryAuditJson.includes('修改后的备注'), false);
+
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -521,6 +921,10 @@ async function main() {
     .set('authorization', `Bearer ${ownerAccess}`)
     .expect(404);
   await request(server)
+    .get(`/api/v1/entries/${ownerCoupleEntry.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  await request(server)
     .get(`/api/v1/ledgers/${coupleLedgerId}`)
     .set('authorization', `Bearer ${partner.accessToken}`)
     .expect(200);
@@ -531,6 +935,10 @@ async function main() {
     .expect(200);
   await request(server)
     .get(`/api/v1/ledgers/${coupleLedgerId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(404);
+  await request(server)
+    .get(`/api/v1/entries/${ownerCoupleEntry.body.data.id}`)
     .set('authorization', `Bearer ${partner.accessToken}`)
     .expect(404);
   assert.equal(
@@ -569,7 +977,7 @@ async function main() {
     .expect(200);
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
-  console.log('API health, authentication, couple ledger, and category E2E passed.');
+  console.log('API health, authentication, couple ledger, category, and Entry E2E passed.');
 }
 
 main().catch(async (error) => {
