@@ -62,8 +62,18 @@ async function main() {
   const user = await prisma.user.findFirstOrThrow({
     where: { credential: { emailNormalized: email } },
   });
+  const personalLedger = await prisma.ledger.findFirstOrThrow({
+    where: { ownerUserId: user.id, type: 'PERSONAL' },
+  });
   assert.equal(await prisma.ledger.count({ where: { ownerUserId: user.id, type: 'PERSONAL' } }), 1);
   assert.equal(await prisma.ledgerMember.count({ where: { userId: user.id, role: 'OWNER' } }), 1);
+  assert.equal(await prisma.category.count({ where: { ledgerId: personalLedger.id } }), 16);
+  assert.equal(
+    await prisma.category.count({
+      where: { ledgerId: personalLedger.id, isSystem: true, isEnabled: true },
+    }),
+    16,
+  );
 
   await request(server)
     .post('/api/v1/auth/register')
@@ -200,6 +210,172 @@ async function main() {
   assert.equal(createdCouple.body.data.members.length, 1);
   assert.equal(createdCouple.body.data.members[0].role, 'OWNER');
   assert.equal(JSON.stringify(createdCouple.body).includes('idempotencyKey'), false);
+  assert.equal(await prisma.category.count({ where: { ledgerId: coupleLedgerId } }), 16);
+
+  const ownerExpenseCategories = await request(server)
+    .get('/api/v1/categories')
+    .query({ ledgerId: coupleLedgerId, type: 'EXPENSE', includeDisabled: true })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(ownerExpenseCategories.body.data.items.length, 9);
+  assert.deepEqual(ownerExpenseCategories.body.data.permissions, {
+    canCreate: true,
+    canReorder: true,
+  });
+  assert.equal(
+    ownerExpenseCategories.body.data.items.every((item) => item.canToggle),
+    true,
+  );
+  await request(server)
+    .get('/api/v1/categories')
+    .query({ ledgerId: coupleLedgerId, type: 'EXPENSE' })
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '非法图标分类',
+      icon: 'not-allowed',
+      color: '#64748B',
+      idempotencyKey: `invalid-icon-${suffix}`,
+    })
+    .expect(400);
+  await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '超'.repeat(51),
+      icon: 'other',
+      color: '#64748B',
+      idempotencyKey: `long-name-${suffix}`,
+    })
+    .expect(400);
+
+  const ownerCategoryKey = `owner-category-${suffix}`;
+  const ownerCategory = await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '共同旅行',
+      icon: 'transport',
+      color: '#3B82F6',
+      idempotencyKey: ownerCategoryKey,
+    })
+    .expect(201);
+  const ownerCategoryId = ownerCategory.body.data.id;
+  assert.equal(ownerCategory.body.data.canEdit, true);
+  assert.equal(ownerCategory.body.data.sortOrder, 1000);
+  const ownerCategoryReplay = await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '共同旅行',
+      icon: 'transport',
+      color: '#3b82f6',
+      idempotencyKey: ownerCategoryKey,
+    })
+    .expect(201);
+  assert.equal(ownerCategoryReplay.body.data.id, ownerCategoryId);
+  const categoryIdempotencyConflict = await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '不同分类',
+      icon: 'other',
+      color: '#64748B',
+      idempotencyKey: ownerCategoryKey,
+    })
+    .expect(409);
+  assert.equal(categoryIdempotencyConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+  const duplicateCategory = await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: ' 共同旅行 ',
+      icon: 'other',
+      color: '#64748B',
+      idempotencyKey: `duplicate-category-${suffix}`,
+    })
+    .expect(409);
+  assert.equal(duplicateCategory.body.code, 'CATEGORY_NAME_CONFLICT');
+
+  const systemCategoryId = ownerExpenseCategories.body.data.items[0].id;
+  const immutableSystem = await request(server)
+    .patch(`/api/v1/categories/${systemCategoryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ name: '系统分类不可改' })
+    .expect(403);
+  assert.equal(immutableSystem.body.code, 'CATEGORY_SYSTEM_IMMUTABLE');
+  await request(server)
+    .patch(`/api/v1/categories/${ownerCategoryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ name: '共同长途旅行', icon: 'gift', color: '#E67E22' })
+    .expect(200);
+  await request(server)
+    .post(`/api/v1/categories/${ownerCategoryId}/disable`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  await request(server)
+    .post(`/api/v1/categories/${ownerCategoryId}/disable`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const activeOnly = await request(server)
+    .get('/api/v1/categories')
+    .query({ ledgerId: coupleLedgerId, type: 'EXPENSE' })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(
+    activeOnly.body.data.items.some((item) => item.id === ownerCategoryId),
+    false,
+  );
+  await request(server)
+    .post(`/api/v1/categories/${ownerCategoryId}/enable`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+
+  const beforeReorder = await request(server)
+    .get('/api/v1/categories')
+    .query({ ledgerId: coupleLedgerId, type: 'EXPENSE', includeDisabled: true })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const reversedCategoryIds = beforeReorder.body.data.items.map((item) => item.id).reverse();
+  const reordered = await request(server)
+    .put('/api/v1/categories/reorder')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ledgerId: coupleLedgerId, type: 'EXPENSE', categoryIds: reversedCategoryIds })
+    .expect(200);
+  assert.deepEqual(
+    reordered.body.data.items.map((item) => item.id),
+    reversedCategoryIds,
+  );
+  assert.deepEqual(
+    reordered.body.data.items.map((item) => item.sortOrder),
+    reversedCategoryIds.map((_, index) => (index + 1) * 100),
+  );
+  await request(server)
+    .put('/api/v1/categories/reorder')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ledgerId: coupleLedgerId, type: 'EXPENSE', categoryIds: reversedCategoryIds })
+    .expect(200);
+  const invalidReorder = await request(server)
+    .put('/api/v1/categories/reorder')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ledgerId: coupleLedgerId, type: 'EXPENSE', categoryIds: [ownerCategoryId] })
+    .expect(409);
+  assert.equal(invalidReorder.body.code, 'CATEGORY_REORDER_INVALID');
 
   const replayedCouple = await request(server)
     .post('/api/v1/couple-ledgers')
@@ -243,6 +419,71 @@ async function main() {
     .send({ token: invitationToken })
     .expect(200);
   assert.equal(accepted.body.data.members.length, 2);
+  const memberCategories = await request(server)
+    .get('/api/v1/categories')
+    .query({ ledgerId: coupleLedgerId, type: 'EXPENSE', includeDisabled: true })
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.deepEqual(memberCategories.body.data.permissions, {
+    canCreate: true,
+    canReorder: false,
+  });
+  assert.equal(
+    memberCategories.body.data.items.find((item) => item.id === systemCategoryId).canToggle,
+    false,
+  );
+  assert.equal(
+    memberCategories.body.data.items.find((item) => item.id === ownerCategoryId).canEdit,
+    false,
+  );
+  const memberCategory = await request(server)
+    .post('/api/v1/categories')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      name: '成员自定义分类',
+      icon: 'entertainment',
+      color: '#F5A623',
+      idempotencyKey: `member-category-${suffix}`,
+    })
+    .expect(201);
+  assert.equal(memberCategory.body.data.creatorUserId, partner.user.id);
+  assert.equal(memberCategory.body.data.canEdit, true);
+  const editOtherCategory = await request(server)
+    .patch(`/api/v1/categories/${ownerCategoryId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ name: '越权修改' })
+    .expect(403);
+  assert.equal(editOtherCategory.body.code, 'CATEGORY_PERMISSION_DENIED');
+  await request(server)
+    .patch(`/api/v1/categories/${memberCategory.body.data.id}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ name: '成员自定义长名称分类' })
+    .expect(200);
+  await request(server)
+    .post(`/api/v1/categories/${memberCategory.body.data.id}/disable`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  await request(server)
+    .post(`/api/v1/categories/${memberCategory.body.data.id}/enable`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  const memberSystemToggle = await request(server)
+    .post(`/api/v1/categories/${systemCategoryId}/disable`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(403);
+  assert.equal(memberSystemToggle.body.code, 'CATEGORY_PERMISSION_DENIED');
+  const memberReorder = await request(server)
+    .put('/api/v1/categories/reorder')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      categoryIds: [...reversedCategoryIds, memberCategory.body.data.id],
+    })
+    .expect(403);
+  assert.equal(memberReorder.body.code, 'CATEGORY_PERMISSION_DENIED');
   await request(server)
     .get(`/api/v1/ledgers/${coupleLedgerId}`)
     .set('authorization', `Bearer ${outsider.accessToken}`)
@@ -312,6 +553,15 @@ async function main() {
     }),
     4,
   );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        targetType: 'CATEGORY',
+        targetId: { in: [ownerCategoryId, memberCategory.body.data.id, coupleLedgerId] },
+      },
+    }),
+    9,
+  );
 
   await request(server)
     .post('/api/v1/auth/logout')
@@ -319,7 +569,7 @@ async function main() {
     .expect(200);
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
-  console.log('API health, authentication, and couple ledger E2E passed.');
+  console.log('API health, authentication, couple ledger, and category E2E passed.');
 }
 
 main().catch(async (error) => {

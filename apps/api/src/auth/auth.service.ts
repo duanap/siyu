@@ -13,6 +13,7 @@ import { hash as argonHash, verify as argonVerify, argon2id } from 'argon2';
 import { Queue } from 'bullmq';
 
 import { readConfig } from '../config';
+import { initializeDefaultCategories } from '../categories/category-defaults';
 import { PrismaService } from '../database/prisma.service';
 import {
   ACCESS_TOKEN_SECONDS,
@@ -134,6 +135,7 @@ export class AuthService implements OnModuleDestroy {
         await tx.ledgerMember.create({
           data: { ledgerId: ledger.id, userId: created.id, role: 'OWNER' },
         });
+        await initializeDefaultCategories(tx, ledger.id);
         await tx.auditLog.create({
           data: {
             actorUserId: created.id,

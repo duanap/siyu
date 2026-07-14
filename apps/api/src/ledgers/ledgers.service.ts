@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { readConfig } from '../config';
+import { initializeDefaultCategories } from '../categories/category-defaults';
 import { LedgersRepository } from './ledgers.repository';
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -121,6 +122,7 @@ export class LedgersService {
         throw businessConflict('COUPLE_ALREADY_JOINED', '当前已加入一个情侣账本');
       }
       const ledger = await this.repository.createCouple(tx, userId, name, idempotencyKey);
+      await initializeDefaultCategories(tx, ledger.id);
       await this.repository.audit(tx, {
         actorUserId: userId,
         action: 'COUPLE_LEDGER_CREATED',

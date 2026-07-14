@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from './auth';
 import AccountView from './views/AccountView.vue';
 import AuthenticationView from './views/AuthenticationView.vue';
+import CategoryManagementView from './views/CategoryManagementView.vue';
 import CoupleLedgerView from './views/CoupleLedgerView.vue';
 import ForbiddenView from './views/ForbiddenView.vue';
 import HomeView from './views/HomeView.vue';
@@ -57,6 +58,7 @@ export const router = createRouter({
     },
     { path: '/forbidden', name: 'forbidden', component: ForbiddenView },
     { path: '/account', name: 'account', component: AccountView },
+    { path: '/categories', name: 'categories', component: CategoryManagementView },
     { path: '/couple/invite', name: 'couple-invite', component: CoupleLedgerView },
   ],
 });

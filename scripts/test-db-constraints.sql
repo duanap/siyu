@@ -52,6 +52,11 @@ BEGIN
       'salary_records_entry_id_key',
       'salary_records_active_profile_month_key',
       'saving_contributions_user_id_idempotency_key_key',
+      'categories_ledger_id_template_key_key',
+      'categories_creator_user_id_idempotency_key_key',
+      'categories_id_ledger_id_type_key',
+      'categories_active_name_key',
+      'categories_ledger_id_type_is_enabled_sort_order_id_idx',
       'ledgers_one_active_personal_per_owner',
       'ledgers_owner_idempotency_key_unique',
       'ledger_invitations_inviter_idempotency_key_unique',
@@ -60,8 +65,8 @@ BEGIN
       'debts_id_user_id_key',
       'salary_profiles_id_user_id_key'
     );
-  IF required_indexes <> 19 THEN
-    RAISE EXCEPTION 'Expected 19 critical unique indexes, found %', required_indexes;
+  IF required_indexes <> 24 THEN
+    RAISE EXCEPTION 'Expected 24 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -79,10 +84,14 @@ BEGIN
     'salary_records_amounts_valid', 'salary_records_payment_consistent',
     'salary_records_profile_user_fkey', 'salary_items_amount_positive',
     'salary_items_sort_order_valid', 'saving_goals_amounts_valid',
-    'saving_contributions_amount_positive'
+    'saving_contributions_amount_positive',
+    'categories_name_valid', 'categories_sort_order_valid', 'categories_color_valid',
+    'categories_icon_valid', 'categories_template_shape_valid',
+    'categories_idempotency_key_valid', 'entries_category_scope_fkey',
+    'recurring_rules_category_scope_fkey'
   );
-  IF required_constraints <> 24 THEN
-    RAISE EXCEPTION 'Expected 24 custom constraints, found %', required_constraints;
+  IF required_constraints <> 32 THEN
+    RAISE EXCEPTION 'Expected 32 custom constraints, found %', required_constraints;
   END IF;
 
   SELECT count(*) INTO required_delete_actions
@@ -92,12 +101,15 @@ BEGIN
     ('recurring_runs_entry_id_fkey', 'r'),
     ('salary_records_entry_id_fkey', 'n'),
     ('salary_items_salary_record_id_fkey', 'c'),
-    ('categories_owner_user_id_fkey', 'n'),
+    ('categories_ledger_id_fkey', 'r'),
+    ('categories_creator_user_id_fkey', 'r'),
+    ('entries_category_scope_fkey', 'r'),
+    ('recurring_rules_category_scope_fkey', 'r'),
     ('ledger_invitations_accepted_by_user_id_fkey', 'n'),
     ('audit_logs_actor_user_id_fkey', 'n')
   );
-  IF required_delete_actions <> 7 THEN
-    RAISE EXCEPTION 'Expected 7 critical delete actions, found %', required_delete_actions;
+  IF required_delete_actions <> 10 THEN
+    RAISE EXCEPTION 'Expected 10 critical delete actions, found %', required_delete_actions;
   END IF;
 END $$;
 
@@ -185,10 +197,24 @@ SELECT pg_temp.expect_sqlstate(
   '23505', 'one pending invitation per ledger'
 );
 
-INSERT INTO categories (id, owner_user_id, type, name, is_system, updated_at)
+INSERT INTO categories (
+  id, ledger_id, creator_user_id, type, name, icon, color, sort_order,
+  is_system, is_enabled, template_key, template_version, idempotency_key, updated_at
+)
 VALUES
-  ('00000000-0000-0000-0000-000000000030', NULL, 'EXPENSE', '系统分类', true, CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '个人分类', false, CURRENT_TIMESTAMP);
+  ('00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000010', NULL, 'EXPENSE', '系统分类', 'other', '#64748B', 100, true, true, 'test.expense.system', 1, NULL, CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '个人分类', 'gift', '#E67E22', 200, false, true, NULL, NULL, 'category-key-31', CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000010', NULL, 'INCOME', '系统收入', 'salary', '#22A06B', 100, true, true, 'test.income.system', 1, NULL, CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000011', NULL, 'EXPENSE', '情侣系统分类', 'other', '#64748B', 100, true, true, 'test.couple.system', 1, NULL, CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '停用分类', 'other', '#64748B', 300, false, false, NULL, NULL, 'category-key-34', CURRENT_TIMESTAMP);
+
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000035', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '  未裁剪  ', 'other', '#64748B', false, 'category-key-35', CURRENT_TIMESTAMP)$sql$, '23514', 'category trimmed name');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000036', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '非法颜色', 'other', 'red', false, 'category-key-36', CURRENT_TIMESTAMP)$sql$, '23514', 'category color format');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000037', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '非法图标', 'unknown', '#64748B', false, 'category-key-37', CURRENT_TIMESTAMP)$sql$, '23514', 'category icon allowlist');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, sort_order, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000038', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '非法顺序', 'other', '#64748B', -1, false, 'category-key-38', CURRENT_TIMESTAMP)$sql$, '23514', 'category sort order');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, template_key, template_version, updated_at) VALUES ('00000000-0000-0000-0000-000000000039', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '非法系统形态', 'other', '#64748B', true, 'test.invalid', 1, CURRENT_TIMESTAMP)$sql$, '23514', 'category template shape');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '个人分类', 'other', '#64748B', false, 'category-key-80', CURRENT_TIMESTAMP)$sql$, '23505', 'category active normalized name unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creator_user_id, type, name, icon, color, is_system, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000081', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000003', 'EXPENSE', '幂等冲突', 'other', '#64748B', false, 'category-key-31', CURRENT_TIMESTAMP)$sql$, '23505', 'category creator idempotency unique');
 
 INSERT INTO entries (
   id, ledger_id, creator_user_id, type, amount_cent, category_id,
@@ -199,7 +225,7 @@ INSERT INTO entries (
   ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'source-key', CURRENT_TIMESTAMP),
   ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'debt-entry', CURRENT_TIMESTAMP),
   ('00000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'recurring-entry', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 9000, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'salary-entry', CURRENT_TIMESTAMP),
+  ('00000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 9000, '00000000-0000-0000-0000-000000000032', '2026-07-11', 'MANUAL', NULL, 'salary-entry', CURRENT_TIMESTAMP),
   ('00000000-0000-0000-0000-000000000046', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'manual-null-source', CURRENT_TIMESTAMP);
 
 SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'entry amount positive');
@@ -208,6 +234,9 @@ SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'SALARY', s
 SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'MANUAL', source_id = '00000000-0000-0000-0000-000000000099' WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'manual source forbids id');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000047', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 200, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'shared-key', CURRENT_TIMESTAMP)$sql$, '23505', 'entry user idempotency unique');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, source_id, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'different-user-source', CURRENT_TIMESTAMP)$sql$, '23505', 'entry source unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000033', '2026-07-11', 'cross-ledger-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry category ledger scope');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000083', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'wrong-type-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry category type scope');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000084', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000034', '2026-07-11', 'disabled-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry disabled category');
 
 INSERT INTO debts (id, user_id, direction, counterparty_name, principal_cent, remaining_cent, start_date, due_date, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'BORROWED', '归属测试', 1000, 1000, '2026-07-11', '2026-08-11', CURRENT_TIMESTAMP);
@@ -225,12 +254,17 @@ SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, 
 
 INSERT INTO recurring_rules (id, owner_user_id, ledger_id, name, entry_type, amount_cent, category_id, frequency, start_date, end_date, total_occurrences, generation_mode, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000060', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000010', '月租', 'EXPENSE', 1000, '00000000-0000-0000-0000-000000000030', 'MONTHLY', '2026-07-01', '2026-12-01', 6, 'AUTO', CURRENT_TIMESTAMP);
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_rules (id, owner_user_id, ledger_id, name, entry_type, amount_cent, category_id, frequency, start_date, generation_mode, updated_at) VALUES ('00000000-0000-0000-0000-000000000085', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000010', '跨账本分类', 'EXPENSE', 1000, '00000000-0000-0000-0000-000000000033', 'MONTHLY', '2026-07-01', 'AUTO', CURRENT_TIMESTAMP)$sql$, '23514', 'recurring category ledger scope');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring rule amount');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET interval_value = 0 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring interval');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET total_occurrences = 0 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring total occurrences');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET completed_occurrences = 7 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring completed occurrences');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET end_date = '2026-06-30' WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring dates');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET reminder_days_before = -1 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring reminder');
+
+UPDATE categories SET is_enabled = false WHERE id = '00000000-0000-0000-0000-000000000030';
+UPDATE entries SET note = '停用后历史记录保留' WHERE id = '00000000-0000-0000-0000-000000000040';
+UPDATE recurring_rules SET name = '停用后历史规则保留' WHERE id = '00000000-0000-0000-0000-000000000060';
 
 INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, status, entry_id, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000061', '00000000-0000-0000-0000-000000000060', '2026-07-01', 1000, 'GENERATED', '00000000-0000-0000-0000-000000000044', CURRENT_TIMESTAMP);
@@ -288,14 +322,9 @@ DO $$ BEGIN
   END IF;
 END $$;
 
-DELETE FROM users WHERE id IN (
-  '00000000-0000-0000-0000-000000000003',
-  '00000000-0000-0000-0000-000000000005'
-);
+SELECT pg_temp.expect_sqlstate($sql$DELETE FROM users WHERE id = '00000000-0000-0000-0000-000000000003'$sql$, '23503', 'category creator delete restrict');
+DELETE FROM users WHERE id = '00000000-0000-0000-0000-000000000005';
 DO $$ BEGIN
-  IF (SELECT owner_user_id IS NOT NULL FROM categories WHERE id = '00000000-0000-0000-0000-000000000031') THEN
-    RAISE EXCEPTION 'category owner should be set null';
-  END IF;
   IF (SELECT accepted_by_user_id IS NOT NULL FROM ledger_invitations WHERE id = '00000000-0000-0000-0000-000000000022') THEN
     RAISE EXCEPTION 'invitation accepted_by should be set null';
   END IF;

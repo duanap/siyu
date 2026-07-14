@@ -16,6 +16,106 @@ docker compose --profile test up -d --wait siyu-postgres-test
 
 docker compose --profile test exec -T siyu-postgres-test \
   createdb -U siyu siyu_shadow
+docker compose --profile test exec -T siyu-postgres-test \
+  createdb -U siyu siyu_legacy
+
+for migration in \
+  apps/api/prisma/migrations/20260711000000_init/migration.sql \
+  apps/api/prisma/migrations/20260712000000_authentication_foundation/migration.sql \
+  apps/api/prisma/migrations/20260714000000_couple_ledger_permissions/migration.sql; do
+  docker compose --profile test exec -T siyu-postgres-test \
+    psql -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy < "$migration"
+done
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy <<'SQL'
+INSERT INTO users (id, nickname, updated_at) VALUES
+  ('10000000-0000-4000-8000-000000000001', '迁移用户一', CURRENT_TIMESTAMP),
+  ('10000000-0000-4000-8000-000000000002', '迁移用户二', CURRENT_TIMESTAMP);
+INSERT INTO ledgers (id, type, name, owner_user_id, updated_at) VALUES
+  ('20000000-0000-4000-8000-000000000001', 'PERSONAL', '个人一', '10000000-0000-4000-8000-000000000001', CURRENT_TIMESTAMP),
+  ('20000000-0000-4000-8000-000000000002', 'COUPLE', '情侣', '10000000-0000-4000-8000-000000000001', CURRENT_TIMESTAMP),
+  ('20000000-0000-4000-8000-000000000003', 'PERSONAL', '个人二', '10000000-0000-4000-8000-000000000002', CURRENT_TIMESTAMP);
+INSERT INTO ledger_members (id, ledger_id, user_id, role) VALUES
+  ('30000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'OWNER'),
+  ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'MEMBER');
+INSERT INTO categories (id, owner_user_id, type, name, icon, is_system, updated_at) VALUES
+  ('40000000-0000-4000-8000-000000000001', NULL, 'EXPENSE', '餐饮', 'legacy-food', true, CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'EXPENSE', '餐饮', NULL, false, CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', 'INCOME', '旧兼职', NULL, false, CURRENT_TIMESTAMP);
+INSERT INTO entries (
+  id, ledger_id, creator_user_id, type, amount_cent, category_id,
+  business_date, idempotency_key, updated_at
+) VALUES (
+  '50000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000001', 'EXPENSE', 100,
+  '40000000-0000-4000-8000-000000000001', '2026-07-14', 'legacy-entry', CURRENT_TIMESTAMP
+);
+INSERT INTO recurring_rules (
+  id, owner_user_id, ledger_id, name, entry_type, amount_cent, category_id,
+  frequency, start_date, generation_mode, updated_at
+) VALUES (
+  '60000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000002', '旧周期', 'EXPENSE', 100,
+  '40000000-0000-4000-8000-000000000001', 'MONTHLY', '2026-07-14', 'AUTO', CURRENT_TIMESTAMP
+);
+SQL
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql --single-transaction -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy \
+  < apps/api/prisma/migrations/20260714020000_category_module/migration.sql
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy <<'SQL'
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM ledgers ledger
+    WHERE ledger.status = 'ACTIVE' AND ledger.deleted_at IS NULL
+      AND (SELECT count(*) FROM categories category
+           WHERE category.ledger_id = ledger.id AND category.is_system) <> 16
+  ) THEN
+    RAISE EXCEPTION 'Legacy migration did not initialize 16 system categories per active ledger';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM categories
+    WHERE substring(id::text from 15 for 1) <> '4'
+       OR substring(id::text from 20 for 1) <> '8'
+  ) THEN
+    RAISE EXCEPTION 'Migrated deterministic category IDs are not valid version 4 UUIDs';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM entries entry JOIN categories category ON category.id = entry.category_id
+    WHERE entry.ledger_id <> category.ledger_id OR entry.type <> category.type
+  ) THEN
+    RAISE EXCEPTION 'Legacy entry category was not rebound to its ledger and type';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM recurring_rules rule JOIN categories category ON category.id = rule.category_id
+    WHERE rule.ledger_id <> category.ledger_id OR rule.entry_type <> category.type
+  ) THEN
+    RAISE EXCEPTION 'Legacy recurring category was not rebound to its ledger and type';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM categories
+    WHERE ledger_id = '20000000-0000-4000-8000-000000000001'
+      AND name = '餐饮' AND NOT is_system AND is_enabled
+  ) OR NOT EXISTS (
+    SELECT 1 FROM categories
+    WHERE ledger_id = '20000000-0000-4000-8000-000000000001'
+      AND template_key = 'expense.food' AND is_system AND NOT is_enabled
+  ) THEN
+    RAISE EXCEPTION 'Legacy custom/default name conflict policy was not preserved';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM categories
+    WHERE ledger_id = '20000000-0000-4000-8000-000000000003'
+      AND name = '旧兼职' AND creator_user_id = '10000000-0000-4000-8000-000000000002'
+  ) THEN
+    RAISE EXCEPTION 'Unreferenced legacy custom category was not assigned to the personal ledger';
+  END IF;
+END $$;
+SQL
 
 DATABASE_URL='postgresql://siyu:siyu_test_only@localhost:55432/siyu_test?schema=public' \
   pnpm --filter @siyu/api prisma:migrate:deploy
@@ -46,12 +146,12 @@ docker compose --profile test exec -T siyu-postgres-test \
 set +e
 docker compose --profile test exec -T siyu-postgres-test \
   psql -v ON_ERROR_STOP=1 -U siyu -d siyu_test -c \
-  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
+  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
   >/tmp/siyu-concurrency-a.log 2>&1 &
 first_pid=$!
 docker compose --profile test exec -T siyu-postgres-test \
   psql -v ON_ERROR_STOP=1 -U siyu -d siyu_test -c \
-  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000035', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
+  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000035', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
   >/tmp/siyu-concurrency-b.log 2>&1 &
 second_pid=$!
 wait "$first_pid"

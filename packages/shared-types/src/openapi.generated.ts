@@ -346,11 +346,28 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 获取系统和个人分类 */
+    /** 获取当前成员可见的账本分类与服务端权限能力 */
     get: operations['listCategories'];
     put?: never;
-    /** 创建个人分类 */
+    /** 在账本中幂等创建自定义分类 */
     post: operations['createCategory'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/categories/reorder': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** OWNER 按账本和收支类型重排全部分类 */
+    put: operations['reorderCategories'];
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -376,6 +393,25 @@ export interface paths {
     patch: operations['updateCategory'];
     trace?: never;
   };
+  '/categories/{id}/enable': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 重新启用分类 */
+    post: operations['enableCategory'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/categories/{id}/disable': {
     parameters: {
       query?: never;
@@ -387,7 +423,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** 停用个人分类 */
+    /** 停用分类并保留历史引用 */
     post: operations['disableCategory'];
     delete?: never;
     options?: never;
@@ -994,6 +1030,24 @@ export interface components {
     /** @enum {string} */
     EntryType: 'INCOME' | 'EXPENSE';
     /** @enum {string} */
+    CategoryIconKey:
+      | 'food'
+      | 'shopping'
+      | 'transport'
+      | 'housing'
+      | 'entertainment'
+      | 'medical'
+      | 'education'
+      | 'gift'
+      | 'salary'
+      | 'bonus'
+      | 'part_time'
+      | 'investment'
+      | 'red_packet'
+      | 'refund'
+      | 'other';
+    CategoryColor: string;
+    /** @enum {string} */
     RecurringRunStatus: 'PENDING' | 'GENERATED' | 'CONFIRMED' | 'SKIPPED' | 'FAILED';
     User: {
       /** Format: uuid */
@@ -1043,12 +1097,21 @@ export interface components {
     Category: {
       /** Format: uuid */
       id: string;
+      /** Format: uuid */
+      ledgerId: string;
+      /** Format: uuid */
+      creatorUserId: string | null;
       type: components['schemas']['EntryType'];
       name: string;
-      icon?: string | null;
-      sortOrder?: number;
+      icon: components['schemas']['CategoryIconKey'];
+      color: components['schemas']['CategoryColor'];
+      sortOrder: number;
       isSystem: boolean;
       isEnabled: boolean;
+      canEdit: boolean;
+      canToggle: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
     };
     Entry: {
       /** Format: uuid */
@@ -1229,6 +1292,18 @@ export interface components {
       };
       requestId: string;
     };
+    CategoryListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['Category'][];
+        permissions: {
+          canCreate: boolean;
+          canReorder: boolean;
+        };
+      };
+      requestId: string;
+    };
     ActionResponse: {
       /** @constant */
       success: true;
@@ -1315,16 +1390,24 @@ export interface components {
       targetUserId: string;
     };
     CreateCategoryRequest: {
+      /** Format: uuid */
+      ledgerId: string;
       type: components['schemas']['EntryType'];
       name: string;
-      icon?: string | null;
-      /** @default 0 */
-      sortOrder: number;
+      icon: components['schemas']['CategoryIconKey'];
+      color: components['schemas']['CategoryColor'];
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateCategoryRequest: {
       name?: string;
-      icon?: string | null;
-      sortOrder?: number;
+      icon?: components['schemas']['CategoryIconKey'];
+      color?: components['schemas']['CategoryColor'];
+    };
+    ReorderCategoriesRequest: {
+      /** Format: uuid */
+      ledgerId: string;
+      type: components['schemas']['EntryType'];
+      categoryIds: string[];
     };
     CreateEntryRequest: {
       /** Format: uuid */
@@ -1510,6 +1593,16 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['ResourceListResponse'];
+      };
+    };
+    /** @description 分类列表与服务端权限能力查询成功 */
+    CategoryListOk: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['CategoryListResponse'];
       };
     };
     /** @description 操作成功 */
@@ -1996,8 +2089,10 @@ export interface operations {
   };
   listCategories: {
     parameters: {
-      query?: {
+      query: {
+        ledgerId: components['parameters']['LedgerId'];
         type?: components['schemas']['EntryType'];
+        includeDisabled?: boolean;
       };
       header?: never;
       path?: never;
@@ -2005,8 +2100,10 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['CategoryListOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
     };
   };
   createCategory: {
@@ -2024,6 +2121,33 @@ export interface operations {
     responses: {
       201: components['responses']['ResourceCreated'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  reorderCategories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReorderCategoriesRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['CategoryListOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   updateCategory: {
@@ -2042,8 +2166,32 @@ export interface operations {
     };
     responses: {
       200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  enableCategory: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   disableCategory: {
@@ -2057,9 +2205,12 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
     };
   };
   listEntries: {

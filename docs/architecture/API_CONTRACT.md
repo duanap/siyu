@@ -102,12 +102,20 @@
 - `GET /categories`
 - `POST /categories`
 - `PATCH /categories/:id`
+- `PUT /categories/reorder`
+- `POST /categories/:id/enable`
 - `POST /categories/:id/disable`
 - `GET /entries`
 - `POST /entries`
 - `GET /entries/:id`
 - `PATCH /entries/:id`
 - `DELETE /entries/:id`
+
+分类查询必须携带 `ledgerId`，可选 `type` 和 `includeDisabled`。列表中的每个分类返回
+`canEdit`、`canToggle`，集合返回 `canCreate`、`canReorder`，客户端不得复制服务端权限规则。
+创建分类必须携带 `ledgerId`、`type`、`name`、固定 `icon`、`#RRGGBB` `color` 和
+`idempotencyKey`。系统分类不可修改内容；账本 OWNER 可排序和启停，情侣 MEMBER 仅可创建、
+修改和启停自己创建的自定义分类。非成员和失效关系返回 404。
 
 新增账目：
 
@@ -188,6 +196,6 @@
 - DTO 对金额、日期、枚举和文本长度严格校验。
 - 业务冲突返回 409；无权限返回 403；资源不可见可按安全策略返回 404。
 - 新增或修改接口同步更新 OpenAPI。
-- `openapi.yaml` 必须覆盖本文件列出的 72 个已批准操作；`scripts/check-openapi-coverage.mjs`
+- `openapi.yaml` 必须覆盖本文件列出的 74 个已批准操作；`scripts/check-openapi-coverage.mjs`
   负责阻止遗漏或未批准的新增路径。
 - TASK-000 只固化契约与生成共享类型，不实现上述业务接口。

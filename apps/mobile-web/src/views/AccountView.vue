@@ -16,6 +16,7 @@ async function logout(): Promise<void> {
       <p>{{ auth.user?.nickname }}</p>
       <p>{{ auth.user?.email || 'QQ 用户' }}</p>
       <p class="hint">个人记账功能将在后续任务中开放。</p>
+      <RouterLink class="account-link" to="/categories">管理收支分类</RouterLink>
       <RouterLink class="couple-link" to="/couple/invite">管理朝暮同笺</RouterLink>
       <button type="button" @click="logout">退出登录</button>
     </section>
@@ -47,7 +48,8 @@ button {
   background: var(--siyu-primary);
   color: #fff;
 }
-.couple-link {
+.couple-link,
+.account-link {
   display: grid;
   min-height: 44px;
   place-items: center;
@@ -56,5 +58,8 @@ button {
   border-radius: 12px;
   color: var(--siyu-primary);
   text-decoration: none;
+}
+.account-link {
+  margin-bottom: 12px;
 }
 </style>

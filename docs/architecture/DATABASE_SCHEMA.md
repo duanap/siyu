@@ -59,7 +59,13 @@ ORM：Prisma
 
 ### categories
 
-`id, owner_user_id, type, name, icon, sort_order, is_system, is_enabled`
+`id, ledger_id, creator_user_id, type, name, icon, color, sort_order, is_system, is_enabled, template_key, template_version, idempotency_key, created_at, updated_at`
+
+- 每条分类属于一个账本；系统分类无创建者且必须有模板键，自定义分类必须有创建者且无模板键。
+- `(ledger_id, template_key)` 保证默认初始化幂等；`(creator_user_id, idempotency_key)` 保证创建请求幂等。
+- 启用名称在 `ledger_id + type + lower(name)` 内唯一；查询使用 `(ledger_id, type, is_enabled, sort_order, id)`。
+- 名称、排序、颜色、图标和系统/自定义形态由 CHECK 固化；系统和自定义分类均不物理删除。
+- Entry、RecurringRule 的插入或分类/账本/类型变更由触发器校验分类归属、类型和启用状态；停用不回写历史引用。
 
 ### entries
 
@@ -130,6 +136,8 @@ ORM：Prisma
 必须使用事务：
 
 - 首次用户和个人账本初始化
+- 创建账本与默认分类初始化
+- 分类创建、排序、启停与审计
 - 接受情侣邀请
 - 借贷处理及可选生成账目
 - 周期实例与自动账目
@@ -149,12 +157,15 @@ Prisma 不能直接表达的约束由 SQL migration 补充：
 - 情侣有效成员不超过两名需事务锁与服务校验
 - 情侣账本每个用户最多一个有效关系、每个账本最多两名有效成员，由事务级 advisory lock、服务复查和数据库触发器共同保证
 - 每个账本最多一个有效 OWNER 成员，由部分唯一索引保证；所有权转移在同一事务内更新成员角色和 `owner_user_id`
+- 分类模板键、创建幂等键和启用名称唯一；名称、颜色、图标、排序及模板形态 CHECK
+- 分类初始化、创建和排序使用 `ledger_id + type` advisory transaction lock，排序按 100 间隔规范化
 
 ## 工程基线
 
 - Prisma 事实文件：`apps/api/prisma/schema.prisma`
 - 架构镜像：`docs/architecture/schema.prisma`，文档检查时必须保持同内容
 - 初始迁移：`apps/api/prisma/migrations/20260711000000_init/migration.sql`
+- 分类增量迁移：`apps/api/prisma/migrations/20260714020000_category_module/migration.sql`
 - 用户默认时区暂按已批准 ExecPlan 使用 `Asia/Shanghai`；若负责人否决，后续迁移移除数据库默认值
 - Prisma 无法直接表达的部分唯一索引、复合归属外键与 CHECK 由人工审查的 migration SQL 固化
 - 借贷处理和周期实例引用的账目禁止硬删除；必须先按业务规则解除关联，避免与来源一致性 CHECK 冲突
