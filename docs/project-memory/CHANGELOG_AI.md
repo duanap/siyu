@@ -246,3 +246,37 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 - main push CI Run `29305065285` 的 `quality`、`database`、`secret-scan` 全部成功，无失败或跳过步骤；
   Node.js 20、Redis 版本和 `pg` 弃用提示仅作为非阻断工具链信息记录。
 - TASK-007 已正式关闭；KI-006 仍未解决。下一项计划任务为 TASK-008，但尚未开始。
+
+## 2026-07-14 / TASK-008
+
+### 任务
+
+实现移动端快速记账、明细列表和账目详情任务流，不新增后端接口、迁移或 TASK-009 内容。
+
+### 修改内容
+
+- 新增 `/entries`、`/entries/new`、`/entries/:id` 受保护路由与账号入口，底部导航仅出现在明细页。
+- Entry 客户端直接别名 OpenAPI 生成 `components` 类型；请求层新增结构化错误、单飞 Refresh、一次重放和取消保护。
+- 新增字符串/BigInt 金额工具、账本上下文、URL 深度恢复、严格 `from` 校验和一次性创建成功状态。
+- 新增 14 个公共组件，完成账本/月份/类型/分类/创建人/关键词筛选、分页、详情、编辑冲突和删除确认。
+- `AppAmount` 仅按 Entry 类型决定符号，`amountCent` 始终保持正安全整数；来源账目明确只读。
+- 更新账号页、设计 Token/页面规格/流程/组件清单、验收条件和 TASK-008 ExecPlan。
+
+### API 与数据库变化
+
+- 无新增 API、OpenAPI operation、Prisma Schema 或数据库迁移；OpenAPI 保持 74/74。
+- Nginx 构建上下文补入现有 `@siyu/shared-types` 工作区包，以支持移动端生产构建。
+
+### 验证
+
+- 移动端 17 个文件 52 项测试、全仓 71 项测试、认证/情侣/分类/Entry E2E 和完整构建通过。
+- Prisma validate、五迁移 status/零 diff、OpenAPI 74/74、依赖审计和 `git diff --check` 通过。
+- Compose 五服务 healthy；经 Nginx 覆盖个人和情侣 OWNER/MEMBER 创建、查看、编辑、拒绝和删除。
+- Chrome 150.0.7871.114 完成三页面 × 320/375/480px × 日间/暗色 18 组基础矩阵，无横向溢出。
+- 发现并修复暗色 Drawer/Dialog 背景、关闭点击区不足 44px 和关闭后焦点未恢复；12 组弹层补验通过。
+- 覆盖空态、长文本、筛选无结果、网络失败、慢网取消、重复提交、版本冲突、来源只读和 MEMBER 权限。
+- 验收后清理仓库外截图与浏览器目录，关闭 Compose，并恢复本机 Redis active/PONG。
+
+### 交付状态
+
+- TASK-008 任务分支实现与本地验收完成，待提交、推送和 PR；KI-006 仍未解决，TASK-009 未开始。

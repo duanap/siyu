@@ -9,6 +9,9 @@ const payload = {
   user: {
     id: 'user-id',
     nickname: '四时',
+    avatarUrl: null,
+    timezone: 'Asia/Shanghai',
+    status: 'ACTIVE' as const,
     email: 'user@example.com',
     roles: ['USER'],
     permissions: ['profile:read'],

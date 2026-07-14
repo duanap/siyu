@@ -54,6 +54,9 @@ describe('CategoryManagementView', () => {
     auth.user = {
       id: 'user-owner',
       nickname: '朝暮',
+      avatarUrl: null,
+      timezone: 'Asia/Shanghai',
+      status: 'ACTIVE',
       email: 'owner@example.com',
       roles: ['USER'],
       permissions: [],

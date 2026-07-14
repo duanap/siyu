@@ -29,6 +29,11 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | CategoryEditorDrawer | 自定义分类名称、固定图标和颜色选择 |
 | CategoryOrderControls | OWNER 使用的 44px 上移/下移完整排序控件 |
 | EntryListItem | 明细、首页最近账目 |
+| EntryAmountInput | 字符串金额输入、精确转分和字段错误 |
+| CategoryGrid | 记账与编辑时选择当前启用分类 |
+| EntryFilterDrawer | 明细类型、分类和创建人筛选 |
+| EntryEditorForm | 新增和编辑共享字段与提交状态 |
+| EntryDetailCard | 账目完整字段、来源和历史分类状态 |
 | MonthlySummaryCard | 首页 |
 | SalaryBalanceCard | 个人首页、工资首页 |
 | DebtSummaryCard | 首页、借贷 |

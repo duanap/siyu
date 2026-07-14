@@ -1,68 +1,62 @@
-# TASK-007 验证报告
+# TASK-008 验证报告
 
 日期：2026-07-14
 
 ## 结论
 
-TASK-007 普通账目 API 已完成数据库、后端、OpenAPI/共享类型、自动化回归和 Compose/Nginx 链路验收。
-PR #6 已按 Head SHA `aa9ea3bccc5d5bd48ed2bb5e98506d7e34df6be7` 以 Squash merge 合入 main，
-功能提交为 `f6e579957535ccb5ea4ce06d9d4bb8368d7c994c`；main push CI Run
-[`29305065285`](https://github.com/duanap/siyu/actions/runs/29305065285) 全部通过，TASK-007 正式关闭。
+TASK-008 记账页面与明细列表已在任务分支完成实现与本地验收。新增受保护的 `/entries`、
+`/entries/new`、`/entries/:id`，复用既有五个 Entry API 和 OpenAPI 生成类型；未新增后端接口、迁移、
+OpenAPI 操作或生产依赖，KI-006 仍未解决，TASK-009 未开始。
 
-## 功能、权限与隐私
+## 页面与公共能力
 
-- 实现 `GET/POST /entries` 和 `GET/PATCH/DELETE /entries/:id` 五个既有批准操作。
-- 个人 OWNER 和情侣 OWNER 可管理账本内全部手工账目；情侣 MEMBER 可查看双方、创建并仅管理自己的账目。
-- 非成员、退出成员和解散账本按资源不可见处理；详情、更新、删除和墓碑重试均从带成员条件的查询开始。
-- `canEdit/canDelete` 只按当前操作者计算；创建人被禁用不取消有效 OWNER 的管理权限。
-- 当前操作者被禁用时可按有效会话读取但不可写；响应不包含邮箱、QQ OpenID、角色或请求哈希。
+- 明细页支持账本、月份、收支、分类、创建人、备注和累计分页深度 URL 恢复；恢复上限为 10 页。
+- 快速记账使用正整数分、字符串/BigInt 金额校验、稳定草稿幂等键和用户时区默认日期。
+- 详情页展示完整字段；编辑和删除只消费服务端 `canEdit/canDelete`，非 MANUAL 来源明确只读。
+- 新增账本切换、金额、分类、列表项、筛选、详情、页面头、空态、错误态、Drawer、Dialog 和底栏组件。
+- 账号页补充明细与记账入口；底部导航只出现在明细页，首页和统计保持禁用而不创建虚假页面。
 
-## 数据库与迁移
+## 请求、路由与安全边界
 
-- 正式迁移：`20260714040000_entry_api`；四条历史迁移未修改。
-- 新增 `EntryPaymentMethod`、`version`、不可变 `createRequestHash`、成员复合外键和有效创建人触发器。
-- 创建哈希由版本化规范创建载荷计算 SHA-256；数据库触发器拒绝修改，历史记录使用 `legacy:<id>`。
-- 迁移仅补建可证明合法的 ACTIVE OWNER；异常非 OWNER 缺失成员关系会让事务迁移失败，不生成 LEFT MEMBER。
-- 四个正常查询索引均为 `WHERE deleted_at IS NULL` 部分索引，并覆盖稳定倒序字段。
-- 金额、UUID v4/variant、版本、备注、幂等键、来源形状/唯一、支付枚举、分类复合归属与启用状态约束：通过。
-- 五迁移空库回放、四迁移升级、migrate status、零 diff、Prisma validate、25 模型 introspection：通过。
-- 28 个关键索引、38 个自定义约束、11 个关键删除动作和数据库并发幂等：通过。
+- 客户端模型直接别名生成文件导出的 `components`，未复制 Entry/User DTO。
+- 非认证端点 401 使用单飞 Refresh，最多重放一次；认证端点跳过恢复，取消请求不重放或跳转。
+- `ApiError` 携带 `status/code/requestId`；主动取消、网络失败和业务错误分别处理。
+- 详情 `from` 必须为站内相对位置，并由 Router 解析为名称严格等于 `entries` 的路由，否则回退。
+- 创建人筛选仅使用当前有效成员和已加载账目发现的历史创建人，不新增历史成员 API。
 
-## API、幂等与并发
+## 自动化验证
 
-- 列表支持月份、类型、分类、创建人、备注关键词和分页；默认 1/20、最大 100，按
-  `businessDate DESC, createdAt DESC, id DESC` 排序，无 N+1。
-- 创建服务端固定当前用户、MANUAL 和空 sourceId；相同请求 hash 重放同一记录，不同 hash 冲突。
-- 账目后续修改不改变创建 hash；修改后使用原载荷重放仍识别原创建操作。
-- 并发相同 POST 只产生一行；PATCH 版本冲突返回 `ENTRY_VERSION_CONFLICT`；无变化 PATCH 不递增版本或审计。
-- DELETE 只软删除并递增版本；合法重试完整重验可见性、权限、来源和墓碑版本，只写一条删除审计。
-- 非 MANUAL 账目可按权限读取，普通修改/删除返回 `ENTRY_SOURCE_MANAGED`。
-- 审计覆盖创建、实际修改和首次删除，不保存完整备注、请求原文、Token 或创建哈希。
+- 移动端 17 个测试文件、52 项测试通过；全仓 71 项单元/API/组件测试通过。
+- 金额安全整数、正整数模型、类型决定符号、请求参数、幂等键、重复点击、URL 规范化和分页取消：通过。
+- 401 单飞、认证端点跳过、最多一次重放、Refresh 失败和 AbortSignal：通过。
+- 严格 `from` 校验、服务端能力、无变化编辑、版本冲突、删除重试、来源只读和 404：通过。
+- Drawer/Dialog 关闭焦点恢复、44px 关闭点击区和共享 Token 暗色覆盖具有回归测试。
+- OpenAPI 74/74、共享类型、Prisma validate、五迁移 status/零 diff、认证/情侣/分类/Entry E2E：通过。
+- `pnpm verify`、`pnpm audit` 和 `git diff --check`：通过；依赖审计无已知漏洞。
 
-## E2E 与契约
+## Compose 与真实 API
 
-- 个人收入/支出、情侣 OWNER/MEMBER 创建与双方查看、MEMBER 自己/他人权限、OWNER 全量管理：通过。
-- 非成员、退出成员、解散账本、跨账本 ID、禁用操作者、禁用创建人 OWNER 管理：通过。
-- 分类类型/账本/启用状态，金额零/负数/浮点/超上限，非法日期/支付方式/长备注/来源伪造：通过。
-- 创建重放、不同载荷、并发重复提交、修改冲突、软删除隐藏/重试、来源保护和审计：通过。
-- 月份、类型、分类、创建人、关键词、分页 total/hasNext、稳定排序和 BigInt 安全序列化：通过。
-- 认证、情侣账本和分类完整回归：通过。
-- OpenAPI/API_CONTRACT 74/74，Redocly lint 和共享类型重新生成：通过。
+- PostgreSQL、Redis、API、Worker、Nginx 五个服务全部 healthy，`/health` 通过。
+- 经 Nginx 完成个人账本与情侣 OWNER/MEMBER 的创建、查看、编辑、权限拒绝和软删除链路。
+- 验收数据覆盖 25 条分页记录、多个业务日期、长备注、停用分类、来源只读和双方创建人。
+- TASK-008 未修改数据库 Schema、迁移、API 契约或后端业务代码。
+- 验收结束后 Compose 已关闭；本机 Redis 恢复为 active，`redis-cli ping` 返回 `PONG`。
 
-## 质量门与运行环境
+## 真浏览器验收
 
-- 全仓 35 项单元/API/组件测试通过，其中移动端既有 16 项；TASK-007 未修改前端。
-- lint、typecheck、生产构建、Prisma validate、OpenAPI、E2E、文档、Manifest 和 `git diff --check`：通过。
-- `pnpm verify`：通过；`pnpm audit`：无已知漏洞。
-- PR #6 CI Run `29303770616` 与功能合并后的 main push CI Run `29305065285`：`quality`、
-  `database`、`secret-scan` 全部成功，Failed=0、Skipped=0。
-- Node.js 20、Redis 版本和 `pg` 弃用提示仅作为非阻断工具链信息记录，不在 TASK-007 闭环中处理。
-- Compose PostgreSQL、Redis 7.4、API、Worker、Nginx 构建成功并全部 healthy。
-- `http://localhost:8080` Nginx 真实链路完成注册、个人账本/分类查询、Entry 创建及分页回读：通过。
-- 验收后 Compose 已关闭；本机 Redis 已恢复 active，`redis-cli ping` 返回 `PONG`。
+- 浏览器：Google Chrome `150.0.7871.114`，真实浏览器进程通过 CDP 验收。
+- 页面：`/entries`、`/entries/new`、`/entries/:id`。
+- 320×800、375×812、480×900 的日间/暗色共 18 组基础矩阵：全部通过。
+- 编辑 Drawer 与删除 Dialog 在三个宽度、双主题共 12 组补充矩阵：全部通过。
+- 每组均满足 `document.documentElement.scrollWidth <= window.innerWidth`，未发现横向溢出。
+- 覆盖空列表、多日期、长文本、筛选无结果、网络错误、提交中、重复提交、编辑、版本冲突、删除、
+  来源只读、停用分类、情侣创建人、MEMBER 权限、前进后退、刷新、URL 恢复、慢网取消和键盘操作。
+- 发现并修复暗色 Drawer/Dialog 仍使用浅色背景，以及关闭后焦点未返回触发控件、关闭点击区不足 44px。
+- 当前会话未提供 Windows 自动化桥接且 WSL 禁止 Windows 可执行文件互操作，因此使用 WSL 中安装的
+  同版本真实 Chrome；浏览器用户目录和截图均位于仓库外，并在验收后清理。
 
-## 范围边界
+## 范围与交付状态
 
-- 未实现记账或明细页面、首页统计、图表、借贷、周期、工资、攒钱、CSV、上传或 TASK-008。
-- 来源业务删除策略 KI-006 仍待批准；当前保持跨软删除记录的来源唯一性，普通 API 不删除来源账目。
-- PR #6 已合并且 TASK-007 正式关闭；远程任务分支保留，TASK-008 尚未开始。
+- 未实现首页、统计、借贷、周期、工资、攒钱、凭证、CSV 或 TASK-009。
+- 未修改来源业务删除策略；KI-006 继续保持未解决。
+- 任务分支验证完成并推送后等待 PR；未创建 PR、未合并 main、未删除任务分支。
