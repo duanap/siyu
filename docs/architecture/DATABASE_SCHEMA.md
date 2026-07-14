@@ -69,19 +69,28 @@ ORM：Prisma
 
 ### entries
 
-`id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, note, payment_method, source_type, source_id, idempotency_key, created_at, updated_at, deleted_at`
+`id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, note, payment_method, source_type, source_id, idempotency_key, create_request_hash, version, created_at, updated_at, deleted_at`
+
+- `payment_method` 是 `CASH / WECHAT / ALIPAY / BANK_CARD / OTHER` 受控枚举或 NULL。
+- `create_request_hash` 保存版本化规范创建载荷的 SHA-256，数据库触发器禁止后续修改；历史记录使用
+  `legacy:<entry-id>` 保留命名空间且不参与成功重放。
+- `version >= 1`，PATCH 和 DELETE 以预期版本原子递增；备注和幂等键由 CHECK 固化裁剪、长度和格式。
+- `(ledger_id, creator_user_id)` 复合外键保证创建人可追溯到成员记录；新写入触发器同时要求有效账本、
+  有效成员和未禁用创建人。迁移仅修复可证明合法的 OWNER 缺失关系，其他异常历史归属失败退出。
 
 索引：
 
-- `(ledger_id, business_date)`
-- `(ledger_id, type, business_date)`
-- `(ledger_id, category_id, business_date)`
-- `(ledger_id, creator_user_id, business_date)`
+- `(ledger_id, business_date DESC, created_at DESC, id DESC) WHERE deleted_at IS NULL`
+- `(ledger_id, type, business_date DESC, created_at DESC, id DESC) WHERE deleted_at IS NULL`
+- `(ledger_id, category_id, business_date DESC, created_at DESC, id DESC) WHERE deleted_at IS NULL`
+- `(ledger_id, creator_user_id, business_date DESC, created_at DESC, id DESC) WHERE deleted_at IS NULL`
 
 唯一：
 
 - `creator_user_id + idempotency_key`
 - 来源业务非空时 `source_type + source_id`（PostgreSQL 部分唯一索引）
+
+TASK-007 正式增量迁移为 `20260714040000_entry_api`；上述 CHECK、触发器和部分索引按 ADR-010 由受审 SQL 固化。
 
 ### debts
 

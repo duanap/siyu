@@ -5,11 +5,19 @@ import { RequestIdMiddleware } from './request-id';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DatabaseModule } from './database/database.module';
+import { EntriesModule } from './entries/entries.module';
 import { LedgersModule } from './ledgers/ledgers.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UsersModule, LedgersModule, CategoriesModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    UsersModule,
+    LedgersModule,
+    CategoriesModule,
+    EntriesModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {

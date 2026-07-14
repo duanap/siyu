@@ -424,13 +424,14 @@ paths:
       tags: [Entries]
       operationId: listEntries
       summary: 分页查询账目
+      description: month 缺省时使用当前用户时区的当前月份；仅返回未软删除账目。
       parameters:
         - $ref: '#/components/parameters/LedgerId'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - in: query
           name: month
-          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+          schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
         - in: query
           name: type
           schema: { $ref: '#/components/schemas/EntryType' }
@@ -444,24 +445,28 @@ paths:
           name: keyword
           schema: { type: string, maxLength: 100 }
       responses:
-        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '200': { $ref: '#/components/responses/EntryListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Entries]
       operationId: createEntry
       summary: 创建手工账目
-      description: 相同用户和操作下，相同幂等键与载荷重放原结果；不同载荷返回 409。
+      description: 相同用户和操作下使用不可变创建请求哈希判断重放；不同载荷、legacy 记录或已删除原记录返回 409。
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/CreateEntryRequest' }
       responses:
-        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '201': { $ref: '#/components/responses/EntryCreated' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /entries/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -470,7 +475,8 @@ paths:
       operationId: getEntry
       summary: 获取账目详情
       responses:
-        '200': { $ref: '#/components/responses/ResourceOk' }
+        '200': { $ref: '#/components/responses/EntryOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
     patch:
       tags: [Entries]
@@ -482,17 +488,31 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/UpdateEntryRequest' }
       responses:
-        '200': { $ref: '#/components/responses/ResourceOk' }
+        '200': { $ref: '#/components/responses/EntryOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
     delete:
       tags: [Entries]
       operationId: deleteEntry
       summary: 软删除账目
+      description: 重试仍会重新校验账本可见性、操作者权限、来源类型和版本。
+      parameters:
+        - in: query
+          name: expectedVersion
+          required: true
+          schema: { type: integer, minimum: 1 }
       responses:
-        '200': { $ref: '#/components/responses/ActionOk' }
+        '200': { $ref: '#/components/responses/EntryDeleted' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /debts:
     get:
       tags: [Debts]
@@ -1065,6 +1085,34 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/CategoryListResponse' }
+    EntryOk:
+      description: 账目查询或更新成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/EntryResponse' }
+    EntryCreated:
+      description: 手工账目创建或幂等重放成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/EntryResponse' }
+    EntryListOk:
+      description: 账目分页查询成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/EntryListResponse' }
+    EntryDeleted:
+      description: 账目首次软删除或经完整校验后的幂等重试成功
+      headers:
+        X-Request-ID: { $ref: '#/components/headers/RequestId' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/EntryDeleteResponse' }
     ActionOk:
       description: 操作成功
       headers:
@@ -1159,6 +1207,12 @@ components:
     EntryType:
       type: string
       enum: [INCOME, EXPENSE]
+    EntrySourceType:
+      type: string
+      enum: [MANUAL, SALARY, DEBT_TRANSACTION, RECURRING_RUN]
+    EntryPaymentMethod:
+      type: string
+      enum: [CASH, WECHAT, ALIPAY, BANK_CARD, OTHER]
     CategoryIconKey:
       type: string
       enum:
@@ -1238,18 +1292,43 @@ components:
         updatedAt: { $ref: '#/components/schemas/Timestamp' }
     Entry:
       type: object
-      required: [id, ledgerId, creatorUserId, type, amountCent, categoryId, businessDate, sourceType]
+      required:
+        [id, ledgerId, type, amountCent, businessDate, note, paymentMethod, sourceType, creator, category, createdAt, updatedAt, version, canEdit, canDelete]
       properties:
         id: { type: string, format: uuid }
         ledgerId: { type: string, format: uuid }
-        creatorUserId: { type: string, format: uuid }
         type: { $ref: '#/components/schemas/EntryType' }
         amountCent: { $ref: '#/components/schemas/Cent' }
-        categoryId: { type: string, format: uuid }
         businessDate: { $ref: '#/components/schemas/BusinessDate' }
         note: { type: [string, 'null'], maxLength: 500 }
-        paymentMethod: { type: [string, 'null'], maxLength: 50 }
-        sourceType: { type: string, enum: [MANUAL, SALARY, DEBT_TRANSACTION, RECURRING_RUN] }
+        paymentMethod:
+          anyOf:
+            - $ref: '#/components/schemas/EntryPaymentMethod'
+            - type: 'null'
+        sourceType: { $ref: '#/components/schemas/EntrySourceType' }
+        creator: { $ref: '#/components/schemas/EntryCreator' }
+        category: { $ref: '#/components/schemas/EntryCategorySummary' }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+        version: { type: integer, minimum: 1 }
+        canEdit: { type: boolean }
+        canDelete: { type: boolean }
+    EntryCreator:
+      type: object
+      required: [id, nickname, avatarUrl]
+      properties:
+        id: { type: string, format: uuid }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        avatarUrl: { type: [string, 'null'], format: uri, maxLength: 2048 }
+    EntryCategorySummary:
+      type: object
+      required: [id, name, icon, color, isEnabled]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 50 }
+        icon: { $ref: '#/components/schemas/CategoryIconKey' }
+        color: { $ref: '#/components/schemas/CategoryColor' }
+        isEnabled: { type: boolean }
     Debt:
       type: object
       required: [id, direction, counterpartyName, principalCent, processedCent, remainingCent, startDate, status]
@@ -1385,6 +1464,43 @@ components:
       properties:
         success: { const: true }
         data: { $ref: '#/components/schemas/DomainResource' }
+        requestId: { type: string }
+    EntryResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/Entry' }
+        requestId: { type: string }
+    EntryListResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [items, page, pageSize, total, hasNext]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/Entry' }
+            page: { type: integer, minimum: 1 }
+            pageSize: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+            hasNext: { type: boolean }
+        requestId: { type: string }
+    EntryDeleteResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [id, deleted, version]
+          properties:
+            id: { type: string, format: uuid }
+            deleted: { const: true }
+            version: { type: integer, minimum: 2 }
         requestId: { type: string }
     InvitationCreatedResponse:
       type: object
@@ -1599,19 +1715,27 @@ components:
         categoryId: { type: string, format: uuid }
         businessDate: { $ref: '#/components/schemas/BusinessDate' }
         note: { type: [string, 'null'], maxLength: 500 }
-        paymentMethod: { type: [string, 'null'], maxLength: 50 }
+        paymentMethod:
+          anyOf:
+            - $ref: '#/components/schemas/EntryPaymentMethod'
+            - type: 'null'
         idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     UpdateEntryRequest:
       type: object
-      minProperties: 1
+      required: [expectedVersion]
+      minProperties: 2
       additionalProperties: false
       properties:
+        expectedVersion: { type: integer, minimum: 1 }
         type: { $ref: '#/components/schemas/EntryType' }
         amountCent: { $ref: '#/components/schemas/Cent' }
         categoryId: { type: string, format: uuid }
         businessDate: { $ref: '#/components/schemas/BusinessDate' }
         note: { type: [string, 'null'], maxLength: 500 }
-        paymentMethod: { type: [string, 'null'], maxLength: 50 }
+        paymentMethod:
+          anyOf:
+            - $ref: '#/components/schemas/EntryPaymentMethod'
+            - type: 'null'
     CreateDebtRequest:
       type: object
       required: [direction, counterpartyName, principalCent, startDate]

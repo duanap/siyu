@@ -30,4 +30,9 @@ TASK-006 已通过 BR-CATEGORY-004 至 012、AC-CATEGORY-001 至 008 和 ADR-017
 默认初始化、OWNER/MEMBER 分类权限、排序、启停和历史引用规则。实现、迁移/E2E、OpenAPI 74/74
 和 Chrome 150 多尺寸双主题验收已通过；PR #4 已以 Squash merge 合入 main，功能提交
 `25dcad0a29951ba4269e318423d5ebbf301857b3` 的 main push CI Run `29298535552` 全部通过，TASK-006
-已正式关闭。下一项计划任务为 TASK-007，但尚未开始。
+已正式关闭。
+
+TASK-007 已通过 BR-ENTRY-007 至 015、AC-ENTRY-008 至 014 和 ADR-018 冻结不可变创建请求哈希、
+乐观锁、权限优先软删除重试、来源维护边界和服务端能力计算。普通账目 API、第五迁移、E2E、OpenAPI
+74/74 和 Compose/Nginx 链路已在任务分支验证；尚未创建 PR 或合入 main。KI-006 的来源业务删除策略
+仍未批准，因此 TASK-007 保留跨软删除记录的来源唯一键，不允许普通 API 删除来源账目。

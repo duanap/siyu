@@ -45,6 +45,10 @@ BEGIN
       'ledger_invitations_token_hash_key',
       'entries_creator_user_id_idempotency_key_key',
       'entries_source_type_source_id_key',
+      'entries_ledger_id_business_date_idx',
+      'entries_ledger_id_type_business_date_idx',
+      'entries_ledger_id_category_id_business_date_idx',
+      'entries_ledger_id_creator_user_id_business_date_idx',
       'debt_transactions_entry_id_key',
       'debt_transactions_user_id_idempotency_key_key',
       'recurring_runs_entry_id_key',
@@ -65,8 +69,8 @@ BEGIN
       'debts_id_user_id_key',
       'salary_profiles_id_user_id_key'
     );
-  IF required_indexes <> 24 THEN
-    RAISE EXCEPTION 'Expected 24 critical indexes, found %', required_indexes;
+  IF required_indexes <> 28 THEN
+    RAISE EXCEPTION 'Expected 28 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -88,10 +92,12 @@ BEGIN
     'categories_name_valid', 'categories_sort_order_valid', 'categories_color_valid',
     'categories_icon_valid', 'categories_template_shape_valid',
     'categories_idempotency_key_valid', 'entries_category_scope_fkey',
-    'recurring_rules_category_scope_fkey'
+    'recurring_rules_category_scope_fkey', 'entries_creator_membership_fkey',
+    'entries_version_valid', 'entries_note_valid', 'entries_idempotency_key_valid',
+    'entries_create_request_hash_valid', 'entries_id_uuid_v4'
   );
-  IF required_constraints <> 32 THEN
-    RAISE EXCEPTION 'Expected 32 custom constraints, found %', required_constraints;
+  IF required_constraints <> 38 THEN
+    RAISE EXCEPTION 'Expected 38 custom constraints, found %', required_constraints;
   END IF;
 
   SELECT count(*) INTO required_delete_actions
@@ -104,12 +110,27 @@ BEGIN
     ('categories_ledger_id_fkey', 'r'),
     ('categories_creator_user_id_fkey', 'r'),
     ('entries_category_scope_fkey', 'r'),
+    ('entries_creator_membership_fkey', 'r'),
     ('recurring_rules_category_scope_fkey', 'r'),
     ('ledger_invitations_accepted_by_user_id_fkey', 'n'),
     ('audit_logs_actor_user_id_fkey', 'n')
   );
-  IF required_delete_actions <> 10 THEN
-    RAISE EXCEPTION 'Expected 10 critical delete actions, found %', required_delete_actions;
+  IF required_delete_actions <> 11 THEN
+    RAISE EXCEPTION 'Expected 11 critical delete actions, found %', required_delete_actions;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname IN (
+        'entries_ledger_id_business_date_idx',
+        'entries_ledger_id_type_business_date_idx',
+        'entries_ledger_id_category_id_business_date_idx',
+        'entries_ledger_id_creator_user_id_business_date_idx'
+      )
+      AND indexdef NOT LIKE '%WHERE (deleted_at IS NULL)%'
+  ) THEN
+    RAISE EXCEPTION 'Expected all normal Entry query indexes to be partial on deleted_at IS NULL';
   END IF;
 END $$;
 
@@ -144,7 +165,9 @@ SELECT pg_temp.expect_sqlstate(
 );
 
 INSERT INTO ledger_members (id, ledger_id, user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', 'OWNER');
+VALUES
+  ('00000000-0000-0000-0000-000000000019', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'OWNER'),
+  ('00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', 'OWNER');
 SELECT pg_temp.expect_sqlstate(
   $sql$INSERT INTO ledger_members (id, ledger_id, user_id, role)
        VALUES ('00000000-0000-0000-0000-000000000021', '00000000-0000-0000-0000-000000000011',
@@ -218,25 +241,29 @@ SELECT pg_temp.expect_sqlstate($sql$INSERT INTO categories (id, ledger_id, creat
 
 INSERT INTO entries (
   id, ledger_id, creator_user_id, type, amount_cent, category_id,
-  business_date, source_type, source_id, idempotency_key, updated_at
+  business_date, source_type, source_id, idempotency_key, create_request_hash, updated_at
 ) VALUES
-  ('00000000-0000-0000-0000-000000000040', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'shared-key', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'shared-key', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'source-key', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'debt-entry', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000044', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'recurring-entry', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000045', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 9000, '00000000-0000-0000-0000-000000000032', '2026-07-11', 'MANUAL', NULL, 'salary-entry', CURRENT_TIMESTAMP),
-  ('00000000-0000-0000-0000-000000000046', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'manual-null-source', CURRENT_TIMESTAMP);
+  ('40000000-0000-4000-8000-000000000040', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'shared-key', repeat('a', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000041', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000033', '2026-07-11', 'MANUAL', NULL, 'shared-key', repeat('b', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000042', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'source-key', repeat('c', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000043', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'debt-entry', repeat('d', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000044', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'recurring-entry', repeat('e', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000045', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 9000, '00000000-0000-0000-0000-000000000032', '2026-07-11', 'MANUAL', NULL, 'salary-entry', repeat('f', 64), CURRENT_TIMESTAMP),
+  ('40000000-0000-4000-8000-000000000046', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'MANUAL', NULL, 'manual-null-source', repeat('1', 64), CURRENT_TIMESTAMP);
 
-SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'entry amount positive');
-SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET amount_cent = 9007199254740992 WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'entry safe integer');
-SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'SALARY', source_id = NULL WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'non-manual source requires id');
-SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'MANUAL', source_id = '00000000-0000-0000-0000-000000000099' WHERE id = '00000000-0000-0000-0000-000000000040'$sql$, '23514', 'manual source forbids id');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000047', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 200, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'shared-key', CURRENT_TIMESTAMP)$sql$, '23505', 'entry user idempotency unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, source_id, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000048', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'different-user-source', CURRENT_TIMESTAMP)$sql$, '23505', 'entry source unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000033', '2026-07-11', 'cross-ledger-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry category ledger scope');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000083', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'wrong-type-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry category type scope');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000084', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000034', '2026-07-11', 'disabled-category', CURRENT_TIMESTAMP)$sql$, '23514', 'entry disabled category');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET amount_cent = 0 WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'entry amount positive');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET amount_cent = 9007199254740992 WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'entry safe integer');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'SALARY', source_id = NULL WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'non-manual source requires id');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'MANUAL', source_id = '00000000-0000-0000-0000-000000000099' WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'manual source forbids id');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET create_request_hash = repeat('9', 64) WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'entry create request hash immutable');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET version = 0 WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'entry version positive');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET note = '  untrimmed  ' WHERE id = '40000000-0000-4000-8000-000000000040'$sql$, '23514', 'entry note trimmed');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000047', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 200, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'shared-key', repeat('2', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'entry user idempotency unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, source_id, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000048', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000033', '2026-07-11', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000090', 'different-user-source', repeat('3', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'entry source unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000082', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000033', '2026-07-11', 'cross-ledger-category', repeat('4', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry category ledger scope');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000083', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'INCOME', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'wrong-type-category', repeat('5', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry category type scope');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000084', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000034', '2026-07-11', 'disabled-category', repeat('6', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry disabled category');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000085', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'invalid-entry-uuid', repeat('7', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry UUID v4');
 
 INSERT INTO debts (id, user_id, direction, counterparty_name, principal_cent, remaining_cent, start_date, due_date, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'BORROWED', '归属测试', 1000, 1000, '2026-07-11', '2026-08-11', CURRENT_TIMESTAMP);
@@ -244,12 +271,12 @@ SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET processed_cent = 100, remai
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET due_date = '2026-07-10' WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt due date');
 
 INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key)
-VALUES ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '00000000-0000-0000-0000-000000000043', 'shared-key');
+VALUES ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'shared-key');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction amount');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET sync_entry = false WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction entry consistency');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET entry_id = NULL WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction synced entry required');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000002', 100, '2026-07-11', 'wrong-owner')$sql$, '23503', 'debt transaction owner composite fk');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '00000000-0000-0000-0000-000000000043', 'other-entry-key')$sql$, '23505', 'debt transaction entry unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'other-entry-key')$sql$, '23505', 'debt transaction entry unique');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key')$sql$, '23505', 'debt transaction idempotency unique');
 
 INSERT INTO recurring_rules (id, owner_user_id, ledger_id, name, entry_type, amount_cent, category_id, frequency, start_date, end_date, total_occurrences, generation_mode, updated_at)
@@ -263,24 +290,24 @@ SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET end_date = '2026-
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_rules SET reminder_days_before = -1 WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23514', 'recurring reminder');
 
 UPDATE categories SET is_enabled = false WHERE id = '00000000-0000-0000-0000-000000000030';
-UPDATE entries SET note = '停用后历史记录保留' WHERE id = '00000000-0000-0000-0000-000000000040';
+UPDATE entries SET note = '停用后历史记录保留' WHERE id = '40000000-0000-4000-8000-000000000040';
 UPDATE recurring_rules SET name = '停用后历史规则保留' WHERE id = '00000000-0000-0000-0000-000000000060';
 
 INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, status, entry_id, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000061', '00000000-0000-0000-0000-000000000060', '2026-07-01', 1000, 'GENERATED', '00000000-0000-0000-0000-000000000044', CURRENT_TIMESTAMP);
+VALUES ('00000000-0000-0000-0000-000000000061', '00000000-0000-0000-0000-000000000060', '2026-07-01', 1000, 'GENERATED', '40000000-0000-4000-8000-000000000044', CURRENT_TIMESTAMP);
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_runs SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000061'$sql$, '23514', 'recurring run amount');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_runs SET attempts = -1 WHERE id = '00000000-0000-0000-0000-000000000061'$sql$, '23514', 'recurring run attempts');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_runs SET status = 'PENDING' WHERE id = '00000000-0000-0000-0000-000000000061'$sql$, '23514', 'pending run forbids entry');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE recurring_runs SET entry_id = NULL WHERE id = '00000000-0000-0000-0000-000000000061'$sql$, '23514', 'generated run requires entry');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000062', '00000000-0000-0000-0000-000000000060', '2026-07-01', 1000, CURRENT_TIMESTAMP)$sql$, '23505', 'recurring rule date unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, status, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000063', '00000000-0000-0000-0000-000000000060', '2026-08-01', 1000, 'GENERATED', '00000000-0000-0000-0000-000000000044', CURRENT_TIMESTAMP)$sql$, '23505', 'recurring entry unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, status, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000063', '00000000-0000-0000-0000-000000000060', '2026-08-01', 1000, 'GENERATED', '40000000-0000-4000-8000-000000000044', CURRENT_TIMESTAMP)$sql$, '23505', 'recurring entry unique');
 
 INSERT INTO salary_profiles (id, user_id, name, pay_day, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', '主工资', 10, CURRENT_TIMESTAMP);
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_profiles SET pay_day = 0 WHERE id = '00000000-0000-0000-0000-000000000070'$sql$, '23514', 'salary pay day');
 
 INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'PAID', '2026-07-10', '00000000-0000-0000-0000-000000000045', CURRENT_TIMESTAMP);
+VALUES ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'PAID', '2026-07-10', '40000000-0000-4000-8000-000000000045', CURRENT_TIMESTAMP);
 INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, deleted_at, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET salary_month = '2026-07-02' WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'salary month normalized');
@@ -289,7 +316,7 @@ SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET payment_status = '
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET paid_date = NULL WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'paid salary date required');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, CURRENT_TIMESTAMP)$sql$, '23503', 'salary profile owner composite fk');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000074', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, CURRENT_TIMESTAMP)$sql$, '23505', 'active salary month unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', '00000000-0000-0000-0000-000000000045', CURRENT_TIMESTAMP)$sql$, '23505', 'salary entry unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', '40000000-0000-4000-8000-000000000045', CURRENT_TIMESTAMP)$sql$, '23505', 'salary entry unique');
 
 INSERT INTO salary_items (id, salary_record_id, item_type, item_code, item_name, amount_cent)
 VALUES ('00000000-0000-0000-0000-000000000076', '00000000-0000-0000-0000-000000000071', 'EARNING', 'base', '基本工资', 10000);
@@ -306,8 +333,8 @@ VALUES ('00000000-0000-0000-0000-000000000081', '00000000-0000-0000-0000-0000000
 SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_contributions SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000081'$sql$, '23514', 'saving contribution amount');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_contributions (id, goal_id, user_id, amount_cent, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', CURRENT_TIMESTAMP)$sql$, '23505', 'saving contribution idempotency unique');
 
-SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '00000000-0000-0000-0000-000000000043'$sql$, '23503', 'debt-linked entry delete restrict');
-SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '00000000-0000-0000-0000-000000000044'$sql$, '23503', 'recurring-linked entry delete restrict');
+SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '40000000-0000-4000-8000-000000000043'$sql$, '23503', 'debt-linked entry delete restrict');
+SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '40000000-0000-4000-8000-000000000044'$sql$, '23503', 'recurring-linked entry delete restrict');
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM debts WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23503', 'debt delete restrict');
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM recurring_rules WHERE id = '00000000-0000-0000-0000-000000000060'$sql$, '23503', 'recurring rule delete restrict');
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM saving_goals WHERE id = '00000000-0000-0000-0000-000000000080'$sql$, '23503', 'saving goal delete restrict');
@@ -315,7 +342,7 @@ SELECT pg_temp.expect_sqlstate($sql$DELETE FROM ledgers WHERE id = '00000000-000
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM categories WHERE id = '00000000-0000-0000-0000-000000000030'$sql$, '23503', 'category delete restrict');
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM users WHERE id = '00000000-0000-0000-0000-000000000001'$sql$, '23503', 'user delete restrict');
 
-DELETE FROM entries WHERE id = '00000000-0000-0000-0000-000000000045';
+DELETE FROM entries WHERE id = '40000000-0000-4000-8000-000000000045';
 DO $$ BEGIN
   IF (SELECT entry_id IS NOT NULL FROM salary_records WHERE id = '00000000-0000-0000-0000-000000000071') THEN
     RAISE EXCEPTION 'salary record entry_id should be set null';

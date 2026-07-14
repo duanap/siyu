@@ -438,12 +438,15 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 分页查询账目 */
+    /**
+     * 分页查询账目
+     * @description month 缺省时使用当前用户时区的当前月份；仅返回未软删除账目。
+     */
     get: operations['listEntries'];
     put?: never;
     /**
      * 创建手工账目
-     * @description 相同用户和操作下，相同幂等键与载荷重放原结果；不同载荷返回 409。
+     * @description 相同用户和操作下使用不可变创建请求哈希判断重放；不同载荷、legacy 记录或已删除原记录返回 409。
      */
     post: operations['createEntry'];
     delete?: never;
@@ -465,7 +468,10 @@ export interface paths {
     get: operations['getEntry'];
     put?: never;
     post?: never;
-    /** 软删除账目 */
+    /**
+     * 软删除账目
+     * @description 重试仍会重新校验账本可见性、操作者权限、来源类型和版本。
+     */
     delete: operations['deleteEntry'];
     options?: never;
     head?: never;
@@ -1030,6 +1036,10 @@ export interface components {
     /** @enum {string} */
     EntryType: 'INCOME' | 'EXPENSE';
     /** @enum {string} */
+    EntrySourceType: 'MANUAL' | 'SALARY' | 'DEBT_TRANSACTION' | 'RECURRING_RUN';
+    /** @enum {string} */
+    EntryPaymentMethod: 'CASH' | 'WECHAT' | 'ALIPAY' | 'BANK_CARD' | 'OTHER';
+    /** @enum {string} */
     CategoryIconKey:
       | 'food'
       | 'shopping'
@@ -1118,17 +1128,34 @@ export interface components {
       id: string;
       /** Format: uuid */
       ledgerId: string;
-      /** Format: uuid */
-      creatorUserId: string;
       type: components['schemas']['EntryType'];
       amountCent: components['schemas']['Cent'];
-      /** Format: uuid */
-      categoryId: string;
       businessDate: components['schemas']['BusinessDate'];
-      note?: string | null;
-      paymentMethod?: string | null;
-      /** @enum {string} */
-      sourceType: 'MANUAL' | 'SALARY' | 'DEBT_TRANSACTION' | 'RECURRING_RUN';
+      note: string | null;
+      paymentMethod: components['schemas']['EntryPaymentMethod'] | null;
+      sourceType: components['schemas']['EntrySourceType'];
+      creator: components['schemas']['EntryCreator'];
+      category: components['schemas']['EntryCategorySummary'];
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
+      version: number;
+      canEdit: boolean;
+      canDelete: boolean;
+    };
+    EntryCreator: {
+      /** Format: uuid */
+      id: string;
+      nickname: string;
+      /** Format: uri */
+      avatarUrl: string | null;
+    };
+    EntryCategorySummary: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      icon: components['schemas']['CategoryIconKey'];
+      color: components['schemas']['CategoryColor'];
+      isEnabled: boolean;
     };
     Debt: {
       /** Format: uuid */
@@ -1269,6 +1296,36 @@ export interface components {
       /** @constant */
       success: true;
       data: components['schemas']['DomainResource'];
+      requestId: string;
+    };
+    EntryResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['Entry'];
+      requestId: string;
+    };
+    EntryListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['Entry'][];
+        page: number;
+        pageSize: number;
+        total: number;
+        hasNext: boolean;
+      };
+      requestId: string;
+    };
+    EntryDeleteResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        /** Format: uuid */
+        id: string;
+        /** @constant */
+        deleted: true;
+        version: number;
+      };
       requestId: string;
     };
     InvitationCreatedResponse: {
@@ -1418,17 +1475,18 @@ export interface components {
       categoryId: string;
       businessDate: components['schemas']['BusinessDate'];
       note?: string | null;
-      paymentMethod?: string | null;
+      paymentMethod?: components['schemas']['EntryPaymentMethod'] | null;
       idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateEntryRequest: {
+      expectedVersion: number;
       type?: components['schemas']['EntryType'];
       amountCent?: components['schemas']['Cent'];
       /** Format: uuid */
       categoryId?: string;
       businessDate?: components['schemas']['BusinessDate'];
       note?: string | null;
-      paymentMethod?: string | null;
+      paymentMethod?: components['schemas']['EntryPaymentMethod'] | null;
     };
     CreateDebtRequest: {
       /** @enum {string} */
@@ -1603,6 +1661,46 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['CategoryListResponse'];
+      };
+    };
+    /** @description 账目查询或更新成功 */
+    EntryOk: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['EntryResponse'];
+      };
+    };
+    /** @description 手工账目创建或幂等重放成功 */
+    EntryCreated: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['EntryResponse'];
+      };
+    };
+    /** @description 账目分页查询成功 */
+    EntryListOk: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['EntryListResponse'];
+      };
+    };
+    /** @description 账目首次软删除或经完整校验后的幂等重试成功 */
+    EntryDeleted: {
+      headers: {
+        'X-Request-ID': components['headers']['RequestId'];
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['EntryDeleteResponse'];
       };
     };
     /** @description 操作成功 */
@@ -2231,9 +2329,10 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['EntryListOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
-      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
   createEntry: {
@@ -2249,10 +2348,13 @@ export interface operations {
       };
     };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['EntryCreated'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   getEntry: {
@@ -2266,13 +2368,16 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['EntryOk'];
+      401: components['responses']['Unauthorized'];
       404: components['responses']['NotFound'];
     };
   };
   deleteEntry: {
     parameters: {
-      query?: never;
+      query: {
+        expectedVersion: number;
+      };
       header?: never;
       path: {
         id: components['parameters']['Id'];
@@ -2281,9 +2386,13 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['EntryDeleted'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   updateEntry: {
@@ -2301,9 +2410,13 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['EntryOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   listDebts: {

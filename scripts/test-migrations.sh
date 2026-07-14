@@ -7,7 +7,7 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 cleanup() {
-  rm -f /tmp/siyu-concurrency-a.log /tmp/siyu-concurrency-b.log /tmp/siyu-introspected.prisma
+  rm -f /tmp/siyu-concurrency-a.log /tmp/siyu-concurrency-b.log /tmp/siyu-invalid-entry.log /tmp/siyu-introspected.prisma
   docker compose --profile test rm -sf siyu-postgres-test >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -18,6 +18,8 @@ docker compose --profile test exec -T siyu-postgres-test \
   createdb -U siyu siyu_shadow
 docker compose --profile test exec -T siyu-postgres-test \
   createdb -U siyu siyu_legacy
+docker compose --profile test exec -T siyu-postgres-test \
+  createdb -U siyu siyu_invalid
 
 for migration in \
   apps/api/prisma/migrations/20260711000000_init/migration.sql \
@@ -117,6 +119,86 @@ BEGIN
 END $$;
 SQL
 
+docker compose --profile test exec -T siyu-postgres-test \
+  psql --single-transaction -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy \
+  < apps/api/prisma/migrations/20260714040000_entry_api/migration.sql
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql -v ON_ERROR_STOP=1 -U siyu -d siyu_legacy <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM ledger_members
+    WHERE ledger_id = '20000000-0000-4000-8000-000000000001'
+      AND user_id = '10000000-0000-4000-8000-000000000001'
+      AND role = 'OWNER' AND status = 'ACTIVE'
+  ) THEN
+    RAISE EXCEPTION 'TASK-007 migration did not repair the valid legacy OWNER membership';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM entries
+    WHERE id = '50000000-0000-4000-8000-000000000001'
+      AND create_request_hash = 'legacy:50000000-0000-4000-8000-000000000001'
+      AND version = 1
+  ) THEN
+    RAISE EXCEPTION 'TASK-007 migration did not preserve the legacy Entry with a reserved hash';
+  END IF;
+END $$;
+SQL
+
+for migration in \
+  apps/api/prisma/migrations/20260711000000_init/migration.sql \
+  apps/api/prisma/migrations/20260712000000_authentication_foundation/migration.sql \
+  apps/api/prisma/migrations/20260714000000_couple_ledger_permissions/migration.sql; do
+  docker compose --profile test exec -T siyu-postgres-test \
+    psql -v ON_ERROR_STOP=1 -U siyu -d siyu_invalid < "$migration"
+done
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql -v ON_ERROR_STOP=1 -U siyu -d siyu_invalid <<'SQL'
+INSERT INTO users (id, nickname, updated_at) VALUES
+  ('70000000-0000-4000-8000-000000000001', '异常账本所有者', CURRENT_TIMESTAMP),
+  ('70000000-0000-4000-8000-000000000002', '异常账目创建人', CURRENT_TIMESTAMP);
+INSERT INTO ledgers (id, type, name, owner_user_id, updated_at)
+VALUES ('71000000-0000-4000-8000-000000000001', 'PERSONAL', '异常归属账本',
+        '70000000-0000-4000-8000-000000000001', CURRENT_TIMESTAMP);
+SQL
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql --single-transaction -v ON_ERROR_STOP=1 -U siyu -d siyu_invalid \
+  < apps/api/prisma/migrations/20260714020000_category_module/migration.sql
+
+docker compose --profile test exec -T siyu-postgres-test \
+  psql -v ON_ERROR_STOP=1 -U siyu -d siyu_invalid <<'SQL'
+INSERT INTO ledger_members (id, ledger_id, user_id, role)
+VALUES ('72000000-0000-4000-8000-000000000001', '71000000-0000-4000-8000-000000000001',
+        '70000000-0000-4000-8000-000000000001', 'OWNER');
+INSERT INTO entries (
+  id, ledger_id, creator_user_id, type, amount_cent, category_id,
+  business_date, idempotency_key, updated_at
+)
+SELECT '73000000-0000-4000-8000-000000000001', '71000000-0000-4000-8000-000000000001',
+       '70000000-0000-4000-8000-000000000002', 'EXPENSE', 100, id,
+       '2026-07-14', 'invalid-owner-entry', CURRENT_TIMESTAMP
+FROM categories
+WHERE ledger_id = '71000000-0000-4000-8000-000000000001'
+  AND template_key = 'expense.food';
+SQL
+
+set +e
+docker compose --profile test exec -T siyu-postgres-test \
+  psql --single-transaction -v ON_ERROR_STOP=1 -U siyu -d siyu_invalid \
+  < apps/api/prisma/migrations/20260714040000_entry_api/migration.sql \
+  >/tmp/siyu-invalid-entry.log 2>&1
+invalid_status=$?
+set -e
+if [[ $invalid_status -eq 0 ]] || ! grep -Fq 'is not a repairable OWNER' /tmp/siyu-invalid-entry.log; then
+  echo "Expected TASK-007 migration to reject an abnormal historical Entry membership." >&2
+  cat /tmp/siyu-invalid-entry.log >&2
+  exit 1
+fi
+rm -f /tmp/siyu-invalid-entry.log
+
 DATABASE_URL='postgresql://siyu:siyu_test_only@localhost:55432/siyu_test?schema=public' \
   pnpm --filter @siyu/api prisma:migrate:deploy
 
@@ -146,12 +228,12 @@ docker compose --profile test exec -T siyu-postgres-test \
 set +e
 docker compose --profile test exec -T siyu-postgres-test \
   psql -v ON_ERROR_STOP=1 -U siyu -d siyu_test -c \
-  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000034', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
+  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000034', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', repeat('8', 64), CURRENT_TIMESTAMP);" \
   >/tmp/siyu-concurrency-a.log 2>&1 &
 first_pid=$!
 docker compose --profile test exec -T siyu-postgres-test \
   psql -v ON_ERROR_STOP=1 -U siyu -d siyu_test -c \
-  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000035', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', CURRENT_TIMESTAMP);" \
+  "INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, source_type, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000035', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000031', '2026-07-11', 'MANUAL', 'concurrent-key', repeat('8', 64), CURRENT_TIMESTAMP);" \
   >/tmp/siyu-concurrency-b.log 2>&1 &
 second_pid=$!
 wait "$first_pid"

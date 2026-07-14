@@ -57,7 +57,13 @@
 - `COUPLE_ALREADY_JOINED`
 - `INVITATION_INVALID`
 - `INVITATION_EXPIRED`
+- `ENTRY_NOT_FOUND`
+- `ENTRY_PERMISSION_DENIED`
 - `ENTRY_DUPLICATE_SOURCE`
+- `ENTRY_VERSION_CONFLICT`
+- `ENTRY_SOURCE_MANAGED`
+- `ENTRY_CATEGORY_INVALID`
+- `CATEGORY_DISABLED`
 - `DEBT_AMOUNT_EXCEEDS_REMAINING`
 - `RECURRING_RUN_DUPLICATE`
 - `SALARY_MONTH_DUPLICATE`
@@ -131,6 +137,15 @@
   "idempotencyKey": "client-generated-key"
 }
 ```
+
+普通账目列表必须携带 `ledgerId`，可选 `month/type/categoryId/creatorUserId/keyword/page/pageSize`；
+month 缺省为用户时区当前月，page/pageSize 缺省 1/20 且 pageSize 最大 100。结果排除软删除记录，按
+`businessDate DESC, createdAt DESC, id DESC` 排序，返回 `items/page/pageSize/total/hasNext`。
+
+每条账目返回最小 creator、category、`version`、`canEdit` 和 `canDelete`。创建接口只生成 MANUAL，
+内部以不可变创建请求哈希判断幂等，不接受客户端创建人或来源字段。PATCH 必须携带 `expectedVersion`；
+DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_SOURCE_MANAGED`，版本冲突返回
+`ENTRY_VERSION_CONFLICT`。非成员、退出成员和解散账本按资源不可见处理。
 
 ### 借贷
 
