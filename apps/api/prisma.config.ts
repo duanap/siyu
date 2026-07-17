@@ -1,6 +1,8 @@
-import 'dotenv/config';
-
 import { defineConfig } from 'prisma/config';
+
+import { loadEnvironmentFile } from './src/config';
+
+loadEnvironmentFile();
 
 const localDatabaseUrl = 'postgresql://siyu:siyu_local_only@localhost:5432/siyu?schema=public';
 const shadowDatabaseUrl = process.env.SHADOW_DATABASE_URL;

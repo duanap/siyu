@@ -27,6 +27,19 @@
 分类管理页面使用服务端 `canCreate/canReorder/canEdit/canToggle` 能力，不在前端复制 OWNER/MEMBER
 规则；停用必须二次确认，上下移动按钮点击区不少于 44px。账本和类型写入 URL 查询参数，刷新和返回后恢复。
 
+快速记账和账目明细已在 TASK-008 实现，另含 `/entries/:id` 详情/编辑路由。页面只消费服务端
+`canEdit/canDelete`，非 `MANUAL` 来源保持只读；创建表单在同一载荷重试时复用幂等键，删除携带
+`expectedVersion` 并二次确认。浏览器验收截图位于 `output/playwright/entries-320-light.png`、
+`entries-375-light.png`、`entries-375-dark.png`、`entries-480-light.png`、
+`entry-create-320-light.png`、`entry-create-320-dark.png`、`entry-detail-375-light.png` 和
+`entry-detail-375-dark.png`。
+
+个人/情侣首页和统计已在 TASK-009 实现。首页只呈现普通账目月度汇总、情侣成员支出和最近账目；未上线业务模块
+不显示静态卡片。统计页使用 ECharts 按需渲染完整逐日趋势，并展示支出分类和情侣成员排行。验收截图位于
+`output/playwright/home-320-light.png`、`home-375-dark.png`、`statistics-320-light.png`、
+`statistics-375-dark.png`、`statistics-480-light.png`、`statistics-375-empty-light.png` 和
+`statistics-375-no-access-light.png`。
+
 ## 页面交付要求
 
 每张页面实现时必须同时提交：

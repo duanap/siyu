@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+
+import { AuthModule } from '../auth/auth.module';
+import { DatabaseModule } from '../database/database.module';
+import { StatisticsController } from './statistics.controller';
+import { StatisticsRepository } from './statistics.repository';
+import { StatisticsService } from './statistics.service';
+
+@Module({
+  imports: [DatabaseModule, AuthModule],
+  controllers: [StatisticsController],
+  providers: [StatisticsRepository, StatisticsService],
+})
+export class StatisticsModule {}

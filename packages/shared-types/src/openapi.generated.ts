@@ -1167,9 +1167,19 @@ export interface components {
       processedCent: components['schemas']['NonNegativeCent'];
       remainingCent: components['schemas']['NonNegativeCent'];
       startDate: components['schemas']['BusinessDate'];
-      dueDate?: components['schemas']['BusinessDate'] | null;
+      dueDate: components['schemas']['BusinessDate'] | null;
       /** @enum {string} */
       status: 'ACTIVE' | 'SETTLED' | 'OVERDUE' | 'CANCELLED';
+      overdueDays: number;
+      note: string | null;
+      reminderEnabled: boolean;
+      readonly canEdit: boolean;
+      readonly canDelete: boolean;
+      /** Format: date-time */
+      readonly createdAt: string;
+      /** Format: date-time */
+      readonly updatedAt: string;
+      transactions?: components['schemas']['DebtTransaction'][];
     };
     DebtTransaction: {
       /** Format: uuid */
@@ -1182,8 +1192,10 @@ export interface components {
       businessDate: components['schemas']['BusinessDate'];
       syncEntry: boolean;
       /** Format: uuid */
-      entryId?: string | null;
-      note?: string | null;
+      entryId: string | null;
+      note: string | null;
+      /** Format: date-time */
+      readonly createdAt: string;
     };
     RecurringRule: {
       /** Format: uuid */
@@ -1369,10 +1381,102 @@ export interface components {
       };
       requestId: string;
     };
+    StatisticsOverviewResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['StatisticsOverview'];
+      requestId: string;
+    };
+    StatisticsOverview: {
+      /** Format: uuid */
+      ledgerId: string;
+      /** @enum {string} */
+      ledgerType: 'PERSONAL' | 'COUPLE';
+      month: string;
+      incomeCent: number;
+      expenseCent: number;
+      balanceCent: number;
+      averageDailyExpenseCent: number;
+      largestExpenseCent: number;
+      entryCount: number;
+    };
+    StatisticsTrendResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['StatisticsTrend'];
+      requestId: string;
+    };
+    StatisticsTrend: {
+      /** Format: uuid */
+      ledgerId: string;
+      /** @enum {string} */
+      ledgerType: 'PERSONAL' | 'COUPLE';
+      month: string;
+      items: {
+        /** Format: date */
+        date: string;
+        incomeCent: number;
+        expenseCent: number;
+      }[];
+    };
+    StatisticsCategoriesResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['StatisticsCategories'];
+      requestId: string;
+    };
+    StatisticsCategories: {
+      /** Format: uuid */
+      ledgerId: string;
+      /** @enum {string} */
+      ledgerType: 'PERSONAL' | 'COUPLE';
+      month: string;
+      /** @constant */
+      type: 'EXPENSE';
+      totalCent: number;
+      items: {
+        /** Format: uuid */
+        categoryId: string;
+        name: string;
+        icon: string;
+        color: string;
+        isEnabled: boolean;
+        amountCent: number;
+        basisPoints: number;
+        entryCount: number;
+      }[];
+    };
+    StatisticsMembersResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['StatisticsMembers'];
+      requestId: string;
+    };
+    StatisticsMembers: {
+      /** Format: uuid */
+      ledgerId: string;
+      /** @enum {string} */
+      ledgerType: 'PERSONAL' | 'COUPLE';
+      month: string;
+      totalCent: number;
+      items: {
+        /** Format: uuid */
+        userId: string;
+        nickname: string;
+        /** Format: uri */
+        avatarUrl: string | null;
+        /** @enum {string} */
+        memberStatus: 'ACTIVE' | 'LEFT';
+        isCurrentUser: boolean;
+        amountCent: number;
+        basisPoints: number;
+        entryCount: number;
+      }[];
+    };
     StatisticsResponse: {
       /** @constant */
       success: true;
-      /** @description 统计字段按对应统计端点返回，所有金额字段以 Cent 结尾。 */
+      /** @description 尚未实现端点的占位统计字段；所有金额字段以 Cent 结尾。 */
       data: {
         [key: string]: number | string | unknown[];
       };
@@ -1498,6 +1602,7 @@ export interface components {
       note?: string | null;
       /** @default false */
       reminderEnabled: boolean;
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateDebtRequest: {
       counterpartyName?: string;
@@ -1724,7 +1829,43 @@ export interface components {
         'application/json': components['schemas']['AuthTokenResponse'];
       };
     };
-    /** @description 统计查询成功 */
+    /** @description 账本月度统计概览查询成功 */
+    StatisticsOverviewOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['StatisticsOverviewResponse'];
+      };
+    };
+    /** @description 账本完整逐日收支趋势查询成功 */
+    StatisticsTrendOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['StatisticsTrendResponse'];
+      };
+    };
+    /** @description 账本支出分类统计查询成功 */
+    StatisticsCategoriesOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['StatisticsCategoriesResponse'];
+      };
+    };
+    /** @description 账本成员支出统计查询成功 */
+    StatisticsMembersOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['StatisticsMembersResponse'];
+      };
+    };
+    /** @description 尚未细化的统计查询成功 */
     StatisticsOk: {
       headers: {
         [name: string]: unknown;
@@ -1805,6 +1946,8 @@ export interface components {
     GoalId: string;
     LedgerId: string;
     LedgerIdOptional: string;
+    /** @description 缺省为用户时区当前月 */
+    StatisticsMonth: string;
     Page: number;
     PageSize: number;
     Year: number;
@@ -3007,7 +3150,8 @@ export interface operations {
     parameters: {
       query: {
         ledgerId: components['parameters']['LedgerId'];
-        month?: string;
+        /** @description 缺省为用户时区当前月 */
+        month?: components['parameters']['StatisticsMonth'];
       };
       header?: never;
       path?: never;
@@ -3015,14 +3159,17 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['StatisticsOverviewOk'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
   getStatisticsTrend: {
     parameters: {
       query: {
         ledgerId: components['parameters']['LedgerId'];
+        /** @description 缺省为用户时区当前月 */
+        month?: components['parameters']['StatisticsMonth'];
       };
       header?: never;
       path?: never;
@@ -3030,14 +3177,17 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['StatisticsTrendOk'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
   getStatisticsCategories: {
     parameters: {
       query: {
         ledgerId: components['parameters']['LedgerId'];
+        /** @description 缺省为用户时区当前月 */
+        month?: components['parameters']['StatisticsMonth'];
       };
       header?: never;
       path?: never;
@@ -3045,14 +3195,17 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['StatisticsCategoriesOk'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
   getStatisticsMembers: {
     parameters: {
       query: {
         ledgerId: components['parameters']['LedgerId'];
+        /** @description 缺省为用户时区当前月 */
+        month?: components['parameters']['StatisticsMonth'];
       };
       header?: never;
       path?: never;
@@ -3060,8 +3213,9 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['StatisticsMembersOk'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
   listNotifications: {

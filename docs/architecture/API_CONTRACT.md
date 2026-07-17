@@ -65,6 +65,9 @@
 - `ENTRY_CATEGORY_INVALID`
 - `CATEGORY_DISABLED`
 - `DEBT_AMOUNT_EXCEEDS_REMAINING`
+- `DEBT_HAS_SYNCED_ENTRY`
+- `DEBT_SYNC_LEDGER_UNAVAILABLE`
+- `DEBT_SYNC_CATEGORY_UNAVAILABLE`
 - `RECURRING_RUN_DUPLICATE`
 - `SALARY_MONTH_DUPLICATE`
 - `SALARY_ALREADY_PAID`
@@ -156,6 +159,15 @@ DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_
 - `DELETE /debts/:id`
 - `POST /debts/:id/transactions`
 
+借贷创建必须携带 `idempotencyKey`。列表按创建时间稳定倒序分页；详情返回未删除的处理记录、逾期天数和
+`canEdit/canDelete`，其中存在任何同步账目的处理记录时 `canDelete=false`。更新仅允许对方名称、到期日、
+备注和提醒设置，不允许重写方向、本金、开始日期或处理汇总。
+
+处理请求必须携带 `amountCent/businessDate/syncEntry/idempotencyKey`。`BORROWED` 的同步处理生成个人账本
+支出，`LENT` 生成个人账本收入，使用对应启用的系统“其他”分类；处理记录、汇总更新和来源账目必须在同一
+事务内完成。相同幂等键和相同规范载荷重放原结果，不同载荷返回 `IDEMPOTENCY_CONFLICT`。存在同步账目的
+借贷删除返回 `DEBT_HAS_SYNCED_ENTRY`；否则借贷与未同步处理记录一起软删除。
+
 ### 周期记账
 
 - `GET /recurring-rules`
@@ -203,6 +215,11 @@ DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_
 - `POST /notifications/read`
 - `GET /exports/entries.csv`
 - `GET /exports/salary.csv`
+
+四个基础统计端点必须携带 `ledgerId`，可选 `month=YYYY-MM`；缺省月份按用户时区确定。概览返回
+`incomeCent/expenseCent/balanceCent/averageDailyExpenseCent/largestExpenseCent/entryCount`；趋势返回完整自然月
+逐日零值补齐序列；分类返回支出金额、笔数和整数万分比；成员返回按 Entry 创建人归属的支出。所有端点只聚合
+当前用户可见有效账本的未软删除账目，非成员和失效关系按资源不可见处理。
 
 ## 实现要求
 

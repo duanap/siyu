@@ -246,3 +246,129 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 - main push CI Run `29305065285` 的 `quality`、`database`、`secret-scan` 全部成功，无失败或跳过步骤；
   Node.js 20、Redis 版本和 `pg` 弃用提示仅作为非阻断工具链信息记录。
 - TASK-007 已正式关闭；KI-006 仍未解决。下一项计划任务为 TASK-008，但尚未开始。
+
+## 2026-07-15 / TASK-008
+
+### 任务
+
+实现移动端记账、明细列表和账目详情/编辑页面，复用 TASK-007 普通账目 API。
+
+### 修改内容
+
+- 新增账目 API 封装、整数分金额解析/格式化、业务日期和创建幂等键管理。
+- 新增当前账本持久化、账本切换、底部导航和账目列表项组件。
+- 实现 `/entries/new`、`/entries`、`/entries/:id`，覆盖创建、筛选分页、详情、编辑与删除。
+- 创建防重复提交且同一表单重试复用幂等键；编辑和删除携带 `expectedVersion` 并处理版本冲突。
+- 只按服务端 `canEdit/canDelete` 显示操作；非 `MANUAL` 来源保持只读。
+
+### 数据库与 API 变化
+
+无数据库、迁移或 API 契约变化；客户端直接使用 TASK-007 已批准接口。
+
+### 验证
+
+- 移动端 8 个测试文件、23 项测试通过；全仓 42 项测试通过。
+- `pnpm lint`、`pnpm typecheck`、`pnpm test`、`pnpm build` 通过。
+- 真实 Chromium 覆盖 320px、375px、480px 日间/夜间、长账本名、长成员名、长备注、响应式筛选、
+  固定底栏遮挡和横向溢出；控制台无应用错误。
+
+### 交付状态
+
+- TASK-008 已在本地源码快照完成；当前工作区没有 `.git`，未形成提交、PR 或远端 CI 记录。
+- 高保真稿仍未确认，页面遵循现有低保真、UI Token 与信息结构；下一项为 TASK-009 首页与统计。
+
+## 2026-07-15 / TASK-009
+
+### 任务
+
+实现首页与基础统计后端、具体 API 契约、移动端页面和真实浏览器验收。
+
+### 修改内容
+
+- 新增 BR-STAT-001 至 004、AC-STAT-003 至 004 和 ADR-019，冻结月份、日均、零值趋势、分类与成员口径。
+- 新增 Statistics Controller/Service/Repository/DTO/Module，聚合未软删除 Entry 并校验有效账本成员。
+- 四个统计端点返回具体概览、完整逐日趋势、支出分类和成员支出 Schema；OpenAPI 保持 74/74。
+- 新增 `/home`、`/statistics`、月度摘要卡与 ECharts 趋势图，共享账本持久化、URL 和月份。
+- 首页仅展示已上线数据；工资、借贷、周期和攒钱模块未用静态数据伪装。
+- ECharts 模块化按需注册，首页/统计路由懒加载，图表依赖隔离为非首屏块。
+
+### 数据库变化
+
+无迁移或 Schema 变化；统计使用既有 Entry 账本/业务日期索引，不引入缓存或汇总表。
+
+### API 变化
+
+实现既有四个统计操作；所有端点支持 `ledgerId + month`，非成员/失效账本按资源不可见处理，金额聚合在
+`bigint` 中完成并经安全范围检查后返回整数分。
+
+### 验证
+
+- 全仓 53 项测试通过，其中移动端 28 项、API 10 项。
+- format、lint、typecheck、OpenAPI lint/74 覆盖、共享类型生成和 build 通过。
+- 320px、375px、480px Chromium 覆盖双主题、ECharts、长文本、空数据、无权限、44px 点击区和横向溢出。
+- 手机主入口约 294 KB；图表依赖作为统计页懒加载块约 507 KB（gzip 172 KB），构建无告警。
+
+### 交付状态
+
+- TASK-009 已在本地源码快照完成；当前工作区没有 `.git` 和 Docker，未形成提交/PR/远端 CI，也未本地复跑数据库 E2E。
+- 下一项 TASK-010 受 KI-006 来源业务删除策略约束。
+
+## 2026-07-16 / TASK-010（实现完成，数据库验收待执行）
+
+### 任务
+
+实现本人私有借贷 CRUD、部分还款/收款、结清、逾期、处理幂等和可选普通账目联动，并落实负责人选择的
+`1A 2A 3A 4A` 业务规则。
+
+### 修改内容
+
+- 新增 Debts Controller/Service/Repository/DTO/Module，提供既有 6 个借贷操作；列表分页、详情处理记录、
+  服务端 `canEdit/canDelete`、本人私有防枚举和写限流已接入。
+- 借贷创建和处理使用不可变 SHA-256 规范载荷哈希、用户/操作/幂等键与事务级锁；相同请求重放原结果，
+  不同载荷冲突，部分处理、超额拒绝和最终结清在整数分中计算。
+- `BORROWED` 处理同步个人支出、`LENT` 同步个人收入，使用启用的系统“其他”分类；Entry 来源固定为
+  `DEBT_TRANSACTION + transactionId`，与处理记录和汇总更新同事务。
+- 采用 ADR-020：存在同步账目时禁止删除借贷；无同步账目时借贷与未同步处理记录一起软删除。
+- 同步记录 ADR-021 至 ADR-023：周期恢复不补期、短月发薪取月末、目标初始金额归创建者且完成状态可回退。
+
+### 数据库与 API 变化
+
+- 新增第六迁移 `20260716000000_debt_api`：Debt 创建幂等键/哈希、DebtTransaction 请求哈希、文本/状态约束、
+  核心事实不可变触发器、未删除列表索引和借贷来源 Entry 延迟一致性触发器。
+- OpenAPI 保持 74/74，CreateDebt 新增必填 `idempotencyKey`，Debt 响应补齐逾期天数、能力、时间和处理记录；
+  共享类型已重新生成。
+
+### 验证
+
+- Prisma validate、format check、lint、typecheck、OpenAPI lint、74/74 覆盖、Compose 静态检查和 build 通过。
+- 全仓 57 项单元/组件测试通过，其中 API 14 项；借贷黑盒 E2E 已覆盖隐私、创建/处理防重、并发重放、
+  超额拒绝、部分处理、结清、两方向账目映射与 1A 删除策略。
+- 当前机器无 Docker CLI、PostgreSQL、Redis 和 psql；`pnpm test:e2e` 在 Redis `ECONNREFUSED` 停止，
+  因此迁移回放、数据库约束和隔离 E2E 仍待执行，任务未伪装为已完成。
+
+### 交付状态
+
+- 实现和非数据库质量门完成；恢复 Docker/PostgreSQL/Redis 后运行
+  `pnpm prisma:migrate:test && pnpm test:e2e && pnpm verify`，全部通过后关闭 TASK-010 并开始 TASK-011。
+- 当前源码快照没有 `.git`，无法形成提交、PR、diff 审查或远端 CI 记录。
+
+## 2026-07-16 / 非 Docker 原生运行
+
+### 修改内容
+
+- 新增 `.env.native.example`、`native:check`、`native:migrate`、`dev:native` 和 `start:native`；PostgreSQL 与
+  Redis/Valkey 可使用本机或云服务，不再强制要求 Docker。
+- API、Worker 和 Prisma CLI 可从仓库根目录 `.env` 或 `SIYU_ENV_FILE` 加载配置，操作系统已有变量保持优先。
+- 手机端和管理端 Vite 开发服务新增 `/api`、`/health` 代理，原生开发模式可使用相对 API 路径和 QQ 登录入口。
+- 新增跨平台原生进程编排；开发同时启动 API、Worker 和两个 Vite 服务，生产同时启动编译后 API、Worker
+  与 Node 静态网关。
+- 原生网关提供手机端、`/admin/` SPA 静态服务，并将 `/api/`、`/health` 反向代理到 API；默认仅监听
+  `127.0.0.1:8080`，正式部署继续由外层 Caddy/Nginx/EdgeOne 提供 HTTPS。
+- 新增完整原生运行文档、systemd 示例、更新步骤和发布检查项，ADR-024 冻结 Docker 可选策略。
+
+### 验证
+
+- Node 脚本语法与原生配置检查通过；缺少服务时 `native:check` 明确指出不可连接端点并拒绝启动整组应用。
+- 已构建产物下，原生网关实测 `/` 与 `/admin/` 返回 200；API 未运行时 `/health` 返回结构化 502。
+- 原生运行新增 3 项自动测试；合并既有工作区测试后全仓 61 项通过，lint、typecheck、format 和 build 通过。
+- 当前机器仍没有 PostgreSQL/Redis，因此尚不能用原生模式完成 TASK-010 数据库迁移与 E2E。

@@ -923,12 +923,11 @@ paths:
       summary: 获取账本统计概览
       parameters:
         - $ref: '#/components/parameters/LedgerId'
-        - in: query
-          name: month
-          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+        - $ref: '#/components/parameters/StatisticsMonth'
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/StatisticsOverviewOk' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /statistics/trend:
     get:
       tags: [Statistics]
@@ -936,9 +935,11 @@ paths:
       summary: 获取账本收支趋势
       parameters:
         - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/StatisticsMonth'
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/StatisticsTrendOk' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /statistics/categories:
     get:
       tags: [Statistics]
@@ -946,9 +947,11 @@ paths:
       summary: 获取账本分类统计
       parameters:
         - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/StatisticsMonth'
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/StatisticsCategoriesOk' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /statistics/members:
     get:
       tags: [Statistics]
@@ -956,9 +959,11 @@ paths:
       summary: 获取情侣成员对比
       parameters:
         - $ref: '#/components/parameters/LedgerId'
+        - $ref: '#/components/parameters/StatisticsMonth'
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/StatisticsMembersOk' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /notifications:
     get:
       tags: [Notifications]
@@ -1036,6 +1041,11 @@ components:
       in: query
       name: ledgerId
       schema: { type: string, format: uuid }
+    StatisticsMonth:
+      in: query
+      name: month
+      description: 缺省为用户时区当前月
+      schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
     Page:
       in: query
       name: page
@@ -1129,8 +1139,28 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/AuthTokenResponse' }
+    StatisticsOverviewOk:
+      description: 账本月度统计概览查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatisticsOverviewResponse' }
+    StatisticsTrendOk:
+      description: 账本完整逐日收支趋势查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatisticsTrendResponse' }
+    StatisticsCategoriesOk:
+      description: 账本支出分类统计查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatisticsCategoriesResponse' }
+    StatisticsMembersOk:
+      description: 账本成员支出统计查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatisticsMembersResponse' }
     StatisticsOk:
-      description: 统计查询成功
+      description: 尚未细化的统计查询成功
       content:
         application/json:
           schema: { $ref: '#/components/schemas/StatisticsResponse' }
@@ -1331,7 +1361,7 @@ components:
         isEnabled: { type: boolean }
     Debt:
       type: object
-      required: [id, direction, counterpartyName, principalCent, processedCent, remainingCent, startDate, status]
+      required: [id, direction, counterpartyName, principalCent, processedCent, remainingCent, startDate, dueDate, status, overdueDays, note, reminderEnabled, canEdit, canDelete, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         direction: { type: string, enum: [BORROWED, LENT] }
@@ -1342,9 +1372,19 @@ components:
         startDate: { $ref: '#/components/schemas/BusinessDate' }
         dueDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         status: { type: string, enum: [ACTIVE, SETTLED, OVERDUE, CANCELLED] }
+        overdueDays: { type: integer, minimum: 0 }
+        note: { type: [string, 'null'], maxLength: 500 }
+        reminderEnabled: { type: boolean }
+        canEdit: { type: boolean, readOnly: true }
+        canDelete: { type: boolean, readOnly: true }
+        createdAt: { type: string, format: date-time, readOnly: true }
+        updatedAt: { type: string, format: date-time, readOnly: true }
+        transactions:
+          type: array
+          items: { $ref: '#/components/schemas/DebtTransaction' }
     DebtTransaction:
       type: object
-      required: [id, debtId, userId, amountCent, businessDate, syncEntry]
+      required: [id, debtId, userId, amountCent, businessDate, syncEntry, entryId, note, createdAt]
       properties:
         id: { type: string, format: uuid }
         debtId: { type: string, format: uuid }
@@ -1354,6 +1394,7 @@ components:
         syncEntry: { type: boolean }
         entryId: { type: [string, 'null'], format: uuid }
         note: { type: [string, 'null'], maxLength: 500 }
+        createdAt: { type: string, format: date-time, readOnly: true }
     RecurringRule:
       type: object
       required: [id, ledgerId, name, entryType, amountCent, categoryId, frequency, generationMode, status]
@@ -1561,6 +1602,118 @@ components:
           properties:
             status: { type: string, minLength: 1, maxLength: 50 }
         requestId: { type: string }
+    StatisticsOverviewResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/StatisticsOverview' }
+        requestId: { type: string }
+    StatisticsOverview:
+      type: object
+      additionalProperties: false
+      required:
+        [ledgerId, ledgerType, month, incomeCent, expenseCent, balanceCent, averageDailyExpenseCent, largestExpenseCent, entryCount]
+      properties:
+        ledgerId: { type: string, format: uuid }
+        ledgerType: { type: string, enum: [PERSONAL, COUPLE] }
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        incomeCent: { type: integer }
+        expenseCent: { type: integer }
+        balanceCent: { type: integer }
+        averageDailyExpenseCent: { type: integer, minimum: 0 }
+        largestExpenseCent: { type: integer, minimum: 0 }
+        entryCount: { type: integer, minimum: 0 }
+    StatisticsTrendResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/StatisticsTrend' }
+        requestId: { type: string }
+    StatisticsTrend:
+      type: object
+      additionalProperties: false
+      required: [ledgerId, ledgerType, month, items]
+      properties:
+        ledgerId: { type: string, format: uuid }
+        ledgerType: { type: string, enum: [PERSONAL, COUPLE] }
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        items:
+          type: array
+          minItems: 28
+          maxItems: 31
+          items:
+            type: object
+            additionalProperties: false
+            required: [date, incomeCent, expenseCent]
+            properties:
+              date: { type: string, format: date }
+              incomeCent: { type: integer, minimum: 0 }
+              expenseCent: { type: integer, minimum: 0 }
+    StatisticsCategoriesResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/StatisticsCategories' }
+        requestId: { type: string }
+    StatisticsCategories:
+      type: object
+      additionalProperties: false
+      required: [ledgerId, ledgerType, month, type, totalCent, items]
+      properties:
+        ledgerId: { type: string, format: uuid }
+        ledgerType: { type: string, enum: [PERSONAL, COUPLE] }
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        type: { const: EXPENSE }
+        totalCent: { type: integer, minimum: 0 }
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [categoryId, name, icon, color, isEnabled, amountCent, basisPoints, entryCount]
+            properties:
+              categoryId: { type: string, format: uuid }
+              name: { type: string, minLength: 1, maxLength: 50 }
+              icon: { type: string, minLength: 1, maxLength: 50 }
+              color: { type: string, pattern: '^#[0-9A-F]{6}$' }
+              isEnabled: { type: boolean }
+              amountCent: { type: integer, minimum: 0 }
+              basisPoints: { type: integer, minimum: 0, maximum: 10000 }
+              entryCount: { type: integer, minimum: 0 }
+    StatisticsMembersResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/StatisticsMembers' }
+        requestId: { type: string }
+    StatisticsMembers:
+      type: object
+      additionalProperties: false
+      required: [ledgerId, ledgerType, month, totalCent, items]
+      properties:
+        ledgerId: { type: string, format: uuid }
+        ledgerType: { type: string, enum: [PERSONAL, COUPLE] }
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        totalCent: { type: integer, minimum: 0 }
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [userId, nickname, avatarUrl, memberStatus, isCurrentUser, amountCent, basisPoints, entryCount]
+            properties:
+              userId: { type: string, format: uuid }
+              nickname: { type: string, minLength: 1, maxLength: 100 }
+              avatarUrl: { type: [string, 'null'], format: uri }
+              memberStatus: { type: string, enum: [ACTIVE, LEFT] }
+              isCurrentUser: { type: boolean }
+              amountCent: { type: integer, minimum: 0 }
+              basisPoints: { type: integer, minimum: 0, maximum: 10000 }
+              entryCount: { type: integer, minimum: 0 }
     StatisticsResponse:
       type: object
       required: [success, data, requestId]
@@ -1568,7 +1721,7 @@ components:
         success: { const: true }
         data:
           type: object
-          description: 统计字段按对应统计端点返回，所有金额字段以 Cent 结尾。
+          description: 尚未实现端点的占位统计字段；所有金额字段以 Cent 结尾。
           additionalProperties:
             anyOf:
               - { type: integer }
@@ -1738,7 +1891,7 @@ components:
             - type: 'null'
     CreateDebtRequest:
       type: object
-      required: [direction, counterpartyName, principalCent, startDate]
+      required: [direction, counterpartyName, principalCent, startDate, idempotencyKey]
       additionalProperties: false
       properties:
         direction: { type: string, enum: [BORROWED, LENT] }
@@ -1748,6 +1901,7 @@ components:
         dueDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         note: { type: [string, 'null'], maxLength: 500 }
         reminderEnabled: { type: boolean, default: false }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     UpdateDebtRequest:
       type: object
       minProperties: 1

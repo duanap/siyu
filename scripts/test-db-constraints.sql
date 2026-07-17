@@ -67,10 +67,12 @@ BEGIN
       'ledger_invitations_one_pending_per_ledger',
       'ledger_members_one_active_owner_per_ledger',
       'debts_id_user_id_key',
+      'debts_user_id_idempotency_key_key',
+      'debts_user_active_created_idx',
       'salary_profiles_id_user_id_key'
     );
-  IF required_indexes <> 28 THEN
-    RAISE EXCEPTION 'Expected 28 critical indexes, found %', required_indexes;
+  IF required_indexes <> 30 THEN
+    RAISE EXCEPTION 'Expected 30 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -95,9 +97,12 @@ BEGIN
     'recurring_rules_category_scope_fkey', 'entries_creator_membership_fkey',
     'entries_version_valid', 'entries_note_valid', 'entries_idempotency_key_valid',
     'entries_create_request_hash_valid', 'entries_id_uuid_v4'
+    ,'debts_text_valid', 'debts_idempotency_valid', 'debts_status_consistent',
+    'debt_transactions_text_valid', 'debt_transactions_entry_reference_valid',
+    'entries_debt_source_valid'
   );
-  IF required_constraints <> 38 THEN
-    RAISE EXCEPTION 'Expected 38 custom constraints, found %', required_constraints;
+  IF required_constraints <> 44 THEN
+    RAISE EXCEPTION 'Expected 44 custom constraints, found %', required_constraints;
   END IF;
 
   SELECT count(*) INTO required_delete_actions
@@ -265,19 +270,27 @@ SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('40000000-0000-4000-8000-000000000084', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000034', '2026-07-11', 'disabled-category', repeat('6', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry disabled category');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO entries (id, ledger_id, creator_user_id, type, amount_cent, category_id, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000085', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'EXPENSE', 100, '00000000-0000-0000-0000-000000000030', '2026-07-11', 'invalid-entry-uuid', repeat('7', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'entry UUID v4');
 
-INSERT INTO debts (id, user_id, direction, counterparty_name, principal_cent, remaining_cent, start_date, due_date, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'BORROWED', '归属测试', 1000, 1000, '2026-07-11', '2026-08-11', CURRENT_TIMESTAMP);
+BEGIN;
+INSERT INTO debts (id, user_id, direction, counterparty_name, principal_cent, remaining_cent, start_date, due_date, idempotency_key, create_request_hash, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 'BORROWED', '归属测试', 1000, 1000, '2026-07-11', '2026-08-11', 'debt-key-50', repeat('a', 64), CURRENT_TIMESTAMP);
+UPDATE entries
+SET source_type = 'DEBT_TRANSACTION', source_id = '00000000-0000-0000-0000-000000000051'
+WHERE id = '40000000-0000-4000-8000-000000000043';
+INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key, request_hash)
+VALUES ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'shared-key', repeat('b', 64));
+COMMIT;
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET processed_cent = 100, remaining_cent = 100 WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt amount equation');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET due_date = '2026-07-10' WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt due date');
-
-INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key)
-VALUES ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'shared-key');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET status = 'SETTLED' WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt status consistency');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET idempotency_key = 'changed-key' WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt idempotency immutable');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE debts SET direction = 'LENT' WHERE id = '00000000-0000-0000-0000-000000000050'$sql$, '23514', 'debt core facts immutable');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction amount');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET sync_entry = false WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction entry consistency');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET entry_id = NULL WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction synced entry required');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000002', 100, '2026-07-11', 'wrong-owner')$sql$, '23503', 'debt transaction owner composite fk');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'other-entry-key')$sql$, '23505', 'debt transaction entry unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key) VALUES ('00000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key')$sql$, '23505', 'debt transaction idempotency unique');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE debt_transactions SET request_hash = repeat('c', 64) WHERE id = '00000000-0000-0000-0000-000000000051'$sql$, '23514', 'debt transaction request hash immutable');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key, request_hash) VALUES ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000002', 100, '2026-07-11', 'wrong-owner', repeat('c', 64))$sql$, '23503', 'debt transaction owner composite fk');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, sync_entry, entry_id, idempotency_key, request_hash) VALUES ('00000000-0000-0000-0000-000000000053', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', true, '40000000-0000-4000-8000-000000000043', 'other-entry-key', repeat('d', 64))$sql$, '23505', 'debt transaction entry unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO debt_transactions (id, debt_id, user_id, amount_cent, business_date, idempotency_key, request_hash) VALUES ('00000000-0000-0000-0000-000000000054', '00000000-0000-0000-0000-000000000050', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', repeat('e', 64))$sql$, '23505', 'debt transaction idempotency unique');
 
 INSERT INTO recurring_rules (id, owner_user_id, ledger_id, name, entry_type, amount_cent, category_id, frequency, start_date, end_date, total_occurrences, generation_mode, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000060', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000010', '月租', 'EXPENSE', 1000, '00000000-0000-0000-0000-000000000030', 'MONTHLY', '2026-07-01', '2026-12-01', 6, 'AUTO', CURRENT_TIMESTAMP);

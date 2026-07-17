@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "node --test scripts/native-runtime.test.mjs && pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @siyu/api test:e2e",
     "build": "pnpm -r --if-present build",
     "prisma:validate": "pnpm --filter @siyu/api prisma:validate",
@@ -23,6 +23,11 @@
     "openapi:generate": "openapi-typescript docs/architecture/openapi.yaml -o packages/shared-types/src/openapi.generated.ts && prettier --write packages/shared-types/src/openapi.generated.ts",
     "openapi:lint": "redocly lint docs/architecture/openapi.yaml && node scripts/check-openapi-coverage.mjs",
     "compose:check": "node scripts/check-compose.mjs",
+    "native:check": "node scripts/check-native-services.mjs",
+    "native:check:config": "node scripts/check-native-services.mjs --config-only",
+    "native:migrate": "pnpm --filter @siyu/api prisma:migrate:deploy",
+    "dev:native": "node scripts/run-native.mjs development",
+    "start:native": "node scripts/run-native.mjs production",
     "verify": "bash scripts/verify.sh"
   },
   "devDependencies": {
