@@ -203,7 +203,14 @@ onMounted(initialize);
               v-for="entry in recentEntries"
               :key="entry.id"
               :entry="entry"
-              :show-creator="selectedLedger?.type === 'COUPLE'"
+              :ledger-type="selectedLedger?.type || 'PERSONAL'"
+              @open="
+                router.push({
+                  name: 'entry-detail',
+                  params: { id: entry.id },
+                  query: { from: route.fullPath },
+                })
+              "
             />
           </div>
           <div v-else class="state-panel compact-state">

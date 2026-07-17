@@ -1,14 +1,8 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import type { OpenApiComponents } from '@siyu/shared-types';
 
-export interface AuthUser {
-  id: string;
-  nickname: string;
-  email: string | null;
-  timezone?: string;
-  roles: string[];
-  permissions: string[];
-}
+export type AuthUser = OpenApiComponents['schemas']['User'];
 
 interface AuthPayload {
   accessToken: string;
@@ -56,6 +50,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function refresh(): Promise<void> {
+    accept(await api<AuthPayload>('/auth/refresh', { method: 'POST' }));
+  }
+
+  function clear(): void {
+    accessToken.value = undefined;
+    user.value = undefined;
+  }
+
   async function login(email: string, password: string): Promise<void> {
     accept(
       await api<AuthPayload>('/auth/login', {
@@ -89,8 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await api('/auth/logout', { method: 'POST' });
     } finally {
-      accessToken.value = undefined;
-      user.value = undefined;
+      clear();
     }
   }
 
@@ -100,6 +102,8 @@ export const useAuthStore = defineStore('auth', () => {
     initialized,
     authenticated,
     initialize,
+    refresh,
+    clear,
     login,
     register,
     forgot,

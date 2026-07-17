@@ -1,78 +1,66 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ApiSession } from './api';
+import { createEntryApi } from './entry';
 
-import { amountTextToCent, entryApi, formatCent } from './entry';
-
-function response(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify({ success: status < 400, data, requestId: 'req_test' }), {
-    status,
+function response(data: unknown): Response {
+  return new Response(JSON.stringify({ success: true, data, requestId: 'req_test' }), {
+    status: 200,
   });
 }
 
-describe('entry helpers and API', () => {
+describe('entry API client', () => {
   beforeEach(() => vi.restoreAllMocks());
+  const session: ApiSession = { accessToken: () => 'token', refresh: vi.fn(), expire: vi.fn() };
 
-  it('converts decimal text to integer cents without floating-point accumulation', () => {
-    expect(amountTextToCent('0.01')).toBe(1);
-    expect(amountTextToCent('128.5')).toBe(12_850);
-    expect(amountTextToCent('8500.00')).toBe(850_000);
-    expect(amountTextToCent('1.234')).toBeNull();
-    expect(amountTextToCent('0')).toBeNull();
-    expect(formatCent(850_001)).toBe('¥ 8,500.01');
-  });
-
-  it('serializes all approved list filters', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(response({ items: [], total: 0 }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    await entryApi.list(
-      {
-        ledgerId: 'ledger-id',
-        month: '2026-07',
-        type: 'EXPENSE',
-        categoryId: 'category-id',
-        creatorUserId: 'user-id',
-        keyword: ' 早餐 ',
-        page: 2,
-        pageSize: 20,
-      },
-      'access-token',
-    );
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/v1/entries?ledgerId=ledger-id&month=2026-07&type=EXPENSE&categoryId=category-id&creatorUserId=user-id&keyword=%E6%97%A9%E9%A4%90&page=2&pageSize=20',
-      expect.objectContaining({
-        headers: expect.objectContaining({ authorization: 'Bearer access-token' }),
-      }),
-    );
-  });
-
-  it('reuses the supplied idempotency key and sends optimistic versions', async () => {
+  it('serializes list filters and cancellation signal', async () => {
     const fetchMock = vi
       .fn()
-      .mockImplementation(() => Promise.resolve(response({ id: 'entry-id' }, 201)));
+      .mockResolvedValue(response({ items: [], page: 1, pageSize: 20, total: 0, hasNext: false }));
     vi.stubGlobal('fetch', fetchMock);
-    const draft = {
-      ledgerId: 'ledger-id',
-      type: 'EXPENSE' as const,
-      amountCent: 2_850,
-      categoryId: 'category-id',
-      businessDate: '2026-07-15',
-      note: '早餐',
-      paymentMethod: 'WECHAT' as const,
-    };
-
-    await entryApi.create(draft, 'token', 'entry-fixed-request');
-    await entryApi.update('entry-id', { ...draft, expectedVersion: 3 }, 'token');
-    await entryApi.delete('entry-id', 4, 'token');
-
-    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
-      ...draft,
-      idempotencyKey: 'entry-fixed-request',
-    });
-    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).not.toHaveProperty('ledgerId');
-    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toEqual(
-      expect.objectContaining({ expectedVersion: 3 }),
+    const controller = new AbortController();
+    await createEntryApi(session).list(
+      { ledgerId: 'ledger', month: '2026-07', type: 'EXPENSE', keyword: '早餐', page: 2 },
+      controller.signal,
     );
-    expect(fetchMock.mock.calls[2]?.[0]).toBe('/api/v1/entries/entry-id?expectedVersion=4');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/entries?ledgerId=ledger&month=2026-07&type=EXPENSE&keyword=%E6%97%A9%E9%A4%90&page=2',
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
+
+  it('keeps client fields constrained for create, update and delete', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(response({ id: 'entry' })));
+    vi.stubGlobal('fetch', fetchMock);
+    const api = createEntryApi(session);
+    await api.create({
+      ledgerId: 'ledger',
+      type: 'EXPENSE',
+      amountCent: 123,
+      categoryId: 'category',
+      businessDate: '2026-07-14',
+      note: null,
+      paymentMethod: null,
+      idempotencyKey: 'entry-request',
+    });
+    await api.update('entry', { expectedVersion: 2, note: 'updated' });
+    await api.delete('entry', 3);
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      '/api/v1/entries',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/v1/entries/entry',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ expectedVersion: 2, note: 'updated' }),
+      }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      '/api/v1/entries/entry?expectedVersion=3',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
   });
 });

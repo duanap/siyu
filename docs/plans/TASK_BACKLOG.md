@@ -10,7 +10,7 @@
 | TASK-005 | 情侣账本邀请和权限 | M2 | Sol | Extra High | TASK-004 |
 | TASK-006 | 分类模块（已合并并正式关闭） | M3 | Terra | Medium | TASK-003 |
 | TASK-007 | 普通账目 API（已合并并正式关闭） | M3 | Sol | High | TASK-005,TASK-006 |
-| TASK-008 | 记账页面与明细列表 | M3 | Terra | Medium | TASK-002,TASK-007 |
+| TASK-008 | 记账页面与明细列表（任务分支实现与本地验收完成，待 PR） | M3 | Terra | Medium | TASK-002,TASK-007 |
 | TASK-009 | 首页与基础统计 | M3 | Terra | Medium | TASK-007,TASK-008 |
 | TASK-010 | 借贷数据和 API | M4 | Sol | High | TASK-007 |
 | TASK-011 | 借贷页面和统计 | M4 | Terra | Medium | TASK-010 |
