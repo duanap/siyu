@@ -372,3 +372,11 @@ OpenAPI/API_CONTRACT 从 72 扩展到 74 个批准操作并重新生成共享类
 - 已构建产物下，原生网关实测 `/` 与 `/admin/` 返回 200；API 未运行时 `/health` 返回结构化 502。
 - 原生运行新增 3 项自动测试；合并既有工作区测试后全仓 61 项通过，lint、typecheck、format 和 build 通过。
 - 当前机器仍没有 PostgreSQL/Redis，因此尚不能用原生模式完成 TASK-010 数据库迁移与 E2E。
+
+## 2026-07-17 / 全远端分支审计与 TASK-008 集成
+
+- 核对全部 10 个远端分支及 8 个 PR；确认 TASK-000 已进入历史，TASK-004 至 TASK-007 无合并后遗留提交。
+- 发现未独立提 PR 的 `task/TASK-008-entry-ui` 含有当前 `main` 缺失的完整组件化记账客户端，建立 `agent/integrate-all-branches` 集成分支。
+- 合并 TASK-008 的生成类型请求层、401 单飞恢复、Abort 处理、精确金额工具、账本恢复、筛选分页、编辑删除交互、14 个公共组件和完整测试。
+- 解决与 TASK-009 的路由、底部导航、首页最近账目和统计页面冲突；保留 TASK-010 借贷 API、数据库迁移及原生运行部署支持。
+- 移动端 61 项、全仓 94 项测试通过；lint、typecheck、Prisma validate、OpenAPI 74/74、build、manifest 和 docs 检查通过。

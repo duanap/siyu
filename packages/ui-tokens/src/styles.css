@@ -5,13 +5,17 @@
   --siyu-primary-soft: #eef2ff;
   --siyu-page-bg: #f6f7f9;
   --siyu-surface: #ffffff;
+  --siyu-secondary-bg: #f1f3f6;
   --siyu-text: #1f2329;
   --siyu-text-secondary: #6f7682;
+  --siyu-text-tertiary: #a1a7b0;
   --siyu-border: #e8ebef;
   --siyu-income: #22a06b;
   --siyu-expense: #e85d5d;
   --siyu-warning: #f5a623;
   --siyu-danger: #e5484d;
+  --siyu-danger-soft: #fff0f0;
+  --siyu-on-primary: #ffffff;
 }
 
 :root[data-theme='dark'] {
@@ -20,13 +24,17 @@
   --siyu-primary-soft: #242c4a;
   --siyu-page-bg: #0f1115;
   --siyu-surface: #191c22;
+  --siyu-secondary-bg: #22262e;
   --siyu-text: #f4f5f7;
   --siyu-text-secondary: #a7adb7;
+  --siyu-text-tertiary: #747b86;
   --siyu-border: #2b3039;
   --siyu-income: #49bf8a;
   --siyu-expense: #f17b7b;
   --siyu-warning: #f4b85e;
   --siyu-danger: #f17b7b;
+  --siyu-danger-soft: #3a2024;
+  --siyu-on-primary: #ffffff;
 }
 
 * {
@@ -60,4 +68,38 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/* Ant Design overlay portals live outside #app, so they consume the shared
+ * theme tokens here instead of inheriting component-scoped backgrounds. */
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-modal-content,
+.ant-modal-header {
+  background: var(--siyu-surface) !important;
+  color: var(--siyu-text) !important;
+}
+
+.ant-drawer-header {
+  border-bottom-color: var(--siyu-border) !important;
+}
+
+.ant-drawer-title,
+.ant-modal-title,
+.ant-modal-body,
+.ant-drawer-close,
+.ant-modal-close {
+  color: var(--siyu-text) !important;
+}
+
+.ant-drawer-close,
+.ant-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+:root[data-theme='dark'] .ant-modal-footer .ant-btn-default {
+  border-color: var(--siyu-border);
+  background: var(--siyu-secondary-bg);
+  color: var(--siyu-text);
 }

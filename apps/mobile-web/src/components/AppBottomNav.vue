@@ -1,5 +1,10 @@
 <script setup lang="ts">
-defineProps<{ active: 'home' | 'entries' | 'create' | 'statistics' | 'profile' }>();
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+type NavKey = 'home' | 'entries' | 'create' | 'statistics' | 'profile';
+const props = defineProps<{ active?: NavKey }>();
+const route = useRoute();
 
 const items = [
   { key: 'home', label: '首页', to: '/home', symbol: '⌂' },
@@ -8,6 +13,16 @@ const items = [
   { key: 'statistics', label: '统计', to: '/statistics', symbol: '统' },
   { key: 'profile', label: '我的', to: '/account', symbol: '我' },
 ] as const;
+
+const routeKeys: Record<string, NavKey> = {
+  dashboard: 'home',
+  entries: 'entries',
+  'entry-new': 'create',
+  'entry-detail': 'entries',
+  statistics: 'statistics',
+  account: 'profile',
+};
+const currentActive = computed(() => props.active ?? routeKeys[String(route.name)]);
 </script>
 
 <template>
@@ -15,9 +30,12 @@ const items = [
     <RouterLink
       v-for="item in items"
       :key="item.key"
-      :class="['bottom-nav__item', { active: active === item.key, create: item.key === 'create' }]"
+      :class="[
+        'bottom-nav__item',
+        { active: currentActive === item.key, create: item.key === 'create' },
+      ]"
       :to="item.to"
-      :aria-current="active === item.key ? 'page' : undefined"
+      :aria-current="currentActive === item.key ? 'page' : undefined"
     >
       <span aria-hidden="true">{{ item.symbol }}</span>
       <small>{{ item.label }}</small>

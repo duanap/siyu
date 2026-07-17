@@ -1,376 +1,208 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-import { ApiError } from '../api';
+import { ApiError, isRequestCancelled } from '../api';
 import { useAuthStore } from '../auth';
-import { categoryApi, categoryGlyph, type Category, type CategoryType } from '../category';
-import AppBottomNav from '../components/AppBottomNav.vue';
-import LedgerSwitcher from '../components/LedgerSwitcher.vue';
-import { coupleLedgerApi, type Ledger } from '../couple-ledger';
-import {
-  amountTextToCent,
-  currentBusinessDate,
-  entryApi,
-  newEntryIdempotencyKey,
-  PAYMENT_METHODS,
-  type EntryPaymentMethod,
-} from '../entry';
-import { persistLedgerId, resolveLedgerId } from '../ledger-selection';
+import AppErrorState from '../components/AppErrorState.vue';
+import AppPageHeader from '../components/AppPageHeader.vue';
+import EntryEditorForm, { type EntryEditorModel } from '../components/EntryEditorForm.vue';
+import { createEntryApi, type EntryType, type Ledger } from '../entry';
+import { markEntryCreated } from '../entry-flash';
+import { parseAmountToCent } from '../entry-money';
+import { listCategories, listLedgers, type Category } from '../entry-resources';
+import { localBusinessDate, persistLedgerId, resolveLedger } from '../ledger-context';
+import { useApiSession } from '../use-api-session';
 
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const session = useApiSession();
+const api = createEntryApi(session);
 const ledgers = ref<Ledger[]>([]);
 const categories = ref<Category[]>([]);
-const selectedLedgerId = ref('');
 const loading = ref(true);
 const categoriesLoading = ref(false);
 const submitting = ref(false);
-const noAccess = ref(false);
+const fatal = ref('');
 const error = ref('');
-const ready = ref(false);
-let idempotencyKey = newEntryIdempotencyKey();
-
-const form = reactive({
-  type: (route.query.type === 'INCOME' ? 'INCOME' : 'EXPENSE') as CategoryType,
+const idempotencyKey = ref(`entry-${crypto.randomUUID()}`);
+let categoryController: AbortController | undefined;
+const initialType: EntryType = route.query.type === 'INCOME' ? 'INCOME' : 'EXPENSE';
+const form = ref<EntryEditorModel>({
+  ledgerId: '',
+  type: initialType,
   amount: '',
   categoryId: '',
-  businessDate: currentBusinessDate(auth.user?.timezone),
+  businessDate: localBusinessDate(auth.user?.timezone),
   note: '',
-  paymentMethod: '' as EntryPaymentMethod | '',
+  paymentMethod: '',
 });
-
-const selectedLedger = computed(() =>
-  ledgers.value.find((ledger) => ledger.id === selectedLedgerId.value),
+const parsedAmount = computed(() => parseAmountToCent(form.value.amount));
+const canSubmit = computed(
+  () =>
+    !submitting.value &&
+    parsedAmount.value.ok &&
+    Boolean(form.value.ledgerId && form.value.categoryId && form.value.businessDate),
 );
 
-function explainFailure(caught: unknown): string {
-  if (caught instanceof ApiError) {
-    if (caught.code === 'CATEGORY_DISABLED') return '所选分类已停用，请重新选择';
-    if (caught.code === 'IDEMPOTENCY_CONFLICT') return '本次保存状态不明确，请返回明细确认后再试';
-    return caught.message;
-  }
-  return '请求失败，请检查网络后重试';
+async function syncQuery() {
+  await router.replace({
+    name: 'entry-new',
+    query: { ledgerId: form.value.ledgerId, type: form.value.type },
+  });
 }
-
-async function loadCategories(): Promise<void> {
-  if (!selectedLedgerId.value) return;
+async function loadCategoriesForForm() {
+  if (!form.value.ledgerId) return;
+  categoryController?.abort();
+  categoryController = new AbortController();
   categoriesLoading.value = true;
   error.value = '';
   try {
-    const result = await categoryApi.list(
-      selectedLedgerId.value,
-      form.type,
+    const result = await listCategories(
+      session,
+      form.value.ledgerId,
+      form.value.type,
       false,
-      auth.accessToken,
+      categoryController.signal,
     );
-    categories.value = result.items.filter((category) => category.isEnabled);
-    if (!categories.value.some((category) => category.id === form.categoryId)) {
-      form.categoryId = categories.value[0]?.id ?? '';
-    }
-  } catch (caught) {
-    categories.value = [];
-    if (caught instanceof ApiError && [403, 404].includes(caught.status)) noAccess.value = true;
-    error.value = explainFailure(caught);
+    categories.value = result.items.filter((item) => item.isEnabled);
+    if (!categories.value.some((item) => item.id === form.value.categoryId))
+      form.value = { ...form.value, categoryId: '' };
+  } catch (cause) {
+    if (!isRequestCancelled(cause))
+      error.value = cause instanceof Error ? cause.message : '分类加载失败';
   } finally {
     categoriesLoading.value = false;
   }
 }
-
-async function initialize(): Promise<void> {
+async function initialize() {
   loading.value = true;
-  error.value = '';
-  noAccess.value = false;
+  fatal.value = '';
   try {
-    ledgers.value = await coupleLedgerApi.list(auth.accessToken);
-    selectedLedgerId.value = resolveLedgerId(
-      ledgers.value,
-      typeof route.query.ledgerId === 'string' ? route.query.ledgerId : undefined,
-    );
-    if (!selectedLedgerId.value) {
-      error.value = '当前没有可用账本';
-      return;
-    }
-    persistLedgerId(selectedLedgerId.value);
-    await loadCategories();
-    ready.value = true;
-  } catch (caught) {
-    if (caught instanceof ApiError && [403, 404].includes(caught.status)) noAccess.value = true;
-    error.value = explainFailure(caught);
+    ledgers.value = await listLedgers(session);
+    const requested = typeof route.query.ledgerId === 'string' ? route.query.ledgerId : '';
+    const resolved = resolveLedger(ledgers.value, requested);
+    if (!resolved.ledger) throw new Error('没有可用账本');
+    form.value = { ...form.value, ledgerId: resolved.ledger.id };
+    persistLedgerId(resolved.ledger.id);
+    await syncQuery();
+    await loadCategoriesForForm();
+  } catch (cause) {
+    if (!isRequestCancelled(cause))
+      fatal.value = cause instanceof Error ? cause.message : '页面加载失败';
   } finally {
     loading.value = false;
   }
 }
-
-async function syncSelection(): Promise<void> {
-  if (!ready.value) return;
-  persistLedgerId(selectedLedgerId.value);
-  form.categoryId = '';
-  await router.replace({
-    query: { ledgerId: selectedLedgerId.value, type: form.type },
-  });
-  await loadCategories();
-}
-
-async function submit(): Promise<void> {
-  if (submitting.value) return;
-  error.value = '';
-  const amountCent = amountTextToCent(form.amount);
-  if (amountCent === null) {
-    error.value = '请输入大于 0、最多两位小数的金额';
-    return;
-  }
-  if (!form.categoryId) {
-    error.value = '请选择分类';
-    return;
-  }
+watch(
+  () => [form.value.ledgerId, form.value.type] as const,
+  async ([ledgerId, type], [oldLedger, oldType]) => {
+    if (loading.value || (ledgerId === oldLedger && type === oldType)) return;
+    persistLedgerId(ledgerId);
+    await syncQuery();
+    await loadCategoriesForForm();
+  },
+);
+async function submit() {
+  if (!canSubmit.value || !parsedAmount.value.ok) return;
   submitting.value = true;
+  error.value = '';
   try {
-    const entry = await entryApi.create(
-      {
-        ledgerId: selectedLedgerId.value,
-        type: form.type,
-        amountCent,
-        categoryId: form.categoryId,
-        businessDate: form.businessDate,
-        note: form.note.trim() || null,
-        paymentMethod: form.paymentMethod || null,
-      },
-      auth.accessToken,
-      idempotencyKey,
-    );
-    idempotencyKey = newEntryIdempotencyKey();
-    await router.replace(`/entries/${entry.id}`);
-  } catch (caught) {
-    error.value = explainFailure(caught);
+    const entry = await api.create({
+      ledgerId: form.value.ledgerId,
+      type: form.value.type,
+      amountCent: parsedAmount.value.amountCent,
+      categoryId: form.value.categoryId,
+      businessDate: form.value.businessDate,
+      note: form.value.note.trim() || null,
+      paymentMethod: form.value.paymentMethod || null,
+      idempotencyKey: idempotencyKey.value,
+    });
+    markEntryCreated(entry.id);
+    idempotencyKey.value = `entry-${crypto.randomUUID()}`;
+    await router.replace({
+      name: 'entries',
+      query: { ledgerId: entry.ledgerId, month: entry.businessDate.slice(0, 7) },
+    });
+  } catch (cause) {
+    if (
+      cause instanceof ApiError &&
+      ['CATEGORY_DISABLED', 'ENTRY_CATEGORY_INVALID'].includes(cause.code)
+    )
+      await loadCategoriesForForm();
+    error.value =
+      cause instanceof ApiError && cause.code === 'IDEMPOTENCY_CONFLICT'
+        ? '保存请求状态冲突，请确认明细后再操作。'
+        : cause instanceof Error
+          ? cause.message
+          : '保存失败';
   } finally {
     submitting.value = false;
   }
 }
-
-watch([selectedLedgerId, () => form.type], syncSelection);
+function cancel() {
+  void router.push({
+    name: 'entries',
+    query: { ledgerId: form.value.ledgerId, month: form.value.businessDate.slice(0, 7) },
+  });
+}
 onMounted(initialize);
+onBeforeUnmount(() => categoryController?.abort());
 </script>
-
 <template>
-  <main class="business-page">
-    <header class="business-header">
-      <RouterLink to="/entries" aria-label="返回明细">‹ 返回</RouterLink>
-      <h1>记一笔</h1>
-      <span class="header-spacer" aria-hidden="true"></span>
-    </header>
-
-    <section v-if="loading" class="state-panel" aria-live="polite">
-      <strong>正在准备记账</strong>
-      <p>加载账本和分类…</p>
-    </section>
-
-    <section v-else-if="noAccess" class="state-panel">
-      <strong>无法访问这个账本</strong>
-      <p>{{ error }}</p>
-      <RouterLink class="primary-button" to="/entries">返回明细</RouterLink>
-    </section>
-
-    <section v-else-if="!selectedLedgerId" class="state-panel">
-      <strong>还没有可用账本</strong>
-      <p>{{ error || '请重新登录或稍后重试。' }}</p>
-      <button class="secondary-button" type="button" @click="initialize">重试</button>
-    </section>
-
-    <form v-else class="entry-form" @submit.prevent="submit">
-      <div class="surface-card field-stack">
-        <LedgerSwitcher v-model="selectedLedgerId" :ledgers="ledgers" :disabled="submitting" />
-
-        <div class="field-label">
-          <span>收支类型</span>
-          <div class="segmented-control" role="group" aria-label="收支类型">
-            <button
-              type="button"
-              :class="{ active: form.type === 'EXPENSE' }"
-              :aria-pressed="form.type === 'EXPENSE'"
-              @click="form.type = 'EXPENSE'"
-            >
-              支出
-            </button>
-            <button
-              type="button"
-              :class="{ active: form.type === 'INCOME' }"
-              :aria-pressed="form.type === 'INCOME'"
-              @click="form.type = 'INCOME'"
-            >
-              收入
-            </button>
-          </div>
-        </div>
-
-        <label class="amount-field">
-          <span>金额</span>
-          <span class="amount-input"
-            ><b>¥</b
-            ><input
-              v-model="form.amount"
-              inputmode="decimal"
-              autocomplete="off"
-              placeholder="0.00"
-              aria-label="金额"
-              :disabled="submitting"
-          /></span>
-        </label>
-
-        <div class="field-label">
-          <span>分类</span>
-          <p v-if="categoriesLoading" class="muted-copy">正在加载分类…</p>
-          <div v-else-if="categories.length" class="category-grid">
-            <button
-              v-for="category in categories"
-              :key="category.id"
-              type="button"
-              :class="{ selected: form.categoryId === category.id }"
-              :aria-pressed="form.categoryId === category.id"
-              @click="form.categoryId = category.id"
-            >
-              <span :style="{ '--category-color': category.color }">
-                {{ categoryGlyph(category.icon) }}
-              </span>
-              <small>{{ category.name }}</small>
-            </button>
-          </div>
-          <div v-else class="empty-categories">
-            <span>当前类型没有可用分类</span>
-            <RouterLink :to="`/categories?ledgerId=${selectedLedgerId}&type=${form.type}`">
-              管理分类
-            </RouterLink>
-          </div>
-        </div>
-
-        <label>
-          <span>业务日期</span>
-          <input v-model="form.businessDate" type="date" required :disabled="submitting" />
-        </label>
-
-        <label>
-          <span>支付方式（选填）</span>
-          <select v-model="form.paymentMethod" :disabled="submitting">
-            <option value="">未记录</option>
-            <option v-for="[value, label] in PAYMENT_METHODS" :key="value" :value="value">
-              {{ label }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>备注（选填）</span>
-          <textarea
-            v-model="form.note"
-            maxlength="500"
-            placeholder="写下这笔收支的说明"
-            :disabled="submitting"
-          ></textarea>
-        </label>
-      </div>
-
-      <p v-if="selectedLedger?.type === 'COUPLE'" class="muted-copy">
-        这笔账将记录到“{{ selectedLedger.name }}”，双方都可以查看。
-      </p>
-      <p v-if="error" class="inline-error" role="alert">{{ error }}</p>
-      <div class="form-actions">
-        <button class="primary-button" type="submit" :disabled="submitting || categoriesLoading">
-          {{ submitting ? '正在保存…' : '保存账目' }}
-        </button>
-      </div>
-    </form>
+  <main class="entry-page">
+    <AppPageHeader title="记一笔" back-label="取消" @back="cancel" />
+    <section v-if="loading" class="loading" aria-live="polite">正在准备账本和分类…</section>
+    <AppErrorState
+      v-else-if="fatal"
+      title="暂时无法记账"
+      :message="fatal"
+      retry-label="重试"
+      @retry="initialize"
+    /><template v-else
+      ><p v-if="error" class="message error" role="alert">{{ error }}</p>
+      <EntryEditorForm
+        v-model="form"
+        :ledgers="ledgers"
+        :categories="categories"
+        :categories-loading="categoriesLoading"
+        :disabled="submitting"
+        :submit-disabled="!canSubmit"
+        @submit="submit"
+        ><template #submit>{{ submitting ? '保存中…' : '保存账目' }}</template></EntryEditorForm
+      ></template
+    >
   </main>
-  <AppBottomNav active="create" />
 </template>
-
 <style scoped>
-.header-spacer {
-  width: 44px;
-}
-.entry-form {
-  display: grid;
-  gap: 14px;
-}
-.amount-input {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid var(--siyu-border);
-}
-.amount-input b {
+.entry-page {
+  width: min(100%, 480px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 16px max(28px, env(safe-area-inset-bottom));
+  overflow-x: clip;
+  background: var(--siyu-page-bg);
   color: var(--siyu-text);
-  font-size: 26px;
 }
-.amount-input input {
-  min-width: 0;
-  padding: 8px 0;
-  border: 0;
-  background: transparent;
-  font-size: clamp(32px, 12vw, 46px);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
+.loading {
+  padding: 40px 20px;
+  border: 1px solid var(--siyu-border);
+  border-radius: 18px;
+  background: var(--siyu-surface);
+  text-align: center;
 }
-.amount-input input:focus {
-  box-shadow: none;
-}
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px 6px;
-}
-.category-grid button {
-  display: grid;
-  min-width: 0;
-  min-height: 64px;
-  place-items: center;
-  align-content: center;
-  gap: 5px;
-  padding: 4px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--siyu-text-secondary);
-}
-.category-grid button.selected {
-  border-color: var(--siyu-primary);
-  background: var(--siyu-primary-soft);
-  color: var(--siyu-primary);
-}
-.category-grid button > span {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--category-color) 14%, var(--siyu-surface));
-  color: var(--category-color);
-  font-weight: 700;
-}
-.category-grid small {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.empty-categories {
-  display: flex;
-  min-height: 64px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.message {
   padding: 12px;
-  border-radius: 10px;
-  background: var(--siyu-primary-soft);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
 }
-.empty-categories a {
-  color: var(--siyu-primary);
-  white-space: nowrap;
+.error {
+  background: var(--siyu-danger-soft);
+  color: var(--siyu-danger);
 }
 @media (max-width: 340px) {
-  .category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .entry-page {
+    padding-inline: 12px;
   }
 }
 </style>

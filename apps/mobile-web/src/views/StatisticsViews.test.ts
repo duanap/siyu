@@ -131,9 +131,11 @@ describe('TASK-009 home and statistics views', () => {
     auth.accessToken = 'access-token';
     auth.user = {
       id: 'user-owner',
+      avatarUrl: null,
       nickname: '朝暮',
       email: 'owner@example.com',
       timezone: 'Asia/Shanghai',
+      status: 'ACTIVE',
       roles: ['USER'],
       permissions: [],
     };

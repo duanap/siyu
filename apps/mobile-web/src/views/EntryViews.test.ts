@@ -1,241 +1,157 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
+import { createMemoryHistory, createRouter } from 'vue-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../components/AppDrawer.vue', () => ({
+  default: { template: '<section v-if="open"><slot /></section>', props: ['open'] },
+}));
+vi.mock('../components/AppDialog.vue', () => ({
+  default: {
+    template:
+      '<section v-if="open" class="dialog-stub"><slot /><button class="confirm" @click="$emit(\'confirm\')">confirm</button><button class="cancel" @click="$emit(\'cancel\')">cancel</button></section>',
+    props: ['open'],
+    emits: ['confirm', 'cancel'],
+  },
+}));
+
 import { useAuthStore } from '../auth';
+import EntriesView from './EntriesView.vue';
 import EntryCreateView from './EntryCreateView.vue';
 import EntryDetailView from './EntryDetailView.vue';
-import EntryListView from './EntryListView.vue';
+import { category, entry, ledger, ok, user } from './entry-view-test-utils';
 
-const routerState = vi.hoisted(() => ({
-  query: {} as Record<string, string>,
-  params: {} as Record<string, string>,
-  replace: vi.fn(),
-}));
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: routerState.query, params: routerState.params }),
-  useRouter: () => ({ replace: routerState.replace }),
-}));
-
-function response(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify({ success: status < 400, data, requestId: 'req_test' }), {
-    status,
+async function setup(path: string, component: object, fetchMock: ReturnType<typeof vi.fn>) {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  const auth = useAuthStore();
+  auth.accessToken = 'token';
+  auth.user = user();
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/entries', name: 'entries', component: path === '/entries' ? component : {} },
+      {
+        path: '/entries/new',
+        name: 'entry-new',
+        component: path.startsWith('/entries/new') ? component : {},
+      },
+      {
+        path: '/entries/:id',
+        name: 'entry-detail',
+        component: path.includes(entry.id) ? component : {},
+      },
+      { path: '/home', name: 'dashboard', component: {} },
+      { path: '/statistics', name: 'statistics', component: {} },
+      { path: '/account', name: 'account', component: {} },
+      { path: '/login', name: 'login', component: {} },
+    ],
   });
+  await router.push(path);
+  await router.isReady();
+  vi.stubGlobal('fetch', fetchMock);
+  const wrapper = mount(component, { global: { plugins: [pinia, router] } });
+  await flushPromises();
+  return { wrapper, router };
 }
 
-const ledger = {
-  id: '00000000-0000-4000-8000-000000000001',
-  type: 'COUPLE',
-  name: '我们的朝暮同笺账本',
-  ownerUserId: 'user-owner',
-  status: 'ACTIVE',
-  members: [
-    {
-      userId: 'user-owner',
-      role: 'OWNER',
-      joinedAt: '2026-07-01T00:00:00Z',
-      nickname: '朝暮',
-      avatarUrl: null,
-    },
-  ],
-};
-
-const category = {
-  id: '00000000-0000-4000-8000-000000000010',
-  ledgerId: ledger.id,
-  creatorUserId: null,
-  type: 'EXPENSE',
-  name: '日常餐饮',
-  icon: 'food',
-  color: '#E85D5D',
-  sortOrder: 100,
-  isSystem: true,
-  isEnabled: true,
-  canEdit: false,
-  canToggle: true,
-  createdAt: '2026-07-14T00:00:00Z',
-  updatedAt: '2026-07-14T00:00:00Z',
-};
-
-function entry(overrides: Record<string, unknown> = {}) {
-  return {
-    id: '00000000-0000-4000-8000-000000000020',
-    ledgerId: ledger.id,
-    type: 'EXPENSE',
-    amountCent: 8_650,
-    businessDate: '2026-07-15',
-    note: '这是一条很长的早餐备注，用于验证列表不会被长文本撑出横向滚动',
-    paymentMethod: 'WECHAT',
-    sourceType: 'MANUAL',
-    creator: { id: 'user-owner', nickname: '朝暮', avatarUrl: null },
-    category: {
-      id: category.id,
-      name: category.name,
-      icon: category.icon,
-      color: category.color,
-      isEnabled: true,
-    },
-    createdAt: '2026-07-15T01:00:00Z',
-    updatedAt: '2026-07-15T01:00:00Z',
-    version: 1,
-    canEdit: true,
-    canDelete: true,
-    ...overrides,
-  };
+function ledgersResponse(): Response {
+  return ok({ items: [ledger], page: 1, pageSize: 20, total: 1, hasNext: false });
 }
 
-const mountOptions = {
-  global: {
-    stubs: {
-      RouterLink: { props: ['to'], template: '<a><slot /></a>' },
-    },
-  },
-};
-
-describe('TASK-008 entry views', () => {
+describe('TASK-008 integrated entry views', () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
-    const auth = useAuthStore();
-    auth.accessToken = 'access-token';
-    auth.user = {
-      id: 'user-owner',
-      nickname: '朝暮',
-      email: 'owner@example.com',
-      timezone: 'Asia/Shanghai',
-      roles: ['USER'],
-      permissions: [],
-    };
     localStorage.clear();
-    routerState.query = {};
-    routerState.params = {};
-    routerState.replace.mockReset();
     vi.restoreAllMocks();
   });
 
-  it('creates exactly one entry while repeated submit events are pending', async () => {
-    vi.stubGlobal('crypto', { randomUUID: () => 'fixed-request' });
+  it('creates exactly one entry while repeated submits are pending', async () => {
     let finishCreate: ((value: Response) => void) | undefined;
     const pendingCreate = new Promise<Response>((resolve) => {
       finishCreate = resolve;
     });
     const fetchMock = vi.fn((url: string, init?: RequestInit) => {
       void init;
-      if (url.includes('/ledgers')) return Promise.resolve(response({ items: [ledger] }));
-      if (url.includes('/categories')) {
-        return Promise.resolve(response({ items: [category], permissions: {} }));
-      }
+      if (url.includes('/ledgers')) return Promise.resolve(ledgersResponse());
+      if (url.includes('/categories'))
+        return Promise.resolve(
+          ok({ items: [category], permissions: { canCreate: true, canReorder: true } }),
+        );
       if (url.endsWith('/entries')) return pendingCreate;
-      throw new Error(`unexpected URL ${url}`);
+      throw new Error(url);
     });
-    vi.stubGlobal('fetch', fetchMock);
-
-    const wrapper = mount(EntryCreateView, mountOptions);
-    await flushPromises();
-    await wrapper.find('input[aria-label="金额"]').setValue('28.50');
-    await wrapper.find('form').trigger('submit');
-    await wrapper.find('form').trigger('submit');
-
+    const { wrapper } = await setup(
+      `/entries/new?ledgerId=${ledger.id}`,
+      EntryCreateView,
+      fetchMock,
+    );
+    await wrapper.get('input[inputmode="decimal"]').setValue('28.50');
+    await wrapper.findAll('.category-grid button')[0]!.trigger('click');
+    const first = wrapper.get('form').trigger('submit');
+    const second = wrapper.get('form').trigger('submit');
+    await Promise.all([first, second]);
     expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/entries'))).toHaveLength(
       1,
     );
-    expect(wrapper.text()).toContain('正在保存');
-    finishCreate?.(response(entry(), 201));
+    finishCreate?.(ok(entry, 201));
     await flushPromises();
-    expect(routerState.replace).toHaveBeenLastCalledWith(`/entries/${entry().id}`);
     const createCall = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/entries'));
     expect(JSON.parse(String(createCall?.[1]?.body))).toEqual(
-      expect.objectContaining({ amountCent: 2850, idempotencyKey: 'entry-fixed-request' }),
+      expect.objectContaining({ amountCent: 2850 }),
     );
   });
 
-  it('groups list results, shows creator and preserves ledger/filter query state', async () => {
-    routerState.query = { ledgerId: ledger.id, month: '2026-07' };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((url: string) => {
-        if (url.includes('/ledgers')) return Promise.resolve(response({ items: [ledger] }));
-        if (url.includes('/categories')) {
-          return Promise.resolve(response({ items: [category], permissions: {} }));
-        }
-        if (url.includes('/entries?')) {
-          return Promise.resolve(
-            response({ items: [entry()], page: 1, pageSize: 20, total: 1, hasNext: false }),
-          );
-        }
-        throw new Error(`unexpected URL ${url}`);
-      }),
+  it('groups list results and preserves the ledger query', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes('/ledgers')) return Promise.resolve(ledgersResponse());
+      if (url.includes('/categories'))
+        return Promise.resolve(ok({ items: [category], permissions: {} }));
+      if (url.includes('/entries?'))
+        return Promise.resolve(
+          ok({ items: [entry], page: 1, pageSize: 20, total: 1, hasNext: false }),
+        );
+      throw new Error(url);
+    });
+    const { wrapper, router } = await setup(
+      `/entries?ledgerId=${ledger.id}&month=2026-07`,
+      EntriesView,
+      fetchMock,
     );
-
-    const wrapper = mount(EntryListView, mountOptions);
     await flushPromises();
-
-    expect(wrapper.text()).toContain('账目明细');
-    expect(wrapper.text()).toContain('日常餐饮');
-    expect(wrapper.text()).toContain('朝暮');
-    expect(wrapper.text()).toContain('共 1 笔');
-    expect(localStorage.getItem('siyu-current-ledger-id')).toBe(ledger.id);
-    expect(routerState.replace).toHaveBeenCalledWith(
-      expect.objectContaining({
-        query: expect.objectContaining({ ledgerId: ledger.id, month: '2026-07' }),
-      }),
-    );
+    expect(wrapper.findAll('.day-group')).toHaveLength(1);
+    expect(wrapper.findAll('.entry-item')).toHaveLength(1);
+    expect(router.currentRoute.value.query.ledgerId).toBe(ledger.id);
   });
 
   it('uses server capabilities for read-only entries', async () => {
-    routerState.params = { id: entry().id };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((url: string) => {
-        if (url.includes('/entries/')) {
-          return Promise.resolve(response(entry({ canEdit: false, canDelete: false })));
-        }
-        if (url.includes('/categories')) {
-          return Promise.resolve(response({ items: [category], permissions: {} }));
-        }
-        throw new Error(`unexpected URL ${url}`);
-      }),
-    );
-
-    const wrapper = mount(EntryDetailView, mountOptions);
-    await flushPromises();
-
-    expect(wrapper.text()).toContain('-¥ 86.50');
-    expect(wrapper.text()).toContain('没有修改权限');
-    expect(wrapper.text()).not.toContain('删除账目');
-    expect(wrapper.findAll('button').some((button) => button.text() === '编辑')).toBe(false);
+    const readOnly = { ...entry, canEdit: false, canDelete: false };
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes('/ledgers')) return Promise.resolve(ledgersResponse());
+      if (url.includes('/entries/')) return Promise.resolve(ok(readOnly));
+      throw new Error(url);
+    });
+    const { wrapper } = await setup(`/entries/${entry.id}`, EntryDetailView, fetchMock);
+    expect(wrapper.find('.app-amount').text()).toContain('12.30');
+    expect(wrapper.find('.actions').exists()).toBe(false);
   });
 
-  it('requires confirmation and sends the server version when deleting', async () => {
-    routerState.params = { id: entry().id };
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it('requires dialog confirmation and sends the server version when deleting', async () => {
     const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-      if (url.includes('/entries/') && init?.method === 'DELETE') {
-        return Promise.resolve(response({ id: entry().id, deleted: true, version: 2 }));
-      }
-      if (url.includes('/entries/')) return Promise.resolve(response(entry()));
-      if (url.includes('/categories')) {
-        return Promise.resolve(response({ items: [category], permissions: {} }));
-      }
-      throw new Error(`unexpected URL ${url}`);
+      if (url.includes('/ledgers')) return Promise.resolve(ledgersResponse());
+      if (url.includes('/entries/') && init?.method === 'DELETE')
+        return Promise.resolve(ok({ id: entry.id, deleted: true, version: 2 }));
+      if (url.includes('/entries/')) return Promise.resolve(ok(entry));
+      throw new Error(url);
     });
-    vi.stubGlobal('fetch', fetchMock);
-
-    const wrapper = mount(EntryDetailView, mountOptions);
+    const { wrapper, router } = await setup(`/entries/${entry.id}`, EntryDetailView, fetchMock);
+    await wrapper.get('.actions .danger').trigger('click');
+    expect(wrapper.find('.dialog-stub').exists()).toBe(true);
+    await wrapper.get('.dialog-stub .confirm').trigger('click');
     await flushPromises();
-    await wrapper
-      .findAll('button')
-      .find((button) => button.text() === '删除账目')!
-      .trigger('click');
-    await flushPromises();
-
-    expect(confirm).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
-      `/api/v1/entries/${entry().id}?expectedVersion=1`,
+      `/api/v1/entries/${entry.id}?expectedVersion=1`,
       expect.objectContaining({ method: 'DELETE' }),
     );
-    expect(routerState.replace).toHaveBeenCalledWith({
-      path: '/entries',
-      query: { ledgerId: ledger.id, month: '2026-07' },
-    });
+    expect(router.currentRoute.value.name).toBe('entries');
   });
 });

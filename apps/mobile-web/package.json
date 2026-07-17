@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@siyu/shared-types": "workspace:*",
     "@siyu/ui-tokens": "workspace:*",
     "ant-design-vue": "^4.2.6",
     "echarts": "^6.0.0",

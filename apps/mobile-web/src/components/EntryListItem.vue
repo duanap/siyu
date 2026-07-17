@@ -1,86 +1,128 @@
 <script setup lang="ts">
 import { categoryGlyph } from '../category';
-import { formatCent, type Entry } from '../entry';
-
-defineProps<{ entry: Entry; showCreator?: boolean }>();
+import type { Entry, Ledger } from '../entry';
+import AppAmount from './AppAmount.vue';
+defineProps<{ entry: Entry; ledgerType: Ledger['type']; highlighted?: boolean }>();
+defineEmits<{ open: [] }>();
+const paymentLabels = {
+  CASH: '现金',
+  WECHAT: '微信',
+  ALIPAY: '支付宝',
+  BANK_CARD: '银行卡',
+  OTHER: '其他',
+} as const;
+const sourceLabels = {
+  SALARY: '工资',
+  DEBT_TRANSACTION: '借贷',
+  RECURRING_RUN: '周期账目',
+} as const;
 </script>
-
 <template>
-  <RouterLink class="entry-row" :to="`/entries/${entry.id}`">
-    <span class="entry-row__icon" :style="{ '--entry-color': entry.category.color }">
-      {{ categoryGlyph(entry.category.icon) }}
-    </span>
-    <span class="entry-row__content">
-      <strong>{{ entry.category.name }}</strong>
-      <small>
-        {{ entry.note || '无备注' }}
-        <template v-if="showCreator"> · {{ entry.creator.nickname }}</template>
-      </small>
-    </span>
-    <span :class="['entry-row__amount', entry.type.toLowerCase()]">
-      {{ entry.type === 'INCOME' ? '+' : '-' }}{{ formatCent(entry.amountCent) }}
-    </span>
-  </RouterLink>
+  <button class="entry-item" :class="{ highlighted }" type="button" @click="$emit('open')">
+    <span class="icon" :style="{ '--category-color': entry.category.color }" aria-hidden="true">{{
+      categoryGlyph(entry.category.icon)
+    }}</span
+    ><span class="main"
+      ><span class="title-row"
+        ><strong>{{ entry.category.name }}</strong
+        ><small v-if="!entry.category.isEnabled">已停用</small
+        ><small v-if="entry.sourceType !== 'MANUAL'">{{
+          sourceLabels[entry.sourceType]
+        }}</small></span
+      ><span v-if="entry.note" class="note">{{ entry.note }}</span
+      ><span class="meta"
+        ><span v-if="ledgerType === 'COUPLE'">{{ entry.creator.nickname }}</span
+        ><span v-if="entry.paymentMethod">{{ paymentLabels[entry.paymentMethod] }}</span></span
+      ></span
+    ><AppAmount :amount-cent="entry.amountCent" :type="entry.type" />
+  </button>
 </template>
-
 <style scoped>
-.entry-row {
+.entry-item {
   display: grid;
-  min-height: 68px;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  width: 100%;
+  min-height: 78px;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--siyu-border);
+  gap: 11px;
+  padding: 11px 12px;
+  border: 1px solid var(--siyu-border);
+  border-radius: 15px;
+  background: var(--siyu-surface);
   color: var(--siyu-text);
-  text-decoration: none;
+  text-align: left;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
 }
-.entry-row__icon {
+.highlighted {
+  border-color: var(--siyu-primary);
+  background: var(--siyu-primary-soft);
+}
+.icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--entry-color) 14%, var(--siyu-surface));
-  color: var(--entry-color);
+  background: color-mix(in srgb, var(--category-color) 17%, var(--siyu-surface));
+  color: var(--category-color);
   font-weight: 700;
 }
-.entry-row__content {
-  display: grid;
+.main {
   min-width: 0;
-  gap: 4px;
 }
-.entry-row__content strong,
-.entry-row__content small {
+.title-row,
+.meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+strong,
+.note {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.entry-row__content small {
+.title-row small {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--siyu-secondary-bg);
+  color: var(--siyu-text-secondary);
+  font-size: 10px;
+}
+.note {
+  margin-top: 4px;
   color: var(--siyu-text-secondary);
   font-size: 12px;
 }
-.entry-row__amount {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  white-space: nowrap;
+.meta {
+  margin-top: 5px;
+  color: var(--siyu-text-tertiary);
+  font-size: 11px;
 }
-.entry-row__amount.income {
-  color: var(--siyu-income);
+.meta span + span::before {
+  margin-right: 6px;
+  content: '·';
 }
-.entry-row__amount.expense {
-  color: var(--siyu-expense);
+button:focus-visible {
+  outline: 3px solid var(--siyu-primary-soft);
+  outline-offset: 2px;
 }
 @media (max-width: 340px) {
-  .entry-row {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
-    gap: 8px;
+  .entry-item {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding-inline: 8px;
   }
-  .entry-row__icon {
-    width: 38px;
-    height: 38px;
+  .icon {
+    width: 40px;
+    height: 40px;
   }
-  .entry-row__amount {
+  .app-amount {
     font-size: 13px;
   }
 }

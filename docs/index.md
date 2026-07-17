@@ -22,6 +22,7 @@
 - `design/INFORMATION_ARCHITECTURE.md`
 - `design/SCREEN_FLOW.md`
 - `design/UI_DESIGN_GUIDE.md`
+- `design/DESIGN_TOKENS.md`
 - `design/COMPONENT_INVENTORY.md`
 - `design/SCREEN_SPECIFICATIONS.md`
 - `design/DESIGN_DELIVERY_PLAN.md`
