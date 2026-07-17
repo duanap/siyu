@@ -119,47 +119,47 @@ enum SavingGoalStatus {
 }
 
 model User {
-  id             String   @id @default(uuid()) @db.Uuid
-  qqOpenId       String?  @unique @map("qq_open_id")
-  nickname       String
-  avatarUrl      String?  @map("avatar_url")
-  timezone       String   @default("Asia/Shanghai")
-  status         UserStatus @default(ACTIVE)
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  id        String     @id @default(uuid()) @db.Uuid
+  qqOpenId  String?    @unique @map("qq_open_id")
+  nickname  String
+  avatarUrl String?    @map("avatar_url")
+  timezone  String     @default("Asia/Shanghai")
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt DateTime?  @map("deleted_at") @db.Timestamptz
 
-  ownedLedgers   Ledger[] @relation("LedgerOwner")
-  memberships    LedgerMember[]
-  sentInvitations LedgerInvitation[] @relation("InvitationInviter")
-  acceptedInvitations LedgerInvitation[] @relation("InvitationAcceptor")
-  createdCategories Category[]
-  createdEntries Entry[]
-  debts          Debt[]
-  debtTransactions DebtTransaction[]
-  recurringRules RecurringRule[]
-  salaryProfiles SalaryProfile[]
-  salaryRecords  SalaryRecord[]
-  createdSavingGoals SavingGoal[]
-  contributions  SavingContribution[]
-  notifications  Notification[]
-  auditLogs      AuditLog[] @relation("AuditActor")
-  credential     UserCredential?
-  authSessions   AuthSession[]
+  ownedLedgers        Ledger[]             @relation("LedgerOwner")
+  memberships         LedgerMember[]
+  sentInvitations     LedgerInvitation[]   @relation("InvitationInviter")
+  acceptedInvitations LedgerInvitation[]   @relation("InvitationAcceptor")
+  createdCategories   Category[]
+  createdEntries      Entry[]
+  debts               Debt[]
+  debtTransactions    DebtTransaction[]
+  recurringRules      RecurringRule[]
+  salaryProfiles      SalaryProfile[]
+  salaryRecords       SalaryRecord[]
+  createdSavingGoals  SavingGoal[]
+  contributions       SavingContribution[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  credential          UserCredential?
+  authSessions        AuthSession[]
   passwordResetTokens PasswordResetToken[]
-  userRoles      UserRole[]
+  userRoles           UserRole[]
 
   @@map("users")
 }
 
 model UserCredential {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @unique @map("user_id") @db.Uuid
-  emailNormalized String   @unique @map("email_normalized")
-  passwordHash    String   @map("password_hash")
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @map("user_id") @db.Uuid
+  emailNormalized   String   @unique @map("email_normalized")
+  passwordHash      String   @map("password_hash")
   passwordChangedAt DateTime @default(now()) @map("password_changed_at") @db.Timestamptz
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
@@ -167,14 +167,14 @@ model UserCredential {
 }
 
 model AuthSession {
-  id         String            @id @default(uuid()) @db.Uuid
-  userId     String            @map("user_id") @db.Uuid
-  status     AuthSessionStatus @default(ACTIVE)
-  expiresAt  DateTime          @map("expires_at") @db.Timestamptz
-  lastUsedAt DateTime          @default(now()) @map("last_used_at") @db.Timestamptz
-  revokedAt  DateTime?         @map("revoked_at") @db.Timestamptz
-  revokeReason String?         @map("revoke_reason")
-  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  id           String            @id @default(uuid()) @db.Uuid
+  userId       String            @map("user_id") @db.Uuid
+  status       AuthSessionStatus @default(ACTIVE)
+  expiresAt    DateTime          @map("expires_at") @db.Timestamptz
+  lastUsedAt   DateTime          @default(now()) @map("last_used_at") @db.Timestamptz
+  revokedAt    DateTime?         @map("revoked_at") @db.Timestamptz
+  revokeReason String?           @map("revoke_reason")
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   refreshTokens RefreshToken[]
@@ -193,7 +193,7 @@ model RefreshToken {
   replacedById String?   @unique @map("replaced_by_id") @db.Uuid
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
-  session       AuthSession  @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  session       AuthSession   @relation(fields: [sessionId], references: [id], onDelete: Restrict)
   replacement   RefreshToken? @relation("TokenRotation", fields: [replacedById], references: [id], onDelete: Restrict)
   replacedToken RefreshToken? @relation("TokenRotation")
 
@@ -216,8 +216,8 @@ model PasswordResetToken {
 }
 
 model Role {
-  id          String @id @default(uuid()) @db.Uuid
-  code        String @unique
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique
   description String?
 
   userRoles       UserRole[]
@@ -227,8 +227,8 @@ model Role {
 }
 
 model Permission {
-  id          String @id @default(uuid()) @db.Uuid
-  code        String @unique
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique
   description String?
 
   rolePermissions RolePermission[]
@@ -237,8 +237,8 @@ model Permission {
 }
 
 model UserRole {
-  userId    String   @map("user_id") @db.Uuid
-  roleId    String   @map("role_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  roleId     String   @map("role_id") @db.Uuid
   assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -260,17 +260,17 @@ model RolePermission {
 }
 
 model Ledger {
-  id          String   @id @default(uuid()) @db.Uuid
-  type        LedgerType
-  name        String
-  ownerUserId String   @map("owner_user_id") @db.Uuid
-  idempotencyKey String? @map("idempotency_key")
-  status      LedgerStatus @default(ACTIVE)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+  id             String       @id @default(uuid()) @db.Uuid
+  type           LedgerType
+  name           String
+  ownerUserId    String       @map("owner_user_id") @db.Uuid
+  idempotencyKey String?      @map("idempotency_key")
+  status         LedgerStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamptz
 
-  owner          User @relation("LedgerOwner", fields: [ownerUserId], references: [id])
+  owner          User               @relation("LedgerOwner", fields: [ownerUserId], references: [id])
   members        LedgerMember[]
   invitations    LedgerInvitation[]
   categories     Category[]
@@ -283,13 +283,13 @@ model Ledger {
 }
 
 model LedgerMember {
-  id        String @id @default(uuid()) @db.Uuid
-  ledgerId  String @map("ledger_id") @db.Uuid
-  userId    String @map("user_id") @db.Uuid
-  role      MemberRole
-  status    MemberStatus @default(ACTIVE)
-  joinedAt  DateTime @default(now()) @map("joined_at") @db.Timestamptz
-  leftAt    DateTime? @map("left_at") @db.Timestamptz
+  id       String       @id @default(uuid()) @db.Uuid
+  ledgerId String       @map("ledger_id") @db.Uuid
+  userId   String       @map("user_id") @db.Uuid
+  role     MemberRole
+  status   MemberStatus @default(ACTIVE)
+  joinedAt DateTime     @default(now()) @map("joined_at") @db.Timestamptz
+  leftAt   DateTime?    @map("left_at") @db.Timestamptz
 
   ledger Ledger @relation(fields: [ledgerId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
@@ -300,46 +300,46 @@ model LedgerMember {
 }
 
 model LedgerInvitation {
-  id               String @id @default(uuid()) @db.Uuid
-  ledgerId         String @map("ledger_id") @db.Uuid
-  inviterUserId    String @map("inviter_user_id") @db.Uuid
-  tokenHash        String @unique @map("token_hash")
-  idempotencyKey   String? @map("idempotency_key")
+  id               String           @id @default(uuid()) @db.Uuid
+  ledgerId         String           @map("ledger_id") @db.Uuid
+  inviterUserId    String           @map("inviter_user_id") @db.Uuid
+  tokenHash        String           @unique @map("token_hash")
+  idempotencyKey   String?          @map("idempotency_key")
   status           InvitationStatus @default(PENDING)
-  expiresAt        DateTime @map("expires_at") @db.Timestamptz
-  acceptedByUserId String? @map("accepted_by_user_id") @db.Uuid
-  acceptedAt       DateTime? @map("accepted_at") @db.Timestamptz
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt        DateTime         @map("expires_at") @db.Timestamptz
+  acceptedByUserId String?          @map("accepted_by_user_id") @db.Uuid
+  acceptedAt       DateTime?        @map("accepted_at") @db.Timestamptz
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz
 
   ledger     Ledger @relation(fields: [ledgerId], references: [id])
-  inviter    User @relation("InvitationInviter", fields: [inviterUserId], references: [id])
-  acceptedBy User? @relation("InvitationAcceptor", fields: [acceptedByUserId], references: [id])
+  inviter    User   @relation("InvitationInviter", fields: [inviterUserId], references: [id])
+  acceptedBy User?  @relation("InvitationAcceptor", fields: [acceptedByUserId], references: [id])
 
   @@index([ledgerId, status])
   @@map("ledger_invitations")
 }
 
 model Category {
-  id              String @id @default(uuid()) @db.Uuid
-  ledgerId        String @map("ledger_id") @db.Uuid
-  creatorUserId   String? @map("creator_user_id") @db.Uuid
+  id              String    @id @default(uuid()) @db.Uuid
+  ledgerId        String    @map("ledger_id") @db.Uuid
+  creatorUserId   String?   @map("creator_user_id") @db.Uuid
   type            EntryType
   name            String
   icon            String
   color           String
-  sortOrder       Int @default(0) @map("sort_order")
-  isSystem        Boolean @default(false) @map("is_system")
-  isEnabled       Boolean @default(true) @map("is_enabled")
-  templateKey     String? @map("template_key")
-  templateVersion Int? @map("template_version")
-  idempotencyKey  String? @map("idempotency_key")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  sortOrder       Int       @default(0) @map("sort_order")
+  isSystem        Boolean   @default(false) @map("is_system")
+  isEnabled       Boolean   @default(true) @map("is_enabled")
+  templateKey     String?   @map("template_key")
+  templateVersion Int?      @map("template_version")
+  idempotencyKey  String?   @map("idempotency_key")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  entries        Entry[] @relation("EntryCategoryScope")
+  entries        Entry[]         @relation("EntryCategoryScope")
   recurringRules RecurringRule[] @relation("RecurringCategoryScope")
-  ledger         Ledger @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
-  creator        User? @relation(fields: [creatorUserId], references: [id], onDelete: Restrict)
+  ledger         Ledger          @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
+  creator        User?           @relation(fields: [creatorUserId], references: [id], onDelete: Restrict)
 
   @@unique([ledgerId, templateKey])
   @@unique([creatorUserId, idempotencyKey])
@@ -349,74 +349,78 @@ model Category {
 }
 
 model Entry {
-  id             String @id @default(uuid()) @db.Uuid
-  ledgerId       String @map("ledger_id") @db.Uuid
-  creatorUserId  String @map("creator_user_id") @db.Uuid
-  type           EntryType
-  amountCent     BigInt @map("amount_cent")
-  categoryId     String @map("category_id") @db.Uuid
-  businessDate   DateTime @map("business_date") @db.Date
-  note           String?
-  paymentMethod  EntryPaymentMethod? @map("payment_method")
-  sourceType     EntrySourceType @default(MANUAL) @map("source_type")
-  sourceId       String? @map("source_id") @db.Uuid
-  idempotencyKey String @map("idempotency_key")
-  createRequestHash String @map("create_request_hash")
-  version        Int @default(1)
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  id                String              @id @default(uuid()) @db.Uuid
+  ledgerId          String              @map("ledger_id") @db.Uuid
+  creatorUserId     String              @map("creator_user_id") @db.Uuid
+  type              EntryType
+  amountCent        BigInt              @map("amount_cent")
+  categoryId        String              @map("category_id") @db.Uuid
+  businessDate      DateTime            @map("business_date") @db.Date
+  note              String?
+  paymentMethod     EntryPaymentMethod? @map("payment_method")
+  sourceType        EntrySourceType     @default(MANUAL) @map("source_type")
+  sourceId          String?             @map("source_id") @db.Uuid
+  idempotencyKey    String              @map("idempotency_key")
+  createRequestHash String              @map("create_request_hash")
+  version           Int                 @default(1)
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime?           @map("deleted_at") @db.Timestamptz
 
-  ledger   Ledger @relation(fields: [ledgerId], references: [id])
-  creator  User @relation(fields: [creatorUserId], references: [id])
-  category Category @relation("EntryCategoryScope", fields: [categoryId, ledgerId, type], references: [id, ledgerId, type], onDelete: Restrict)
+  ledger          Ledger           @relation(fields: [ledgerId], references: [id])
+  creator         User             @relation(fields: [creatorUserId], references: [id])
+  category        Category         @relation("EntryCategoryScope", fields: [categoryId, ledgerId, type], references: [id, ledgerId, type], onDelete: Restrict)
   debtTransaction DebtTransaction?
-  recurringRun RecurringRun?
-  salaryRecord SalaryRecord?
+  recurringRun    RecurringRun?
+  salaryRecord    SalaryRecord?
 
   @@unique([creatorUserId, idempotencyKey])
   @@map("entries")
 }
 
 model Debt {
-  id               String @id @default(uuid()) @db.Uuid
-  userId           String @map("user_id") @db.Uuid
-  direction        DebtDirection
-  counterpartyName String @map("counterparty_name")
-  principalCent    BigInt @map("principal_cent")
-  processedCent    BigInt @default(0) @map("processed_cent")
-  remainingCent    BigInt @map("remaining_cent")
-  startDate        DateTime @map("start_date") @db.Date
-  dueDate          DateTime? @map("due_date") @db.Date
-  status           DebtStatus @default(ACTIVE)
-  note             String?
-  reminderEnabled  Boolean @default(false) @map("reminder_enabled")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+  id                String        @id @default(uuid()) @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  direction         DebtDirection
+  counterpartyName  String        @map("counterparty_name")
+  principalCent     BigInt        @map("principal_cent")
+  processedCent     BigInt        @default(0) @map("processed_cent")
+  remainingCent     BigInt        @map("remaining_cent")
+  startDate         DateTime      @map("start_date") @db.Date
+  dueDate           DateTime?     @map("due_date") @db.Date
+  status            DebtStatus    @default(ACTIVE)
+  note              String?
+  reminderEnabled   Boolean       @default(false) @map("reminder_enabled")
+  idempotencyKey    String        @map("idempotency_key")
+  createRequestHash String        @map("create_request_hash")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime?     @map("deleted_at") @db.Timestamptz
 
-  user         User @relation(fields: [userId], references: [id])
+  user         User              @relation(fields: [userId], references: [id])
   transactions DebtTransaction[]
 
+  @@unique([userId, idempotencyKey])
   @@index([userId, status, dueDate])
   @@map("debts")
 }
 
 model DebtTransaction {
-  id             String @id @default(uuid()) @db.Uuid
-  debtId         String @map("debt_id") @db.Uuid
-  userId         String @map("user_id") @db.Uuid
-  amountCent     BigInt @map("amount_cent")
-  businessDate   DateTime @map("business_date") @db.Date
-  syncEntry      Boolean @default(false) @map("sync_entry")
-  entryId        String? @unique @map("entry_id") @db.Uuid
-  idempotencyKey String @map("idempotency_key")
+  id             String    @id @default(uuid()) @db.Uuid
+  debtId         String    @map("debt_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  amountCent     BigInt    @map("amount_cent")
+  businessDate   DateTime  @map("business_date") @db.Date
+  syncEntry      Boolean   @default(false) @map("sync_entry")
+  entryId        String?   @unique @map("entry_id") @db.Uuid
+  idempotencyKey String    @map("idempotency_key")
+  requestHash    String    @map("request_hash")
   note           String?
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
 
-  debt Debt @relation(fields: [debtId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  debt  Debt   @relation(fields: [debtId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
   entry Entry? @relation(fields: [entryId], references: [id], onDelete: Restrict)
 
   @@unique([userId, idempotencyKey])
@@ -425,30 +429,30 @@ model DebtTransaction {
 }
 
 model RecurringRule {
-  id                   String @id @default(uuid()) @db.Uuid
-  ownerUserId          String @map("owner_user_id") @db.Uuid
-  ledgerId             String @map("ledger_id") @db.Uuid
+  id                   String              @id @default(uuid()) @db.Uuid
+  ownerUserId          String              @map("owner_user_id") @db.Uuid
+  ledgerId             String              @map("ledger_id") @db.Uuid
   name                 String
-  entryType            EntryType @map("entry_type")
-  amountCent           BigInt @map("amount_cent")
-  categoryId           String @map("category_id") @db.Uuid
+  entryType            EntryType           @map("entry_type")
+  amountCent           BigInt              @map("amount_cent")
+  categoryId           String              @map("category_id") @db.Uuid
   frequency            RecurringFrequency
-  intervalValue        Int @default(1) @map("interval_value")
-  startDate            DateTime @map("start_date") @db.Date
-  endDate              DateTime? @map("end_date") @db.Date
-  totalOccurrences     Int? @map("total_occurrences")
-  completedOccurrences Int @default(0) @map("completed_occurrences")
-  nextRunDate          DateTime? @map("next_run_date") @db.Date
-  generationMode       GenerationMode @map("generation_mode")
+  intervalValue        Int                 @default(1) @map("interval_value")
+  startDate            DateTime            @map("start_date") @db.Date
+  endDate              DateTime?           @map("end_date") @db.Date
+  totalOccurrences     Int?                @map("total_occurrences")
+  completedOccurrences Int                 @default(0) @map("completed_occurrences")
+  nextRunDate          DateTime?           @map("next_run_date") @db.Date
+  generationMode       GenerationMode      @map("generation_mode")
   status               RecurringRuleStatus @default(ACTIVE)
-  reminderDaysBefore   Int @default(1) @map("reminder_days_before")
-  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz
+  reminderDaysBefore   Int                 @default(1) @map("reminder_days_before")
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt            DateTime?           @map("deleted_at") @db.Timestamptz
 
-  ledger   Ledger @relation(fields: [ledgerId], references: [id])
-  owner    User @relation(fields: [ownerUserId], references: [id])
-  category Category @relation("RecurringCategoryScope", fields: [categoryId, ledgerId, entryType], references: [id, ledgerId, type], onDelete: Restrict)
+  ledger   Ledger         @relation(fields: [ledgerId], references: [id])
+  owner    User           @relation(fields: [ownerUserId], references: [id])
+  category Category       @relation("RecurringCategoryScope", fields: [categoryId, ledgerId, entryType], references: [id, ledgerId, type], onDelete: Restrict)
   runs     RecurringRun[]
 
   @@index([status, nextRunDate])
@@ -457,20 +461,20 @@ model RecurringRule {
 }
 
 model RecurringRun {
-  id            String @id @default(uuid()) @db.Uuid
-  ruleId        String @map("rule_id") @db.Uuid
-  scheduledDate DateTime @map("scheduled_date") @db.Date
-  amountCent    BigInt @map("amount_cent")
+  id            String             @id @default(uuid()) @db.Uuid
+  ruleId        String             @map("rule_id") @db.Uuid
+  scheduledDate DateTime           @map("scheduled_date") @db.Date
+  amountCent    BigInt             @map("amount_cent")
   status        RecurringRunStatus @default(PENDING)
-  entryId       String? @unique @map("entry_id") @db.Uuid
-  attempts      Int @default(0)
-  lastError     String? @map("last_error")
-  confirmedAt   DateTime? @map("confirmed_at") @db.Timestamptz
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  entryId       String?            @unique @map("entry_id") @db.Uuid
+  attempts      Int                @default(0)
+  lastError     String?            @map("last_error")
+  confirmedAt   DateTime?          @map("confirmed_at") @db.Timestamptz
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz
 
-  rule RecurringRule @relation(fields: [ruleId], references: [id])
-  entry Entry? @relation(fields: [entryId], references: [id], onDelete: Restrict)
+  rule  RecurringRule @relation(fields: [ruleId], references: [id])
+  entry Entry?        @relation(fields: [entryId], references: [id], onDelete: Restrict)
 
   @@unique([ruleId, scheduledDate])
   @@index([status, scheduledDate])
@@ -478,18 +482,18 @@ model RecurringRun {
 }
 
 model SalaryProfile {
-  id               String @id @default(uuid()) @db.Uuid
-  userId           String @map("user_id") @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
   name             String
-  employerName     String? @map("employer_name")
-  payDay           Int @map("pay_day")
-  defaultSyncEntry Boolean @default(true) @map("default_sync_entry")
-  status           String @default("ACTIVE")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  employerName     String?   @map("employer_name")
+  payDay           Int       @map("pay_day")
+  defaultSyncEntry Boolean   @default(true) @map("default_sync_entry")
+  status           String    @default("ACTIVE")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
 
-  user    User @relation(fields: [userId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
   records SalaryRecord[]
 
   @@index([userId, status])
@@ -497,23 +501,23 @@ model SalaryProfile {
 }
 
 model SalaryRecord {
-  id            String @id @default(uuid()) @db.Uuid
-  userId        String @map("user_id") @db.Uuid
-  profileId     String @map("profile_id") @db.Uuid
-  salaryMonth   DateTime @map("salary_month") @db.Date
-  grossCent     BigInt @map("gross_cent")
-  deductionCent BigInt @map("deduction_cent")
-  netCent       BigInt @map("net_cent")
+  id            String              @id @default(uuid()) @db.Uuid
+  userId        String              @map("user_id") @db.Uuid
+  profileId     String              @map("profile_id") @db.Uuid
+  salaryMonth   DateTime            @map("salary_month") @db.Date
+  grossCent     BigInt              @map("gross_cent")
+  deductionCent BigInt              @map("deduction_cent")
+  netCent       BigInt              @map("net_cent")
   paymentStatus SalaryPaymentStatus @default(UNPAID) @map("payment_status")
-  paidDate      DateTime? @map("paid_date") @db.Date
-  entryId       String? @unique @map("entry_id") @db.Uuid
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
+  paidDate      DateTime?           @map("paid_date") @db.Date
+  entryId       String?             @unique @map("entry_id") @db.Uuid
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?           @map("deleted_at") @db.Timestamptz
 
-  user    User @relation(fields: [userId], references: [id])
+  user    User          @relation(fields: [userId], references: [id])
   profile SalaryProfile @relation(fields: [profileId], references: [id])
-  entry   Entry? @relation(fields: [entryId], references: [id])
+  entry   Entry?        @relation(fields: [entryId], references: [id])
   items   SalaryItem[]
 
   @@index([userId, salaryMonth])
@@ -521,13 +525,13 @@ model SalaryRecord {
 }
 
 model SalaryItem {
-  id             String @id @default(uuid()) @db.Uuid
-  salaryRecordId String @map("salary_record_id") @db.Uuid
+  id             String         @id @default(uuid()) @db.Uuid
+  salaryRecordId String         @map("salary_record_id") @db.Uuid
   itemType       SalaryItemType @map("item_type")
-  itemCode       String @map("item_code")
-  itemName       String @map("item_name")
-  amountCent     BigInt @map("amount_cent")
-  sortOrder      Int @default(0) @map("sort_order")
+  itemCode       String         @map("item_code")
+  itemName       String         @map("item_name")
+  amountCent     BigInt         @map("amount_cent")
+  sortOrder      Int            @default(0) @map("sort_order")
 
   record SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
 
@@ -536,23 +540,23 @@ model SalaryItem {
 }
 
 model SavingGoal {
-  id            String @id @default(uuid()) @db.Uuid
-  ledgerId      String @map("ledger_id") @db.Uuid
-  creatorUserId String @map("creator_user_id") @db.Uuid
+  id            String           @id @default(uuid()) @db.Uuid
+  ledgerId      String           @map("ledger_id") @db.Uuid
+  creatorUserId String           @map("creator_user_id") @db.Uuid
   name          String
-  targetCent    BigInt @map("target_cent")
-  initialCent   BigInt @default(0) @map("initial_cent")
-  savedCent     BigInt @default(0) @map("saved_cent")
-  targetDate    DateTime? @map("target_date") @db.Date
+  targetCent    BigInt           @map("target_cent")
+  initialCent   BigInt           @default(0) @map("initial_cent")
+  savedCent     BigInt           @default(0) @map("saved_cent")
+  targetDate    DateTime?        @map("target_date") @db.Date
   status        SavingGoalStatus @default(ACTIVE)
-  coverUrl      String? @map("cover_url")
+  coverUrl      String?          @map("cover_url")
   note          String?
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?        @map("deleted_at") @db.Timestamptz
 
-  ledger        Ledger @relation(fields: [ledgerId], references: [id])
-  creator       User @relation(fields: [creatorUserId], references: [id])
+  ledger        Ledger               @relation(fields: [ledgerId], references: [id])
+  creator       User                 @relation(fields: [creatorUserId], references: [id])
   contributions SavingContribution[]
 
   @@index([ledgerId, status])
@@ -560,19 +564,19 @@ model SavingGoal {
 }
 
 model SavingContribution {
-  id             String @id @default(uuid()) @db.Uuid
-  goalId         String @map("goal_id") @db.Uuid
-  userId         String @map("user_id") @db.Uuid
-  amountCent     BigInt @map("amount_cent")
-  businessDate   DateTime @map("business_date") @db.Date
+  id             String    @id @default(uuid()) @db.Uuid
+  goalId         String    @map("goal_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  amountCent     BigInt    @map("amount_cent")
+  businessDate   DateTime  @map("business_date") @db.Date
   note           String?
-  idempotencyKey String @map("idempotency_key")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  idempotencyKey String    @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
 
   goal SavingGoal @relation(fields: [goalId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  user User       @relation(fields: [userId], references: [id])
 
   @@unique([userId, idempotencyKey])
   @@index([goalId, businessDate])
@@ -580,15 +584,15 @@ model SavingContribution {
 }
 
 model Notification {
-  id          String @id @default(uuid()) @db.Uuid
-  userId      String @map("user_id") @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
   type        String
   title       String
   content     String
-  relatedType String? @map("related_type")
-  relatedId   String? @map("related_id") @db.Uuid
+  relatedType String?   @map("related_type")
+  relatedId   String?   @map("related_id") @db.Uuid
   readAt      DateTime? @map("read_at") @db.Timestamptz
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id])
 
@@ -597,16 +601,16 @@ model Notification {
 }
 
 model AuditLog {
-  id          String @id @default(uuid()) @db.Uuid
-  actorUserId String? @map("actor_user_id") @db.Uuid
-  actorType   String @map("actor_type")
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  actorType   String   @map("actor_type")
   action      String
-  targetType  String @map("target_type")
-  targetId    String? @map("target_id") @db.Uuid
-  requestId   String? @map("request_id")
-  beforeJson  Json? @map("before_json")
-  afterJson   Json? @map("after_json")
-  ipHash      String? @map("ip_hash")
+  targetType  String   @map("target_type")
+  targetId    String?  @map("target_id") @db.Uuid
+  requestId   String?  @map("request_id")
+  beforeJson  Json?    @map("before_json")
+  afterJson   Json?    @map("after_json")
+  ipHash      String?  @map("ip_hash")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   actor User? @relation("AuditActor", fields: [actorUserId], references: [id])

@@ -20,17 +20,30 @@ packages/ui-tokens    @siyu/ui-tokens
 
 - Node.js 24 LTS
 - pnpm 11
-- Docker Compose（数据库与 Redis 集成验证需要）
+- PostgreSQL 17 与 Redis 7.4/Valkey（可本机安装或使用云服务）
+- Docker Compose（可选，仅容器运行和隔离数据库验证需要）
 
 ## 开始
 
 ```bash
-cp .env.example .env
-pnpm install
-pnpm verify
+pnpm install --frozen-lockfile
+pnpm native:check:config
 ```
 
-只启动依赖：
+非 Docker 原生运行：
+
+```bash
+cp .env.native.example .env
+pnpm native:check
+pnpm native:migrate
+pnpm dev:native
+```
+
+手机端为 `http://localhost:5173`，管理端为 `http://localhost:5174/admin/`。生产原生网关使用
+`pnpm build && pnpm start:native`，默认监听 `127.0.0.1:8080`。完整说明见
+[非 Docker 原生运行](docs/architecture/NATIVE_RUNTIME.md)。
+
+Docker 模式只启动依赖：
 
 ```bash
 docker compose up -d siyu-postgres siyu-redis

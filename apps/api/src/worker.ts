@@ -1,7 +1,7 @@
 import { Worker, type Job } from 'bullmq';
 import IORedis from 'ioredis';
 
-import { readConfig } from './config';
+import { loadEnvironmentFile, readConfig } from './config';
 
 const bootstrapQueue = 'siyu-bootstrap';
 const passwordResetQueue = 'siyu-password-reset';
@@ -47,6 +47,7 @@ export async function startWorker(): Promise<{
 }
 
 async function bootstrap(): Promise<void> {
+  loadEnvironmentFile();
   const { worker, passwordResetWorker, connection } = await startWorker();
 
   const shutdown = async (): Promise<void> => {

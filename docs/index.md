@@ -38,6 +38,7 @@
 - `architecture/SECURITY.md`
 - `architecture/BACKGROUND_JOBS.md`
 - `architecture/DEPLOYMENT.md`
+- `architecture/NATIVE_RUNTIME.md`
 
 ## 项目记忆
 

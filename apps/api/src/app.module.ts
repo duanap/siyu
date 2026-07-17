@@ -5,8 +5,10 @@ import { RequestIdMiddleware } from './request-id';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DatabaseModule } from './database/database.module';
+import { DebtsModule } from './debts/debts.module';
 import { EntriesModule } from './entries/entries.module';
 import { LedgersModule } from './ledgers/ledgers.module';
+import { StatisticsModule } from './statistics/statistics.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -16,7 +18,9 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     LedgersModule,
     CategoriesModule,
+    DebtsModule,
     EntriesModule,
+    StatisticsModule,
   ],
   controllers: [HealthController],
 })

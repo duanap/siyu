@@ -1,6 +1,10 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-import { readConfig } from './config';
+import { loadEnvironmentFile, readConfig } from './config';
 
 describe('readConfig', () => {
   it('uses safe local defaults without requiring secrets', () => {
@@ -27,5 +31,21 @@ describe('readConfig', () => {
   it('rejects invalid ports and origins', () => {
     expect(() => readConfig({ SIYU_API_PORT: '70000' })).toThrow();
     expect(() => readConfig({ SIYU_CORS_ORIGINS: 'not-a-url' })).toThrow();
+  });
+
+  it('loads an explicit native environment file without overriding existing values', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'siyu-env-'));
+    const file = join(directory, '.env.native');
+    const previous = process.env.SIYU_NATIVE_TEST_VALUE;
+    try {
+      delete process.env.SIYU_NATIVE_TEST_VALUE;
+      writeFileSync(file, 'SIYU_NATIVE_TEST_VALUE=loaded\n', 'utf8');
+      expect(loadEnvironmentFile(file)).toBe(file);
+      expect(process.env.SIYU_NATIVE_TEST_VALUE).toBe('loaded');
+    } finally {
+      if (previous === undefined) delete process.env.SIYU_NATIVE_TEST_VALUE;
+      else process.env.SIYU_NATIVE_TEST_VALUE = previous;
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });

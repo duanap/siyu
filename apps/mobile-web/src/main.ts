@@ -1,5 +1,6 @@
 import '@siyu/ui-tokens/styles.css';
 import 'ant-design-vue/dist/reset.css';
+import './business.css';
 
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';

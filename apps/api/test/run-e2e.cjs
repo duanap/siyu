@@ -7,7 +7,7 @@ const IORedis = require('ioredis');
 const request = require('supertest');
 
 const { createApp } = require('../dist/app');
-const { readConfig } = require('../dist/config');
+const { loadEnvironmentFile, readConfig } = require('../dist/config');
 const { PrismaService } = require('../dist/database/prisma.service');
 
 let activeApp;
@@ -24,6 +24,7 @@ async function closeResources() {
 }
 
 async function main() {
+  loadEnvironmentFile();
   const redis = new IORedis(readConfig().redisUrl);
   const rateKeys = await redis.keys('rate:auth:*');
   if (rateKeys.length > 0) await redis.del(...rateKeys);
@@ -894,6 +895,208 @@ async function main() {
   );
   assert.equal(entryAuditJson.includes('请求哈希原始备注'), false);
   assert.equal(entryAuditJson.includes('修改后的备注'), false);
+
+  // TASK-010 / BR-DEBT-001..010: privacy, atomic processing, idempotency,
+  // source Entry mapping, settlement, overdue status, and approved delete rule 1A.
+  const borrowedKey = `borrowed-${suffix}`;
+  const borrowedPayload = {
+    direction: 'BORROWED',
+    counterpartyName: '借贷测试对方',
+    principalCent: 1000,
+    startDate: '2026-01-01',
+    dueDate: '2026-01-31',
+    note: '借贷创建幂等测试',
+    reminderEnabled: true,
+    idempotencyKey: borrowedKey,
+  };
+  const borrowed = await request(server)
+    .post('/api/v1/debts')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(borrowedPayload)
+    .expect(201);
+  const borrowedId = borrowed.body.data.id;
+  assert.equal(borrowed.body.data.status, 'OVERDUE');
+  assert.equal(borrowed.body.data.remainingCent, 1000);
+  assert.equal(borrowed.body.data.overdueDays > 0, true);
+  assert.equal(borrowed.body.data.canDelete, true);
+  const borrowedReplay = await request(server)
+    .post('/api/v1/debts')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(borrowedPayload)
+    .expect(201);
+  assert.equal(borrowedReplay.body.data.id, borrowedId);
+  const borrowedConflict = await request(server)
+    .post('/api/v1/debts')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...borrowedPayload, principalCent: 1001 })
+    .expect(409);
+  assert.equal(borrowedConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+  assert.equal(
+    await prisma.entry.count({ where: { sourceType: 'DEBT_TRANSACTION', creatorUserId: user.id } }),
+    0,
+  );
+  await request(server)
+    .get(`/api/v1/debts/${borrowedId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  await request(server)
+    .patch(`/api/v1/debts/${borrowedId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ dueDate: '2025-12-31' })
+    .expect(400);
+
+  const partialPayload = {
+    amountCent: 400,
+    businessDate: '2026-07-16',
+    syncEntry: false,
+    idempotencyKey: `borrowed-partial-${suffix}`,
+    note: '部分还款',
+  };
+  const concurrentDebtTransactions = await Promise.all([
+    request(server)
+      .post(`/api/v1/debts/${borrowedId}/transactions`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(partialPayload),
+    request(server)
+      .post(`/api/v1/debts/${borrowedId}/transactions`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(partialPayload),
+  ]);
+  assert.deepEqual(
+    concurrentDebtTransactions.map((response) => response.status).sort(),
+    [201, 201],
+  );
+  assert.equal(
+    concurrentDebtTransactions[0].body.data.transaction.id,
+    concurrentDebtTransactions[1].body.data.transaction.id,
+  );
+  assert.equal(concurrentDebtTransactions[0].body.data.debt.remainingCent, 600);
+  assert.equal(
+    await prisma.debtTransaction.count({
+      where: { userId: user.id, idempotencyKey: partialPayload.idempotencyKey },
+    }),
+    1,
+  );
+  const overpay = await request(server)
+    .post(`/api/v1/debts/${borrowedId}/transactions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...partialPayload, amountCent: 601, idempotencyKey: `overpay-${suffix}` })
+    .expect(409);
+  assert.equal(overpay.body.code, 'DEBT_AMOUNT_EXCEEDS_REMAINING');
+
+  const settle = await request(server)
+    .post(`/api/v1/debts/${borrowedId}/transactions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      amountCent: 600,
+      businessDate: '2026-07-16',
+      syncEntry: true,
+      idempotencyKey: `borrowed-settle-${suffix}`,
+      note: '结清还款',
+    })
+    .expect(201);
+  assert.equal(settle.body.data.debt.remainingCent, 0);
+  assert.equal(settle.body.data.debt.processedCent, 1000);
+  assert.equal(settle.body.data.debt.status, 'SETTLED');
+  const borrowedEntryId = settle.body.data.transaction.entryId;
+  const borrowedEntry = await prisma.entry.findUniqueOrThrow({ where: { id: borrowedEntryId } });
+  assert.equal(borrowedEntry.ledgerId, personalLedger.id);
+  assert.equal(borrowedEntry.creatorUserId, user.id);
+  assert.equal(borrowedEntry.type, 'EXPENSE');
+  assert.equal(borrowedEntry.amountCent, 600n);
+  assert.equal(borrowedEntry.sourceType, 'DEBT_TRANSACTION');
+  assert.equal(borrowedEntry.sourceId, settle.body.data.transaction.id);
+  const protectedDelete = await request(server)
+    .delete(`/api/v1/debts/${borrowedId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(409);
+  assert.equal(protectedDelete.body.code, 'DEBT_HAS_SYNCED_ENTRY');
+  assert.equal(await prisma.entry.count({ where: { id: borrowedEntryId, deletedAt: null } }), 1);
+
+  const lent = await request(server)
+    .post('/api/v1/debts')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      direction: 'LENT',
+      counterpartyName: '待收款测试对方',
+      principalCent: 200,
+      startDate: '2026-07-01',
+      idempotencyKey: `lent-${suffix}`,
+    })
+    .expect(201);
+  const lentTransaction = await request(server)
+    .post(`/api/v1/debts/${lent.body.data.id}/transactions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      amountCent: 200,
+      businessDate: '2026-07-16',
+      syncEntry: true,
+      idempotencyKey: `lent-settle-${suffix}`,
+    })
+    .expect(201);
+  const lentEntry = await prisma.entry.findUniqueOrThrow({
+    where: { id: lentTransaction.body.data.transaction.entryId },
+  });
+  assert.equal(lentEntry.type, 'INCOME');
+  assert.equal(lentTransaction.body.data.debt.status, 'SETTLED');
+
+  const removable = await request(server)
+    .post('/api/v1/debts')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      direction: 'BORROWED',
+      counterpartyName: '可删除测试对方',
+      principalCent: 300,
+      startDate: '2026-07-01',
+      idempotencyKey: `removable-${suffix}`,
+    })
+    .expect(201);
+  const removableTransaction = await request(server)
+    .post(`/api/v1/debts/${removable.body.data.id}/transactions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      amountCent: 100,
+      businessDate: '2026-07-16',
+      syncEntry: false,
+      idempotencyKey: `removable-tx-${suffix}`,
+    })
+    .expect(201);
+  await request(server)
+    .delete(`/api/v1/debts/${removable.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  await request(server)
+    .get(`/api/v1/debts/${removable.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  assert.equal(
+    await prisma.debt.count({
+      where: { id: removable.body.data.id, status: 'CANCELLED', deletedAt: { not: null } },
+    }),
+    1,
+  );
+  assert.equal(
+    await prisma.debtTransaction.count({
+      where: { id: removableTransaction.body.data.transaction.id, deletedAt: { not: null } },
+    }),
+    1,
+  );
+  const debtList = await request(server)
+    .get('/api/v1/debts')
+    .query({ page: 1, pageSize: 2 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(debtList.body.data.items.length, 2);
+  assert.equal(debtList.body.data.total >= 2, true);
+  assert.equal(
+    (await prisma.auditLog.count({
+      where: {
+        actorUserId: user.id,
+        action: { in: ['DEBT_CREATED', 'DEBT_TRANSACTION_CREATED', 'DEBT_DELETED'] },
+      },
+    })) >= 7,
+    true,
+  );
 
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)

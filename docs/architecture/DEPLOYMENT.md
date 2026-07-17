@@ -31,6 +31,19 @@ flowchart TB
 `/health`，Worker 检查 Redis TCP 链路，Nginx 通过自身代理检查 `/health`。Nginx 使用 Docker
 内置 DNS 动态解析 `siyu-api`，API 容器地址变化后不得要求重启 Nginx 才能恢复代理。
 
+## 非 Docker 原生模式
+
+Docker 不是应用运行的强制依赖。原生模式由 Node.js 直接运行 API、Worker、手机端/管理端开发服务器，或在
+生产环境运行 API、Worker 与 Node 静态网关；PostgreSQL 和 Redis/Valkey 使用本机服务、独立服务器或云服务。
+
+- `pnpm native:check`：检查 Node、环境 URL 和 PostgreSQL/Redis TCP 连通性。
+- `pnpm native:migrate`：对 `DATABASE_URL` 显式执行生产迁移。
+- `pnpm dev:native`：启动 API、Worker 和两个 Vite 开发服务。
+- `pnpm start:native`：启动已构建 API、Worker 和监听 `127.0.0.1:8080` 的静态网关。
+
+生产原生网关应置于 Caddy/Nginx/EdgeOne HTTPS 之后。详细环境、systemd 和更新步骤见
+`docs/architecture/NATIVE_RUNTIME.md`。原生模式不改变数据库、Redis、迁移、备份、权限或幂等要求。
+
 ## 环境
 
 - development
@@ -59,7 +72,7 @@ flowchart TB
 
 ## 发布
 
-1. 构建镜像和前端资源
+1. 构建镜像或原生 Node 产物和前端资源
 2. 运行 lint、类型、测试和构建
 3. 备份数据库
 4. staging 执行迁移

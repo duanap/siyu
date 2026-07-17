@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { isAbsolute, resolve } from 'node:path';
+
 export interface AppConfig {
   port: number;
   corsOrigins: string[];
@@ -11,6 +14,21 @@ export interface AppConfig {
   qqClientId: string | undefined;
   qqClientSecret: string | undefined;
   qqCallbackUrl: string | undefined;
+}
+
+export function loadEnvironmentFile(explicitPath = process.env.SIYU_ENV_FILE): string | undefined {
+  const candidates = explicitPath
+    ? isAbsolute(explicitPath)
+      ? [explicitPath]
+      : [resolve(process.cwd(), explicitPath), resolve(__dirname, '../../..', explicitPath)]
+    : [resolve(process.cwd(), '.env'), resolve(__dirname, '../../../.env')];
+  const file = candidates.find((candidate) => existsSync(candidate));
+  if (!file) {
+    if (explicitPath) throw new Error(`SIYU_ENV_FILE 指向的文件不存在：${candidates[0]}`);
+    return undefined;
+  }
+  process.loadEnvFile(file);
+  return file;
 }
 
 function readPort(value: string | undefined): number {

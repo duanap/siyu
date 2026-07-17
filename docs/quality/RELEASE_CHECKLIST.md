@@ -8,6 +8,8 @@
 - [ ] staging 迁移和 E2E
 - [ ] 权限和安全审计
 - [ ] 环境变量检查
+- [ ] 已选择并验证 Docker Compose 或原生 Node 运行模式
+- [ ] 原生模式执行 `pnpm native:check`，网关仅监听批准地址
 - [ ] 数据库备份
 - [ ] 回滚镜像和方案
 - [ ] Worker 队列为空或可控

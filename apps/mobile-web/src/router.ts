@@ -5,6 +5,9 @@ import AccountView from './views/AccountView.vue';
 import AuthenticationView from './views/AuthenticationView.vue';
 import CategoryManagementView from './views/CategoryManagementView.vue';
 import CoupleLedgerView from './views/CoupleLedgerView.vue';
+import EntryCreateView from './views/EntryCreateView.vue';
+import EntryDetailView from './views/EntryDetailView.vue';
+import EntryListView from './views/EntryListView.vue';
 import ForbiddenView from './views/ForbiddenView.vue';
 import HomeView from './views/HomeView.vue';
 import LegalView from './views/LegalView.vue';
@@ -57,9 +60,18 @@ export const router = createRouter({
       meta: { public: true },
     },
     { path: '/forbidden', name: 'forbidden', component: ForbiddenView },
+    { path: '/home', name: 'dashboard', component: () => import('./views/DashboardView.vue') },
     { path: '/account', name: 'account', component: AccountView },
     { path: '/categories', name: 'categories', component: CategoryManagementView },
     { path: '/couple/invite', name: 'couple-invite', component: CoupleLedgerView },
+    { path: '/entries', name: 'entries', component: EntryListView },
+    { path: '/entries/new', name: 'entry-create', component: EntryCreateView },
+    { path: '/entries/:id', name: 'entry-detail', component: EntryDetailView },
+    {
+      path: '/statistics',
+      name: 'statistics',
+      component: () => import('./views/StatisticsView.vue'),
+    },
   ],
 });
 
