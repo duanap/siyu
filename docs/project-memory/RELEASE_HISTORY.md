@@ -94,3 +94,12 @@ PR #4 已以 Squash merge 合入 main，提交 `25dcad0a29951ba4269e318423d5ebbf
 状态：Node 24 全仓 113 项测试、八迁移/数据库约束、完整 API/Worker E2E、OpenAPI 74/74、构建和审计通过；
 交付头 `830a9592da5ed9043208d88e1c5877c7c69d2b06` 经 PR #14 合入 `main`，PR CI Run `29898941240`
 与 main push CI Run `29899089545` 全部通过，TASK-013 正式关闭。
+
+## v0.12.0-recurring-ui
+
+日期：2026-07-22
+内容：实现移动端周期规则与实例的完整分页、列表、创建、详情、编辑、暂停、恢复、删除、确认入账和跳过，
+包含稳定幂等键、服务端能力边界、三尺寸双主题与异常态真实 Chrome 验收。
+状态：Node 24 全仓 119 项测试、完整 PostgreSQL/Redis E2E、生产构建和依赖审计通过；功能提交
+`b64a5a05c4744d50636d1c14a1d438a34e9283f3` 经 PR #16 合入 `main`，PR CI Run `29903360052`
+与 main push CI Run `29903511196` 全部通过，TASK-014 正式关闭。
