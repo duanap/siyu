@@ -124,6 +124,11 @@ export const router = createRouter({
       name: 'saving-goal-detail',
       component: () => import('./views/SavingGoalDetailView.vue'),
     },
+    {
+      path: '/notifications',
+      name: 'notifications',
+      component: () => import('./views/NotificationsView.vue'),
+    },
   ],
 });
 

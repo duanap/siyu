@@ -279,6 +279,12 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 逐日零值补齐序列；分类返回支出金额、笔数和整数万分比；成员返回按 Entry 创建人归属的支出。所有端点只聚合
 当前用户可见有效账本的未软删除账目，非成员和失效关系按资源不可见处理。
 
+通知列表只返回当前认证用户的通知，按 `createdAt DESC, id DESC` 稳定分页，并返回
+`items/page/pageSize/total/hasNext/unreadCount`。通知项包含可空的 `relatedType/relatedId/readAt`；关联字段只用于
+导航上下文，不授予目标资源权限。标记已读请求接受 1 至 100 个唯一 `ids`，只更新当前用户且尚未已读的通知；
+未知、他人和已读 ID 不区分错误，响应返回 `markedCount/unreadCount`。`readAt` 由服务端以 UTC 首次写入，重放
+不得覆盖。
+
 ## 实现要求
 
 - 详情查询必须包含权限条件，不得先按 ID 裸查。

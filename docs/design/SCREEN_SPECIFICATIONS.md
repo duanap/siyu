@@ -24,7 +24,7 @@
 | 15 | 攒钱目标详情 | `/saving-goals/:id` | 服务端进度、成员贡献、存入增改删和 OWNER 目标管理 | 加载、空、错误、资源不可见、只读、提交中、长文本、夜间 |
 | 16 | 我的与设置 | `/profile` | 资料、主题、通知、导出和账号 | 加载、空、错误、无权限、夜间 |
 | 17 | 朝暮同笺管理 | `/couple/invite` | 创建账本、邀请/加入、成员、改名、转移、退出和解散 | 加载、空、错误、无权限、提交中、长昵称、夜间 |
-| 18 | 消息中心 | `/notifications` | 邀请、到期、失败、完成和未读状态 | 加载、空、错误、无权限、夜间 |
+| 18 | 消息中心 | `/notifications` | 本人通知完整分页、跨页未读数、单条/全部已读和安全关联入口 | 加载、空、错误、无权限、提交中、长文本、夜间 |
 | 19 | 分类管理 | `/categories?ledgerId=&type=` | 账本/收支切换、分类新增编辑、图标颜色、排序和启停 | 加载、空、错误、无权限、提交中、长文本、夜间 |
 
 分类管理页面使用服务端 `canCreate/canReorder/canEdit/canToggle` 能力，不在前端复制 OWNER/MEMBER
@@ -75,6 +75,16 @@
 `saving-loading-375-dark.png`、`saving-new-320-light.png`、`saving-new-375-dark.png`、
 `saving-detail-375-light.png`、`saving-detail-375-dark.png`、`saving-readonly-375-light.png` 和
 `saving-restricted-375-light.png`。
+
+消息中心在 TASK-021 实现。页面完整读取本人通知分页并使用服务端 `unreadCount`；单条与全部已读只提交本人
+未读 ID，超过 100 条按批处理，提交中禁止重复点击，失败后重新读取服务端事实。当前只为
+`RECURRING_CONFIRMATION_DUE` 提供周期列表入口，未知类型保持通用展示且不根据关联 ID 扩大权限。
+真实 Chrome 验收截图位于 `output/playwright/notifications-320-light.png`、
+`notifications-375-light.png`、`notifications-375-dark.png`、`notifications-480-light.png`、
+`notifications-empty-375-light.png`、`notifications-error-375-light.png`、
+`notifications-forbidden-375-dark.png`、`notifications-loading-375-dark.png`、
+`notifications-long-320-light.png`、`notifications-refresh-375-light.png` 和
+`notifications-busy-375-dark.png`。
 
 ## 页面交付要求
 

@@ -1013,7 +1013,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
       responses:
-        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '200': { $ref: '#/components/responses/NotificationListOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /notifications/read:
     post:
@@ -1026,8 +1026,9 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/MarkNotificationsReadRequest' }
       responses:
-        '200': { $ref: '#/components/responses/ActionOk' }
+        '200': { $ref: '#/components/responses/MarkNotificationsReadOk' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /exports/entries.csv:
     get:
       tags: [Exports]
@@ -1264,6 +1265,16 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/SavingContributionResponse' }
+    NotificationListOk:
+      description: 本人站内通知稳定分页与跨页未读总数查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/NotificationListResponse' }
+    MarkNotificationsReadOk:
+      description: 本人通知批量已读操作完成
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/MarkNotificationsReadResponse' }
     SavingDeleteOk:
       description: 目标或本人存入记录软删除成功
       content:
@@ -1787,12 +1798,18 @@ components:
         updatedAt: { $ref: '#/components/schemas/Timestamp' }
     Notification:
       type: object
-      required: [id, type, title, content, createdAt]
+      additionalProperties: false
+      required: [id, type, title, content, relatedType, relatedId, readAt, createdAt]
       properties:
         id: { type: string, format: uuid }
         type: { type: string, minLength: 1, maxLength: 50 }
         title: { type: string, minLength: 1, maxLength: 100 }
         content: { type: string, minLength: 1, maxLength: 1000 }
+        relatedType: { type: [string, 'null'], maxLength: 50 }
+        relatedId:
+          anyOf:
+            - { type: string, format: uuid }
+            - { type: 'null' }
         readAt: { anyOf: [{ $ref: '#/components/schemas/Timestamp' }, { type: 'null' }] }
         createdAt: { $ref: '#/components/schemas/Timestamp' }
     DomainResource:
@@ -2006,6 +2023,40 @@ components:
           required: [status]
           properties:
             status: { type: string, minLength: 1, maxLength: 50 }
+        requestId: { type: string }
+    NotificationListResponse:
+      type: object
+      additionalProperties: false
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          additionalProperties: false
+          required: [items, page, pageSize, total, hasNext, unreadCount]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/Notification' }
+            page: { type: integer, minimum: 1 }
+            pageSize: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+            hasNext: { type: boolean }
+            unreadCount: { type: integer, minimum: 0 }
+        requestId: { type: string }
+    MarkNotificationsReadResponse:
+      type: object
+      additionalProperties: false
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          additionalProperties: false
+          required: [markedCount, unreadCount]
+          properties:
+            markedCount: { type: integer, minimum: 0, maximum: 100 }
+            unreadCount: { type: integer, minimum: 0 }
         requestId: { type: string }
     StatisticsOverviewResponse:
       type: object
