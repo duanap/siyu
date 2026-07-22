@@ -73,10 +73,12 @@ BEGIN
       'recurring_rules_owner_idempotency_key',
       'recurring_rules_ledger_active_created_idx',
       'recurring_runs_confirmation_idempotency_key',
-      'recurring_runs_rule_scheduled_created_idx'
+      'recurring_runs_rule_scheduled_created_idx',
+      'notifications_user_type_related_idx',
+      'notifications_recurring_confirmation_unique'
     );
-  IF required_indexes <> 34 THEN
-    RAISE EXCEPTION 'Expected 34 critical indexes, found %', required_indexes;
+  IF required_indexes <> 36 THEN
+    RAISE EXCEPTION 'Expected 36 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -332,6 +334,9 @@ SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET deleted_at = CURRENT_TIME
 SELECT pg_temp.expect_sqlstate($sql$UPDATE entries SET source_type = 'MANUAL', source_id = NULL WHERE id = '40000000-0000-4000-8000-000000000042'$sql$, '23514', 'recurring source entry detach');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000062', '00000000-0000-0000-0000-000000000060', '2026-07-01', 1000, CURRENT_TIMESTAMP)$sql$, '23505', 'recurring rule date unique');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO recurring_runs (id, rule_id, scheduled_date, amount_cent, status, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000063', '00000000-0000-0000-0000-000000000060', '2026-08-01', 1000, 'GENERATED', '40000000-0000-4000-8000-000000000042', CURRENT_TIMESTAMP)$sql$, '23505', 'recurring entry unique');
+INSERT INTO notifications (id, user_id, type, title, content, related_type, related_id)
+VALUES ('00000000-0000-4000-8000-000000000064', '00000000-0000-0000-0000-000000000001', 'RECURRING_CONFIRMATION_DUE', '周期账目待确认', '测试通知', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000061');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO notifications (id, user_id, type, title, content, related_type, related_id) VALUES ('00000000-0000-4000-8000-000000000065', '00000000-0000-0000-0000-000000000001', 'RECURRING_CONFIRMATION_DUE', '周期账目待确认', '重复通知', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000061')$sql$, '23505', 'recurring confirmation notification unique per recipient and run');
 
 INSERT INTO salary_profiles (id, user_id, name, pay_day, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', '主工资', 10, CURRENT_TIMESTAMP);

@@ -607,6 +607,7 @@ model Notification {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId, readAt, createdAt])
+  @@index([userId, type, relatedType, relatedId], map: "notifications_user_type_related_idx")
   @@map("notifications")
 }
 

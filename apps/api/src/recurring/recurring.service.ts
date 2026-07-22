@@ -26,12 +26,25 @@ import {
 } from './recurring.dates';
 import {
   RecurringRepository,
+  type DueRuleCandidate,
   type RecurringRuleRecord,
   type RecurringRunRecord,
 } from './recurring.repository';
 
 type Actor = { id: string; status: UserStatus; timezone: string };
 type Membership = { userId: string; role: MemberRole; status: string };
+
+export interface RecurringDueJob {
+  ruleId: string;
+  scheduledDate: string;
+}
+
+export interface RecurringScanPage {
+  jobs: RecurringDueJob[];
+  candidateCount: number;
+  nextCursor: string | null;
+  hasMore: boolean;
+}
 
 function invisible(kind: 'rule' | 'run'): NotFoundException {
   return new NotFoundException({
@@ -62,6 +75,31 @@ function parseDate(value: string): Date {
 
 function membershipFor(userId: string, rule: RecurringRuleRecord): Membership | undefined {
   return rule.ledger.members.find((member) => member.userId === userId);
+}
+
+function actionableNotificationRecipients(rule: RecurringRuleRecord): string[] {
+  return [
+    ...new Set(
+      rule.ledger.members
+        .filter((member) => member.userId === rule.ownerUserId || member.role === 'OWNER')
+        .map((member) => member.userId),
+    ),
+  ];
+}
+
+function isCandidateDue(candidate: DueRuleCandidate, asOf: Date): boolean {
+  return candidate.nextRunDate.getTime() <= businessToday(candidate.timezone, asOf).getTime();
+}
+
+function utcTomorrow(asOf: Date): Date {
+  return new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate() + 1));
+}
+
+function safeMaterializationError(error: unknown): string {
+  const code = error instanceof Error ? error.message.trim() : '';
+  return ['RECURRING_CATEGORY_DISABLED', 'RECURRING_OWNER_INACTIVE'].includes(code)
+    ? code
+    : 'RECURRING_EXECUTION_FAILED';
 }
 
 function canManage(userId: string, actor: Actor, rule: RecurringRuleRecord): boolean {
@@ -255,6 +293,34 @@ export class RecurringService {
         pageSize: query.pageSize,
         total: result.total,
         hasNext: query.page * query.pageSize < result.total,
+      };
+    });
+  }
+
+  async scanDueRules(
+    asOf: Date,
+    input: { afterId?: string; limit: number },
+  ): Promise<RecurringScanPage> {
+    if (Number.isNaN(asOf.getTime())) throw new Error('INVALID_SCAN_TIME');
+    if (!Number.isInteger(input.limit) || input.limit < 1 || input.limit > 1_000) {
+      throw new Error('INVALID_SCAN_LIMIT');
+    }
+    return this.repository.transaction(async (tx) => {
+      const candidates = await this.repository.listDueRuleCandidates(tx, {
+        throughDate: utcTomorrow(asOf),
+        ...(input.afterId ? { afterId: input.afterId } : {}),
+        limit: input.limit,
+      });
+      return {
+        jobs: candidates
+          .filter((candidate) => isCandidateDue(candidate, asOf))
+          .map((candidate) => ({
+            ruleId: candidate.id,
+            scheduledDate: dateOnly(candidate.nextRunDate),
+          })),
+        candidateCount: candidates.length,
+        nextCursor: candidates.at(-1)?.id ?? null,
+        hasMore: candidates.length === input.limit,
       };
     });
   }
@@ -672,23 +738,54 @@ export class RecurringService {
 
   async materializeDueRule(ruleId: string, today: Date): Promise<object | null> {
     try {
-      return await this.materializeDueRuleTransaction(ruleId, today);
+      return await this.materializeDueRuleTransaction(ruleId, { today });
     } catch (error) {
       await this.recordMaterializationFailure(ruleId, error);
       throw error;
     }
   }
 
-  private async materializeDueRuleTransaction(ruleId: string, today: Date): Promise<object | null> {
+  async materializeScheduledRule(
+    ruleId: string,
+    scheduledDateValue: string,
+    now = new Date(),
+  ): Promise<object | null> {
+    const scheduledDate = parseBusinessDate(scheduledDateValue);
+    try {
+      return await this.materializeDueRuleTransaction(ruleId, { scheduledDate, now });
+    } catch (error) {
+      await this.recordMaterializationFailure(ruleId, error, scheduledDate);
+      throw error;
+    }
+  }
+
+  private async materializeDueRuleTransaction(
+    ruleId: string,
+    input: { today?: Date; scheduledDate?: Date; now?: Date },
+  ): Promise<object | null> {
     return this.repository.transaction(async (tx) => {
       await this.repository.lock(tx, [`siyu:recurring-rule:${ruleId}`]);
       const rule = await this.repository.findExecutableRule(tx, ruleId);
-      if (!rule || !rule.nextRunDate || rule.nextRunDate.getTime() > today.getTime()) return null;
+      if (!rule || !rule.nextRunDate) return null;
+      if (input.scheduledDate && rule.nextRunDate.getTime() !== input.scheduledDate.getTime()) {
+        return null;
+      }
+      const today = input.today ?? businessToday(rule.owner.timezone, input.now);
+      if (rule.nextRunDate.getTime() > today.getTime()) return null;
       if (!rule.category.isEnabled) throw new Error('RECURRING_CATEGORY_DISABLED');
       if (!membershipFor(rule.ownerUserId, rule)) throw new Error('RECURRING_OWNER_INACTIVE');
       const scheduledDate = rule.nextRunDate;
       const existing = await this.repository.findRunByRuleDate(tx, ruleId, scheduledDate);
-      if (existing && existing.status !== 'FAILED') return existing;
+      if (existing && existing.status !== 'FAILED') {
+        if (existing.status === 'PENDING') {
+          await this.repository.createPendingNotifications(tx, {
+            userIds: actionableNotificationRecipients(rule),
+            runId: existing.id,
+            ruleName: rule.name,
+          });
+        }
+        return existing;
+      }
       const now = new Date();
       const runId = existing?.id ?? randomUUID();
       const attempts = (existing?.attempts ?? 0) + 1;
@@ -710,6 +807,11 @@ export class RecurringService {
               attempts,
               lastAttemptAt: now,
             });
+        await this.repository.createPendingNotifications(tx, {
+          userIds: actionableNotificationRecipients(rule),
+          runId: run.id,
+          ruleName: rule.name,
+        });
       } else {
         const entry = await this.repository.createSourceEntry(tx, {
           ledgerId: rule.ledgerId,
@@ -763,21 +865,24 @@ export class RecurringService {
     });
   }
 
-  private async recordMaterializationFailure(ruleId: string, error: unknown): Promise<void> {
-    const lastError = String(error instanceof Error ? error.message : 'UNKNOWN_RECURRING_FAILURE')
-      .slice(0, 500)
-      .trim();
+  private async recordMaterializationFailure(
+    ruleId: string,
+    error: unknown,
+    scheduledDate?: Date,
+  ): Promise<void> {
+    const lastError = safeMaterializationError(error);
     await this.repository.transaction(async (tx) => {
       await this.repository.lock(tx, [`siyu:recurring-rule:${ruleId}`]);
       const rule = await this.repository.findExecutableRule(tx, ruleId);
       if (!rule?.nextRunDate) return;
+      if (scheduledDate && rule.nextRunDate.getTime() !== scheduledDate.getTime()) return;
       const existing = await this.repository.findRunByRuleDate(tx, ruleId, rule.nextRunDate);
       if (existing && existing.status !== 'FAILED') return;
       const now = new Date();
       if (existing) {
         await this.repository.updateRun(tx, existing.id, {
           attempts: existing.attempts + 1,
-          lastError: lastError || 'UNKNOWN_RECURRING_FAILURE',
+          lastError,
           lastAttemptAt: now,
         });
       } else {
@@ -788,7 +893,7 @@ export class RecurringService {
           amountCent: rule.amountCent,
           status: 'FAILED',
           attempts: 1,
-          lastError: lastError || 'UNKNOWN_RECURRING_FAILURE',
+          lastError,
           lastAttemptAt: now,
         });
       }

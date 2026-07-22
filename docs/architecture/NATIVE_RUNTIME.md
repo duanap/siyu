@@ -33,6 +33,11 @@ REDIS_URL=redis://127.0.0.1:6379
 JWT_SECRET=至少32字符的随机值
 ```
 
+周期 Worker 默认每 60 秒扫描一次、每页 200 条、并发 8、最多 5 次指数退避；可通过
+`SIYU_RECURRING_SCAN_INTERVAL_MS`、`SIYU_RECURRING_SCAN_BATCH_SIZE`、
+`SIYU_RECURRING_WORKER_CONCURRENCY`、`SIYU_RECURRING_JOB_ATTEMPTS` 和
+`SIYU_RECURRING_BACKOFF_DELAY_MS` 调整。原生与 Compose 使用同一默认值和校验边界。
+
 可以通过 `SIYU_ENV_FILE` 指定其他文件。相对路径先按当前工作目录解析，再按仓库根目录解析；操作系统已有环境变量
 优先于文件值。密码包含 `@:/?#%` 等字符时必须进行 URL 编码。
 
@@ -164,6 +169,9 @@ pnpm build
 ```bash
 curl http://127.0.0.1:8080/health
 ```
+
+同时检查 Worker 日志出现 `recurring.worker.started` 与周期性 `recurring.scan.completed`；日志中的队列计数可用于
+发现等待、延迟或最终失败积压。日志不应出现规则名称、金额或底层数据库错误正文。
 
 隔离测试数据库和 Redis 已原生运行时，可通过 `SIYU_ENV_FILE` 指向测试环境文件后执行 `pnpm test:e2e`。
 迁移必须先在 staging 验证并备份数据库；回滚应用时保留新数据库列，数据库问题优先使用向前修复迁移。

@@ -14,7 +14,17 @@ type Tx = Prisma.TransactionClient;
 
 const ruleInclude = {
   category: { select: { id: true, name: true, icon: true, color: true, isEnabled: true } },
-  ledger: { include: { members: { where: { status: 'ACTIVE' as const } } } },
+  ledger: {
+    include: {
+      members: {
+        where: {
+          status: 'ACTIVE' as const,
+          user: { status: 'ACTIVE' as const, deletedAt: null },
+        },
+      },
+    },
+  },
+  owner: { select: { timezone: true } },
 } satisfies Prisma.RecurringRuleInclude;
 
 const runInclude = {
@@ -23,6 +33,11 @@ const runInclude = {
 
 export type RecurringRuleRecord = Prisma.RecurringRuleGetPayload<{ include: typeof ruleInclude }>;
 export type RecurringRunRecord = Prisma.RecurringRunGetPayload<{ include: typeof runInclude }>;
+export type DueRuleCandidate = {
+  id: string;
+  nextRunDate: Date;
+  timezone: string;
+};
 
 @Injectable()
 export class RecurringRepository {
@@ -124,11 +139,48 @@ export class RecurringRepository {
         ledger: {
           status: 'ACTIVE',
           deletedAt: null,
-          members: { some: { status: 'ACTIVE' } },
+          members: {
+            some: {
+              status: 'ACTIVE',
+              user: { status: 'ACTIVE', deletedAt: null },
+            },
+          },
         },
       },
       include: ruleInclude,
     });
+  }
+
+  async listDueRuleCandidates(
+    tx: Tx,
+    input: { throughDate: Date; afterId?: string; limit: number },
+  ): Promise<DueRuleCandidate[]> {
+    const rules = await tx.recurringRule.findMany({
+      where: {
+        ...(input.afterId ? { id: { gt: input.afterId } } : {}),
+        status: 'ACTIVE',
+        deletedAt: null,
+        nextRunDate: { not: null, lte: input.throughDate },
+        owner: { status: 'ACTIVE', deletedAt: null },
+        ledger: {
+          status: 'ACTIVE',
+          deletedAt: null,
+          members: { some: { status: 'ACTIVE' } },
+        },
+      },
+      select: {
+        id: true,
+        nextRunDate: true,
+        owner: { select: { timezone: true } },
+      },
+      orderBy: { id: 'asc' },
+      take: input.limit,
+    });
+    return rules.flatMap((rule) =>
+      rule.nextRunDate
+        ? [{ id: rule.id, nextRunDate: rule.nextRunDate, timezone: rule.owner.timezone }]
+        : [],
+    );
   }
 
   createRule(
@@ -289,6 +341,23 @@ export class RecurringRepository {
   ) {
     return tx.entry.create({
       data: { ...input, sourceType: 'RECURRING_RUN', paymentMethod: null },
+    });
+  }
+
+  createPendingNotifications(
+    tx: Tx,
+    input: { userIds: string[]; runId: string; ruleName: string },
+  ) {
+    return tx.notification.createMany({
+      data: [...new Set(input.userIds)].map((userId) => ({
+        userId,
+        type: 'RECURRING_CONFIRMATION_DUE',
+        title: '周期账目待确认',
+        content: `${input.ruleName} 已到期，请确认本期账目。`,
+        relatedType: 'RECURRING_RUN',
+        relatedId: input.runId,
+      })),
+      skipDuplicates: true,
     });
   }
 

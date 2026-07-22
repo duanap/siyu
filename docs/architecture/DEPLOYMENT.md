@@ -31,6 +31,10 @@ flowchart TB
 `/health`，Worker 检查 Redis TCP 链路，Nginx 通过自身代理检查 `/health`。Nginx 使用 Docker
 内置 DNS 动态解析 `siyu-api`，API 容器地址变化后不得要求重启 Nginx 才能恢复代理。
 
+Worker 启动后注册 `siyu-recurring-due` Job Scheduler 并立即发起一次按分钟去重的扫描。扫描间隔、批量、
+并发、重试次数和指数退避基准可通过 `.env.example` 中的 `SIYU_RECURRING_*` 变量调整；修改前应观察等待、
+运行、延迟和失败任务数。滚动更新可以并行短暂运行多个 Worker，稳定 Job ID 和数据库约束保证至少一次投递安全。
+
 ## 非 Docker 原生模式
 
 Docker 不是应用运行的强制依赖。原生模式由 Node.js 直接运行 API、Worker、手机端/管理端开发服务器，或在
