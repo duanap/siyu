@@ -575,40 +575,44 @@ model SalaryItem {
 }
 
 model SavingGoal {
-  id            String           @id @default(uuid()) @db.Uuid
-  ledgerId      String           @map("ledger_id") @db.Uuid
-  creatorUserId String           @map("creator_user_id") @db.Uuid
-  name          String
-  targetCent    BigInt           @map("target_cent")
-  initialCent   BigInt           @default(0) @map("initial_cent")
-  savedCent     BigInt           @default(0) @map("saved_cent")
-  targetDate    DateTime?        @map("target_date") @db.Date
-  status        SavingGoalStatus @default(ACTIVE)
-  coverUrl      String?          @map("cover_url")
-  note          String?
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime?        @map("deleted_at") @db.Timestamptz
+  id                String           @id @default(uuid()) @db.Uuid
+  ledgerId          String           @map("ledger_id") @db.Uuid
+  creatorUserId     String           @map("creator_user_id") @db.Uuid
+  name              String
+  targetCent        BigInt           @map("target_cent")
+  initialCent       BigInt           @default(0) @map("initial_cent")
+  savedCent         BigInt           @default(0) @map("saved_cent")
+  targetDate        DateTime?        @map("target_date") @db.Date
+  status            SavingGoalStatus @default(ACTIVE)
+  coverUrl          String?          @map("cover_url")
+  note              String?
+  idempotencyKey    String           @map("idempotency_key")
+  createRequestHash String           @map("create_request_hash")
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime?        @map("deleted_at") @db.Timestamptz
 
   ledger        Ledger               @relation(fields: [ledgerId], references: [id])
   creator       User                 @relation(fields: [creatorUserId], references: [id])
   contributions SavingContribution[]
 
+  @@unique([creatorUserId, idempotencyKey])
   @@index([ledgerId, status])
   @@map("saving_goals")
 }
 
 model SavingContribution {
-  id             String    @id @default(uuid()) @db.Uuid
-  goalId         String    @map("goal_id") @db.Uuid
-  userId         String    @map("user_id") @db.Uuid
-  amountCent     BigInt    @map("amount_cent")
-  businessDate   DateTime  @map("business_date") @db.Date
-  note           String?
-  idempotencyKey String    @map("idempotency_key")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  id                String    @id @default(uuid()) @db.Uuid
+  goalId            String    @map("goal_id") @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  amountCent        BigInt    @map("amount_cent")
+  businessDate      DateTime  @map("business_date") @db.Date
+  note              String?
+  idempotencyKey    String    @map("idempotency_key")
+  createRequestHash String    @map("create_request_hash")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz
 
   goal SavingGoal @relation(fields: [goalId], references: [id])
   user User       @relation(fields: [userId], references: [id])

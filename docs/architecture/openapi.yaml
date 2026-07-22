@@ -855,7 +855,8 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
       responses:
-        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '200': { $ref: '#/components/responses/SavingGoalListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
     post:
       tags: [SavingGoals]
@@ -867,9 +868,12 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateSavingGoalRequest' }
       responses:
-        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '201': { $ref: '#/components/responses/SavingGoalCreated' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /saving-goals/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -878,7 +882,8 @@ paths:
       operationId: getSavingGoal
       summary: 获取攒钱目标详情
       responses:
-        '200': { $ref: '#/components/responses/ResourceOk' }
+        '200': { $ref: '#/components/responses/SavingGoalDetailOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
     patch:
       tags: [SavingGoals]
@@ -890,7 +895,9 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/UpdateSavingGoalRequest' }
       responses:
-        '200': { $ref: '#/components/responses/ResourceOk' }
+        '200': { $ref: '#/components/responses/SavingGoalDetailOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
     delete:
@@ -898,7 +905,8 @@ paths:
       operationId: deleteSavingGoal
       summary: 软删除攒钱目标
       responses:
-        '200': { $ref: '#/components/responses/ActionOk' }
+        '200': { $ref: '#/components/responses/SavingDeleteOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
   /saving-goals/{id}/contributions:
@@ -914,7 +922,10 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/CreateSavingContributionRequest' }
       responses:
-        '201': { $ref: '#/components/responses/ResourceCreated' }
+        '201': { $ref: '#/components/responses/SavingContributionCreated' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
   /saving-goals/{goalId}/contributions/{id}:
@@ -931,7 +942,9 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/UpdateSavingContributionRequest' }
       responses:
-        '200': { $ref: '#/components/responses/ResourceOk' }
+        '200': { $ref: '#/components/responses/SavingContributionOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
     delete:
@@ -939,7 +952,8 @@ paths:
       operationId: deleteSavingContribution
       summary: 软删除本人存入记录
       responses:
-        '200': { $ref: '#/components/responses/ActionOk' }
+        '200': { $ref: '#/components/responses/SavingDeleteOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
   /statistics/overview:
@@ -1225,6 +1239,36 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/SalaryBalanceResponse' }
+    SavingGoalListOk:
+      description: 当前用户可见的攒钱目标分页查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingGoalListResponse' }
+    SavingGoalCreated:
+      description: 攒钱目标创建或幂等重放成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingGoalResponse' }
+    SavingGoalDetailOk:
+      description: 攒钱目标详情查询或更新成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingGoalDetailResponse' }
+    SavingContributionCreated:
+      description: 存入记录创建或幂等重放成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingContributionResponse' }
+    SavingContributionOk:
+      description: 本人存入记录更新成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingContributionResponse' }
+    SavingDeleteOk:
+      description: 目标或本人存入记录软删除成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SavingDeleteResponse' }
     CsvExport:
       description: CSV 文件
       headers:
@@ -1679,29 +1723,68 @@ components:
         success: { const: true }
         data: { $ref: '#/components/schemas/SalaryBalance' }
         requestId: { type: string }
+    SavingContributorSummary:
+      type: object
+      additionalProperties: false
+      required: [userId, contributorName, amountCent]
+      properties:
+        userId: { type: string, format: uuid }
+        contributorName: { type: string, minLength: 1, maxLength: 100 }
+        amountCent: { $ref: '#/components/schemas/NonNegativeCent' }
     SavingGoal:
       type: object
-      required: [id, ledgerId, creatorUserId, name, targetCent, initialCent, savedCent, status]
+      required:
+        [id, ledgerId, ledgerName, ledgerType, creatorUserId, creatorName, name, targetCent, initialCent, savedCent, remainingCent, progressBasisPoints, targetDate, status, coverUrl, note, contributorSummaries, canManage, canContribute, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         ledgerId: { type: string, format: uuid }
+        ledgerName: { type: string, minLength: 1, maxLength: 100 }
+        ledgerType: { type: string, enum: [PERSONAL, COUPLE] }
         creatorUserId: { type: string, format: uuid }
+        creatorName: { type: string, minLength: 1, maxLength: 100 }
         name: { type: string, minLength: 1, maxLength: 100 }
         targetCent: { $ref: '#/components/schemas/Cent' }
         initialCent: { $ref: '#/components/schemas/NonNegativeCent' }
         savedCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        remainingCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        progressBasisPoints: { type: integer, minimum: 0, maximum: 10000 }
         targetDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         status: { type: string, enum: [ACTIVE, COMPLETED, CANCELLED] }
+        coverUrl: { type: [string, 'null'], format: uri, maxLength: 2048 }
+        note: { type: [string, 'null'], maxLength: 500 }
+        contributorSummaries:
+          type: array
+          items: { $ref: '#/components/schemas/SavingContributorSummary' }
+        canManage: { type: boolean, readOnly: true }
+        canContribute: { type: boolean, readOnly: true }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+    SavingGoalDetail:
+      allOf:
+        - $ref: '#/components/schemas/SavingGoal'
+        - type: object
+          required: [contributions]
+          properties:
+            contributions:
+              type: array
+              items: { $ref: '#/components/schemas/SavingContribution' }
     SavingContribution:
       type: object
-      required: [id, goalId, userId, amountCent, businessDate]
+      additionalProperties: false
+      required:
+        [id, goalId, userId, contributorName, amountCent, businessDate, note, canEdit, canDelete, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         goalId: { type: string, format: uuid }
         userId: { type: string, format: uuid }
+        contributorName: { type: string, minLength: 1, maxLength: 100 }
         amountCent: { $ref: '#/components/schemas/Cent' }
         businessDate: { $ref: '#/components/schemas/BusinessDate' }
         note: { type: [string, 'null'], maxLength: 500 }
+        canEdit: { type: boolean, readOnly: true }
+        canDelete: { type: boolean, readOnly: true }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
     Notification:
       type: object
       required: [id, type, title, content, createdAt]
@@ -1843,6 +1926,56 @@ components:
             pageSize: { type: integer, minimum: 1, maximum: 100 }
             total: { type: integer, minimum: 0 }
             hasNext: { type: boolean }
+        requestId: { type: string }
+    SavingGoalResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/SavingGoal' }
+        requestId: { type: string }
+    SavingGoalDetailResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/SavingGoalDetail' }
+        requestId: { type: string }
+    SavingGoalListResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [items, page, pageSize, total, hasNext]
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/SavingGoal' }
+            page: { type: integer, minimum: 1 }
+            pageSize: { type: integer, minimum: 1, maximum: 100 }
+            total: { type: integer, minimum: 0 }
+            hasNext: { type: boolean }
+        requestId: { type: string }
+    SavingContributionResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/SavingContribution' }
+        requestId: { type: string }
+    SavingDeleteResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [id, deleted]
+          properties:
+            id: { type: string, format: uuid }
+            deleted: { const: true }
         requestId: { type: string }
     CategoryListResponse:
       type: object
@@ -2313,7 +2446,7 @@ components:
         idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     CreateSavingGoalRequest:
       type: object
-      required: [ledgerId, name, targetCent, initialCent]
+      required: [ledgerId, name, targetCent, initialCent, idempotencyKey]
       additionalProperties: false
       properties:
         ledgerId: { type: string, format: uuid }
@@ -2321,8 +2454,9 @@ components:
         targetCent: { $ref: '#/components/schemas/Cent' }
         initialCent: { $ref: '#/components/schemas/NonNegativeCent' }
         targetDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
-        coverUrl: { type: [string, 'null'], format: uri }
+        coverUrl: { type: [string, 'null'], format: uri, maxLength: 2048 }
         note: { type: [string, 'null'], maxLength: 500 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     UpdateSavingGoalRequest:
       type: object
       minProperties: 1
