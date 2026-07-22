@@ -804,3 +804,17 @@ TASK-018 正式关闭，M6 完成；下一项为 TASK-019 攒钱目标 API。
 ### 当前状态
 
 TASK-019 已完成本地交付候选；待提交、PR、远程 CI、合并和 main CI 后正式关闭。
+
+## 2026-07-22 / TASK-019 正式关闭
+
+### 关闭证据
+
+- 功能提交 `37ac11c9f2ff91b73af07fb0dd6b85f98572d28f` 已推送并经 PR #26 Squash merge 合入
+  `main`；合并提交为 `a04bbef97dfe1cb35527b6e6d3f2cca46db74964`。
+- PR CI Run `29929382178` 与 main push CI Run `29929562773` 的 `quality`、`database`、
+  `secret-scan` 全部通过；包含 11 个迁移、数据库约束、完整 PostgreSQL/Redis E2E、构建、审计和秘密扫描。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-019 正式关闭；下一项为 TASK-020 攒钱目标页面。

@@ -21,7 +21,7 @@
 | TASK-016 | 工资到账与收入联动（已合并、CI 通过并正式关闭） | M6 | Sol | Extra High | TASK-015 |
 | TASK-017 | 工资余额和年度统计（已合并、CI 通过并正式关闭） | M6 | Sol | High | TASK-016 |
 | TASK-018 | 工资页面（已合并、CI 通过并正式关闭） | M6 | Terra | Medium | TASK-015,TASK-017 |
-| TASK-019 | 攒钱目标 API（本地交付候选，待 PR/CI 正式关闭） | M7 | Sol | High | TASK-005 |
+| TASK-019 | 攒钱目标 API（已合并、CI 通过并正式关闭） | M7 | Sol | High | TASK-005 |
 | TASK-020 | 攒钱目标页面 | M7 | Terra | Medium | TASK-019 |
 | TASK-021 | 站内通知 | M8 | Terra | Medium | TASK-005,TASK-013 |
 | TASK-022 | 最小管理后台 | M8 | Terra | Medium | TASK-021 |
