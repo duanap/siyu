@@ -159,6 +159,14 @@ export class ListSalaryRecordsDto {
   profileId?: string;
 }
 
+export class SalaryYearParamDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(9999)
+  year!: number;
+}
+
 export class CreateSalaryRecordDto {
   @IsUUID('4')
   profileId!: string;

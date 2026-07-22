@@ -2,7 +2,7 @@
 
 生成日期：2026-07-22
 
-文件数量（不含本清单、依赖和构建产物）：355
+文件数量（不含本清单、依赖和构建产物）：356
 
 | 文件 | SHA-256 |
 |---|---|
@@ -102,12 +102,12 @@
 | `apps/api/src/recurring/recurring.worker.test.ts` | `49da5be8aafd67495308670a461d6eb41d5e374d83f0040cb35cbe913cd7ea68` |
 | `apps/api/src/recurring/recurring.worker.ts` | `91121a8670c29ec9326da97365ab2c2f3bece35fa08f8178be47d9f3d654e521` |
 | `apps/api/src/request-id.ts` | `0eb667fbd761454ae03c2d8f3fdfa8daad9b44b44cee4588c8680ceb2e3575a7` |
-| `apps/api/src/salary/salary.controller.ts` | `ffd53eeb4f19e9295b4f7332fb041221ee1a04c56a12d08bd620be2c4aa7f5ee` |
-| `apps/api/src/salary/salary.dto.ts` | `136470a7005d0ce9803b8ae5cba804b4c025761f0188050a1e9393f748a4b3a7` |
+| `apps/api/src/salary/salary.controller.ts` | `7ca977d388b527dd869009809562677c7b4663abaca78615e224eb3e84fa1aa4` |
+| `apps/api/src/salary/salary.dto.ts` | `65cb9498cde0bf7a1c8c554a8cf7df84eda64759536625e089386e34c3d0aa45` |
 | `apps/api/src/salary/salary.module.ts` | `e88ded93bd5e312f099d0a543980b94378e088a7ccb5e3261a1bc7814d82e821` |
-| `apps/api/src/salary/salary.repository.ts` | `c4cdebfe6ea32a8368d81a4dd22b8d6fc24be92115c698e34b02b0b8a2caa3fd` |
-| `apps/api/src/salary/salary.service.test.ts` | `a67a8dc8e2532a9db571a5b50f32906de47b8c30faad33b6b2bf0a4253fe0b0a` |
-| `apps/api/src/salary/salary.service.ts` | `8e70246f54acdd23290d8a35a0c5c0c09a8372ea72d15471af82d37a8f0af283` |
+| `apps/api/src/salary/salary.repository.ts` | `337b578d7dfd8e384dc4bf2284dd69ae52ed4621bc40ad72d0cf9f77632f69aa` |
+| `apps/api/src/salary/salary.service.test.ts` | `c3d55b4e900dbc802e31321ddb96b8a1dc84d52fcb306794605555f125a688c7` |
+| `apps/api/src/salary/salary.service.ts` | `8238e122b48325c3fb19f8d573459aa04ffc3b9022ea8c25b6fb3e3ce9f9c899` |
 | `apps/api/src/statistics/statistics.controller.ts` | `e4c8fb56bdb4954ab9000259f16d519ba9005d5d6858f67d02a3718fd52c7bff` |
 | `apps/api/src/statistics/statistics.dto.ts` | `3e9a16c388b98d349d6c8368f0a9861797152987fe0455e3eb7e540871ea191d` |
 | `apps/api/src/statistics/statistics.module.ts` | `4c448fc0582e8e9c4fd486c9acd5bb52975212ccf5b0f5f2c8ec7ab96ddcc278` |
@@ -120,7 +120,7 @@
 | `apps/api/src/users/users.dto.ts` | `ebf0bbc24907c047559d21381fce78afc3500843263cd6e4f523fd3cdd3288b0` |
 | `apps/api/src/users/users.module.ts` | `a60ca0d45604685d23ab7c9a59b1db8ab778827f4c492e27b9dd2bcb79998ce0` |
 | `apps/api/src/worker.ts` | `6a1ec7bb677b21e8e1b135e9347e9605d06304f8fbd13bcb726590b2d7ba2872` |
-| `apps/api/test/run-e2e.cjs` | `f740d715523ea08bca63cec91cb1e63d7ebea155eef2f05b2349d09e45ee8c17` |
+| `apps/api/test/run-e2e.cjs` | `3734b8431a2305dcfd63bde90e68d974f6c3e093d21dab43006863a8fc131893` |
 | `apps/api/tsconfig.build.json` | `2cb0671aac773e691b6ab793e3dc46d71f88a9f3830d3a351e63f9630035db46` |
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
 | `apps/api/vitest.config.ts` | `ab62155f398c51eab4e82c644ad2c943e15fe60e4ee983ecaa916f4567d93e9f` |
@@ -220,15 +220,15 @@
 | `apps/mobile-web/vite.config.ts` | `129724ce0b7ec1c2864d4b66c4ac69b6870aac940529abd144fd9f42b7f015d8` |
 | `apps/mobile-web/vitest.config.ts` | `3c85807bd84ccf059da9b4a4fc8e6f1de99bd81523e377752f90cf1a571062b6` |
 | `docker-compose.yml` | `55efa41105ec21761366f022674ddaccaddb8a40ce49192fe96cd5723905b719` |
-| `docs/architecture/API_CONTRACT.md` | `993a169d2f4f05f26dc47f801e52e33d5a347946dbd9341ea39b451fc4092102` |
+| `docs/architecture/API_CONTRACT.md` | `12383338bbd36491110a1b1f63470d076cb863d07dd976907e04f66adff79112` |
 | `docs/architecture/BACKGROUND_JOBS.md` | `829a32b84eb21c4637d98c81de7d8cafa2b9a557a9cab307a3196f41df3c20d7` |
 | `docs/architecture/DATABASE_SCHEMA.md` | `b5d6395265cf19fc159e95bae473d23e41d702700804601b2acd429c15f0f035` |
 | `docs/architecture/DEPLOYMENT.md` | `2d67d34ee544f4cca67ba06bcacf0736023b9202d7949596719d2dfd608c0bf0` |
 | `docs/architecture/NATIVE_RUNTIME.md` | `ec4cfc042cc944501aba40b9943ff32f084034b38cdc4a52f05159cf79712482` |
-| `docs/architecture/PERMISSION_MODEL.md` | `215264432dc45ee5df16b141434c16946544252e110a0a200b154bade718767b` |
-| `docs/architecture/SECURITY.md` | `daa64f1c317aec4e01598f10d39b097a5f3eb0ea917a5be4a387762df679414f` |
+| `docs/architecture/PERMISSION_MODEL.md` | `e00e16e4420320e4bb73ec101b9c7299798d055dc12db89181b7c038c6c6628c` |
+| `docs/architecture/SECURITY.md` | `392216547bf77070534b126f8cb2ccc10b76fe1f16e13fa8393b9fad9032865a` |
 | `docs/architecture/TECH_ARCHITECTURE.md` | `177ad6d69efa94178be3a151039aa5997afff900de9e633df9a49cdedd4280c6` |
-| `docs/architecture/openapi.yaml` | `484768f53b1e840e4c8bd2b56f491edc540149b1b1d591a0ee7c2332b8d03dde` |
+| `docs/architecture/openapi.yaml` | `adc5925fc0609066b7367b4be6f6c5ae9c59cce9f58b554c11dea217acd1dc23` |
 | `docs/architecture/schema.prisma` | `8951e124b86df6c27ab021a0aa9b4aeaf7a55fa8870b0d15861e5e82fb7e3770` |
 | `docs/codex/BUGFIX_PROMPT_TEMPLATE.md` | `6ad11bd918ea2fdf5052cc769d1ea20dc77d022cd9ff2dcf7fd17df5657a93ff` |
 | `docs/codex/CODEX_FIRST_PROMPT.md` | `e8094b28817a072d74a66e4398514f22525910dae91d6fbd3b54332f3117294c` |
@@ -282,23 +282,24 @@
 | `docs/plans/active/TASK-014-recurring-ui.md` | `842490fb5809f66ce481ce118c6e0215f986190435ae5d59bf9b7ca023b96dc2` |
 | `docs/plans/active/TASK-015-salary-records.md` | `49b71a72a2cb80bda6cd355d2a7b74a4c72a19c5371ffffbb265bb5c39b4d6f8` |
 | `docs/plans/active/TASK-016-salary-mark-paid.md` | `155cdadb6901e9d67f9a2ae0fe86fcae2fb2e4c2ee97e97ac03b361169668a3e` |
+| `docs/plans/active/TASK-017-salary-statistics.md` | `065d10cf0fb0926e48ae4697f352657e3def1b35f2708a1ae0d83971f1e22256` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `923c49ca0db2d43950df0f19491dfb99c3126d32212e31cb16cd433d1ec9e093` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `1399d200c38ab6fa6ff640159cae575586163833d0b717acf8842459e386c128` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
-| `docs/product/BUSINESS_RULES.md` | `527d0bcd593d75f012d4e6c6cc8055d437dab5c1b6306d806f271b6e7d686109` |
+| `docs/product/BUSINESS_RULES.md` | `e1d6d1c2ccb67c8bfaa1c6342937887f5a5c04faa58a802a8dbe6a044afa71d2` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `3d0cb7829909b749f046f6947080eed38f18ddb71b8ca583a083a649dcd8d721` |
-| `docs/project-memory/CURRENT_STATE.md` | `db5425a6edd03a858c9394f27184781e682d35c49ee35e14886682ccf51adbaa` |
-| `docs/project-memory/DECISIONS.md` | `d5b999f2f846aa0e42f4d26a9e15bff56a4e2ad68be6a781e1fafe5ec7372d18` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `dccb5a8284c1f572388c8bcfa291f27582124c6d9f524afadb04eb03291210bb` |
+| `docs/project-memory/CHANGELOG_AI.md` | `da0b354c8d924f9c10290af02ea4135033ea9602fe88e9126e95bec0bc1c5674` |
+| `docs/project-memory/CURRENT_STATE.md` | `d4c42723e87da3bfafd12ca5aed62c9d4e5e16559894f864b2e43f40d846b550` |
+| `docs/project-memory/DECISIONS.md` | `4b2a6e7ee99b43ec68b3e699666ffab8b0b85c5ef178a71599159c5bb4cc217a` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `2be7912d53dd3fbd708725543bea61ab155c40e96f09fdac2c99a775d2ca75f8` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `4a4c860338c85df077d83fbc419653e54a4f88353a47b5e90aa943cef407b789` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `44a75751cd72e2b591ac387db3f320186483eb07208f1f69f20b3be251714f35` |
+| `docs/quality/TEST_STRATEGY.md` | `8c9aa48c91c4f656e977935518ff80589628ce172c23630ccd915e0b87748ea1` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
@@ -331,7 +332,7 @@
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
 | `packages/shared-types/src/index.ts` | `9a9ed0dde440442824d05c80ff155566c7caa75f02dff7d8162dfe2e16c7ce09` |
-| `packages/shared-types/src/openapi.generated.ts` | `441c149beab1ddcc72ae0ddf454c6ee74d2729c99bcc4809c8edd95c32e7cac7` |
+| `packages/shared-types/src/openapi.generated.ts` | `cebcf6988b034cb69ca50f83723e1559f03c12aac242d94057d0cd476ca1180c` |
 | `packages/shared-types/tsconfig.build.json` | `f795af963d7ddec6a6d07115e2b60592309fb5b1473ddfe2525c3b0f2d0a0790` |
 | `packages/shared-types/tsconfig.json` | `57977fbaa04c2c31948710502fc8168cd596259bdfab765db00c8ff9851ba7ad` |
 | `packages/ui-tokens/package.json` | `ccddee7125df376f2a8ae9205929c9c33436c31cbcd4673df883c8e111d7e1ad` |

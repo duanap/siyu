@@ -834,7 +834,7 @@ paths:
       operationId: getSalarySummary
       summary: 获取本人年度工资汇总
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/SalaryAnnualSummaryOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
   /salary/balance:
@@ -843,7 +843,7 @@ paths:
       operationId: getSalaryBalance
       summary: 获取本人工资周期余额
       responses:
-        '200': { $ref: '#/components/responses/StatisticsOk' }
+        '200': { $ref: '#/components/responses/SalaryBalanceOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /saving-goals:
     get:
@@ -1215,11 +1215,16 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/StatisticsMembersResponse' }
-    StatisticsOk:
-      description: 尚未细化的统计查询成功
+    SalaryAnnualSummaryOk:
+      description: 本人年度工资汇总查询成功
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/StatisticsResponse' }
+          schema: { $ref: '#/components/schemas/SalaryAnnualSummaryResponse' }
+    SalaryBalanceOk:
+      description: 本人工资周期余额查询成功
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/SalaryBalanceResponse' }
     CsvExport:
       description: CSV 文件
       headers:
@@ -1278,6 +1283,12 @@ components:
       format: int64
       minimum: 0
       maximum: 9007199254740991
+    SignedCent:
+      type: integer
+      format: int64
+      minimum: -9007199254740991
+      maximum: 9007199254740991
+      description: 可为负数的整数分，不得超出 JavaScript 安全整数。
     BusinessDate:
       type: string
       format: date
@@ -1581,6 +1592,93 @@ components:
         itemName: { type: string, minLength: 1, maxLength: 100 }
         amountCent: { $ref: '#/components/schemas/Cent' }
         sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    SalaryMonthlySummary:
+      type: object
+      additionalProperties: false
+      required:
+        [month, grossCent, deductionCent, netCent, bonusCent, pensionInsuranceCent, medicalInsuranceCent, unemploymentInsuranceCent, housingProvidentFundCent, incomeTaxCent]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        grossCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        deductionCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        netCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        bonusCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        pensionInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        medicalInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        unemploymentInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        housingProvidentFundCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        incomeTaxCent: { $ref: '#/components/schemas/NonNegativeCent' }
+    SalaryAnnualSummary:
+      type: object
+      additionalProperties: false
+      required:
+        [year, recordCount, recordedMonthCount, grossCent, deductionCent, netCent, averageMonthlyNetCent, bonusCent, pensionInsuranceCent, medicalInsuranceCent, unemploymentInsuranceCent, housingProvidentFundCent, incomeTaxCent, items, officialBalanceDisclaimer]
+      properties:
+        year: { type: integer, minimum: 2000, maximum: 9999 }
+        recordCount: { type: integer, minimum: 0 }
+        recordedMonthCount: { type: integer, minimum: 0, maximum: 12 }
+        grossCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        deductionCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        netCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        averageMonthlyNetCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        bonusCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        pensionInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        medicalInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        unemploymentInsuranceCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        housingProvidentFundCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        incomeTaxCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        items:
+          type: array
+          minItems: 12
+          maxItems: 12
+          items: { $ref: '#/components/schemas/SalaryMonthlySummary' }
+        officialBalanceDisclaimer:
+          const: true
+          description: 客户端必须提示专项数据来自用户工资记录，不代表官方账户余额。
+    SalaryAnnualSummaryResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/SalaryAnnualSummary' }
+        requestId: { type: string }
+    SalaryBalance:
+      type: object
+      additionalProperties: false
+      required:
+        [available, asOfDate, salaryRecordId, profileId, salaryMonth, paidDate, nextExpectedPayDate, periodStartDate, periodEndDate, netSalaryCent, fixedExpenseCent, dailyExpenseCent, totalExpenseCent, remainingCent, remainingDays, dailyAvailableCent]
+      properties:
+        available: { type: boolean }
+        asOfDate: { $ref: '#/components/schemas/BusinessDate' }
+        salaryRecordId:
+          anyOf: [{ type: string, format: uuid }, { type: 'null' }]
+        profileId:
+          anyOf: [{ type: string, format: uuid }, { type: 'null' }]
+        salaryMonth:
+          anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }]
+        paidDate:
+          anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }]
+        nextExpectedPayDate:
+          anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }]
+        periodStartDate:
+          anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }]
+        periodEndDate:
+          anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }]
+        netSalaryCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        fixedExpenseCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        dailyExpenseCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        totalExpenseCent: { $ref: '#/components/schemas/NonNegativeCent' }
+        remainingCent: { $ref: '#/components/schemas/SignedCent' }
+        remainingDays: { type: integer, minimum: 0 }
+        dailyAvailableCent:
+          anyOf: [{ $ref: '#/components/schemas/SignedCent' }, { type: 'null' }]
+    SalaryBalanceResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data: { $ref: '#/components/schemas/SalaryBalance' }
+        requestId: { type: string }
     SavingGoal:
       type: object
       required: [id, ledgerId, creatorUserId, name, targetCent, initialCent, savedCent, status]
@@ -1888,21 +1986,6 @@ components:
               amountCent: { type: integer, minimum: 0 }
               basisPoints: { type: integer, minimum: 0, maximum: 10000 }
               entryCount: { type: integer, minimum: 0 }
-    StatisticsResponse:
-      type: object
-      required: [success, data, requestId]
-      properties:
-        success: { const: true }
-        data:
-          type: object
-          description: 尚未实现端点的占位统计字段；所有金额字段以 Cent 结尾。
-          additionalProperties:
-            anyOf:
-              - { type: integer }
-              - { type: number }
-              - { type: string }
-              - { type: array }
-        requestId: { type: string }
     ErrorResponse:
       type: object
       required: [success, code, message, details, requestId]

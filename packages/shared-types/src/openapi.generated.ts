@@ -1025,6 +1025,11 @@ export interface components {
     Cent: number;
     /** Format: int64 */
     NonNegativeCent: number;
+    /**
+     * Format: int64
+     * @description 可为负数的整数分，不得超出 JavaScript 安全整数。
+     */
+    SignedCent: number;
     /** Format: date */
     BusinessDate: string;
     /**
@@ -1323,6 +1328,69 @@ export interface components {
       amountCent: components['schemas']['Cent'];
       sortOrder: number;
     };
+    SalaryMonthlySummary: {
+      month: string;
+      grossCent: components['schemas']['NonNegativeCent'];
+      deductionCent: components['schemas']['NonNegativeCent'];
+      netCent: components['schemas']['NonNegativeCent'];
+      bonusCent: components['schemas']['NonNegativeCent'];
+      pensionInsuranceCent: components['schemas']['NonNegativeCent'];
+      medicalInsuranceCent: components['schemas']['NonNegativeCent'];
+      unemploymentInsuranceCent: components['schemas']['NonNegativeCent'];
+      housingProvidentFundCent: components['schemas']['NonNegativeCent'];
+      incomeTaxCent: components['schemas']['NonNegativeCent'];
+    };
+    SalaryAnnualSummary: {
+      year: number;
+      recordCount: number;
+      recordedMonthCount: number;
+      grossCent: components['schemas']['NonNegativeCent'];
+      deductionCent: components['schemas']['NonNegativeCent'];
+      netCent: components['schemas']['NonNegativeCent'];
+      averageMonthlyNetCent: components['schemas']['NonNegativeCent'];
+      bonusCent: components['schemas']['NonNegativeCent'];
+      pensionInsuranceCent: components['schemas']['NonNegativeCent'];
+      medicalInsuranceCent: components['schemas']['NonNegativeCent'];
+      unemploymentInsuranceCent: components['schemas']['NonNegativeCent'];
+      housingProvidentFundCent: components['schemas']['NonNegativeCent'];
+      incomeTaxCent: components['schemas']['NonNegativeCent'];
+      items: components['schemas']['SalaryMonthlySummary'][];
+      /**
+       * @description 客户端必须提示专项数据来自用户工资记录，不代表官方账户余额。
+       * @constant
+       */
+      officialBalanceDisclaimer: true;
+    };
+    SalaryAnnualSummaryResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SalaryAnnualSummary'];
+      requestId: string;
+    };
+    SalaryBalance: {
+      available: boolean;
+      asOfDate: components['schemas']['BusinessDate'];
+      salaryRecordId: string | null;
+      profileId: string | null;
+      salaryMonth: components['schemas']['BusinessDate'] | null;
+      paidDate: components['schemas']['BusinessDate'] | null;
+      nextExpectedPayDate: components['schemas']['BusinessDate'] | null;
+      periodStartDate: components['schemas']['BusinessDate'] | null;
+      periodEndDate: components['schemas']['BusinessDate'] | null;
+      netSalaryCent: components['schemas']['NonNegativeCent'];
+      fixedExpenseCent: components['schemas']['NonNegativeCent'];
+      dailyExpenseCent: components['schemas']['NonNegativeCent'];
+      totalExpenseCent: components['schemas']['NonNegativeCent'];
+      remainingCent: components['schemas']['SignedCent'];
+      remainingDays: number;
+      dailyAvailableCent: components['schemas']['SignedCent'] | null;
+    };
+    SalaryBalanceResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SalaryBalance'];
+      requestId: string;
+    };
     SavingGoal: {
       /** Format: uuid */
       id: string;
@@ -1572,15 +1640,6 @@ export interface components {
         basisPoints: number;
         entryCount: number;
       }[];
-    };
-    StatisticsResponse: {
-      /** @constant */
-      success: true;
-      /** @description 尚未实现端点的占位统计字段；所有金额字段以 Cent 结尾。 */
-      data: {
-        [key: string]: number | string | unknown[];
-      };
-      requestId: string;
     };
     ErrorResponse: {
       /** @constant */
@@ -2051,13 +2110,22 @@ export interface components {
         'application/json': components['schemas']['StatisticsMembersResponse'];
       };
     };
-    /** @description 尚未细化的统计查询成功 */
-    StatisticsOk: {
+    /** @description 本人年度工资汇总查询成功 */
+    SalaryAnnualSummaryOk: {
       headers: {
         [name: string]: unknown;
       };
       content: {
-        'application/json': components['schemas']['StatisticsResponse'];
+        'application/json': components['schemas']['SalaryAnnualSummaryResponse'];
+      };
+    };
+    /** @description 本人工资周期余额查询成功 */
+    SalaryBalanceOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryBalanceResponse'];
       };
     };
     /** @description CSV 文件 */
@@ -3194,7 +3262,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['SalaryAnnualSummaryOk'];
       400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
     };
@@ -3208,7 +3276,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['StatisticsOk'];
+      200: components['responses']['SalaryBalanceOk'];
       401: components['responses']['Unauthorized'];
     };
   };
