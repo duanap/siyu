@@ -9,6 +9,7 @@ const request = require('supertest');
 const { createApp } = require('../dist/app');
 const { loadEnvironmentFile, readConfig } = require('../dist/config');
 const { PrismaService } = require('../dist/database/prisma.service');
+const { RecurringService } = require('../dist/recurring/recurring.service');
 
 let activeApp;
 let activePrisma;
@@ -828,7 +829,7 @@ async function main() {
       amountCent: 400n,
       categoryId: systemCategoryId,
       businessDate: new Date('2026-07-14T00:00:00.000Z'),
-      sourceType: 'RECURRING_RUN',
+      sourceType: 'SALARY',
       sourceId: randomUUID(),
       idempotencyKey: `managed-entry-${suffix}`,
       createRequestHash: '8'.repeat(64),
@@ -1098,6 +1099,273 @@ async function main() {
     true,
   );
 
+  const recurring = app.get(RecurringService);
+  const autoRuleKey = `recurring-auto-${suffix}`;
+  const autoRulePayload = {
+    ledgerId: personalLedger.id,
+    name: '每月住房支出',
+    entryType: 'EXPENSE',
+    amountCent: 188800,
+    categoryId: personalExpenseCategory.id,
+    frequency: 'MONTHLY',
+    intervalValue: 1,
+    startDate: '2026-01-31',
+    totalOccurrences: 1,
+    generationMode: 'AUTO',
+    reminderDaysBefore: 2,
+    idempotencyKey: autoRuleKey,
+  };
+  const autoRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(autoRulePayload)
+    .expect(201);
+  const autoRuleId = autoRule.body.data.id;
+  assert.equal(autoRule.body.data.canEdit, true);
+  assert.equal(
+    autoRule.body.data.nextRunDate.endsWith('-31') ||
+      autoRule.body.data.nextRunDate.endsWith('-30') ||
+      autoRule.body.data.nextRunDate.endsWith('-28') ||
+      autoRule.body.data.nextRunDate.endsWith('-29'),
+    true,
+  );
+  const autoReplay = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(autoRulePayload)
+    .expect(201);
+  assert.equal(autoReplay.body.data.id, autoRuleId);
+  const recurringCreateConflict = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...autoRulePayload, name: '不同规则' })
+    .expect(409);
+  assert.equal(recurringCreateConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+  await request(server)
+    .get(`/api/v1/recurring-rules/${autoRuleId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+
+  const autoScheduledDate = new Date(`${autoRule.body.data.nextRunDate}T00:00:00.000Z`);
+  await Promise.all([
+    recurring.materializeDueRule(autoRuleId, autoScheduledDate),
+    recurring.materializeDueRule(autoRuleId, autoScheduledDate),
+  ]);
+  const generatedRuns = await prisma.recurringRun.findMany({ where: { ruleId: autoRuleId } });
+  assert.equal(generatedRuns.length, 1);
+  assert.equal(generatedRuns[0].status, 'GENERATED');
+  assert.equal(
+    await prisma.entry.count({
+      where: { sourceType: 'RECURRING_RUN', sourceId: generatedRuns[0].id },
+    }),
+    1,
+  );
+  const completedAutoRule = await prisma.recurringRule.findUniqueOrThrow({
+    where: { id: autoRuleId },
+  });
+  assert.equal(completedAutoRule.completedOccurrences, 1);
+  assert.equal(completedAutoRule.status, 'COMPLETED');
+  assert.equal(completedAutoRule.nextRunDate, null);
+
+  const confirmRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: '每月电费',
+      amountCent: 30000,
+      totalOccurrences: 2,
+      generationMode: 'CONFIRM',
+      idempotencyKey: `recurring-confirm-${suffix}`,
+    })
+    .expect(201);
+  const confirmScheduledDate = new Date(`${confirmRule.body.data.nextRunDate}T00:00:00.000Z`);
+  const pendingRun = await recurring.materializeDueRule(
+    confirmRule.body.data.id,
+    confirmScheduledDate,
+  );
+  assert.equal(pendingRun.status, 'PENDING');
+  const lockedSchedule = await request(server)
+    .patch(`/api/v1/recurring-rules/${confirmRule.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ frequency: 'YEARLY' })
+    .expect(409);
+  assert.equal(lockedSchedule.body.code, 'RECURRING_SCHEDULE_LOCKED');
+  const confirmKey = `confirm-run-${suffix}`;
+  const concurrentConfirmations = await Promise.all([
+    request(server)
+      .post(`/api/v1/recurring-runs/${pendingRun.id}/confirm`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send({ amountCent: 32109, idempotencyKey: confirmKey }),
+    request(server)
+      .post(`/api/v1/recurring-runs/${pendingRun.id}/confirm`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send({ amountCent: 32109, idempotencyKey: confirmKey }),
+  ]);
+  assert.deepEqual(
+    concurrentConfirmations.map((response) => response.status),
+    [200, 200],
+  );
+  assert.equal(
+    concurrentConfirmations[0].body.data.entryId,
+    concurrentConfirmations[1].body.data.entryId,
+  );
+  assert.equal(concurrentConfirmations[0].body.data.amountCent, 32109);
+  const confirmedEntry = await prisma.entry.findUniqueOrThrow({
+    where: { id: concurrentConfirmations[0].body.data.entryId },
+  });
+  assert.equal(Number(confirmedEntry.amountCent), 32109);
+  assert.equal(
+    Number(
+      (await prisma.recurringRule.findUniqueOrThrow({ where: { id: confirmRule.body.data.id } }))
+        .amountCent,
+    ),
+    30000,
+  );
+  const changedConfirmation = await request(server)
+    .post(`/api/v1/recurring-runs/${pendingRun.id}/confirm`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ amountCent: 32110, idempotencyKey: confirmKey })
+    .expect(409);
+  assert.equal(changedConfirmation.body.code, 'IDEMPOTENCY_CONFLICT');
+  await request(server)
+    .post(`/api/v1/recurring-rules/${confirmRule.body.data.id}/pause`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const completedWhilePaused = await request(server)
+    .patch(`/api/v1/recurring-rules/${confirmRule.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ totalOccurrences: 1 })
+    .expect(200);
+  assert.equal(completedWhilePaused.body.data.status, 'COMPLETED');
+  assert.equal(completedWhilePaused.body.data.nextRunDate, null);
+
+  const skipRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: '可跳过订阅',
+      amountCent: 9900,
+      generationMode: 'CONFIRM',
+      idempotencyKey: `recurring-skip-${suffix}`,
+    })
+    .expect(201);
+  const skipRun = await recurring.materializeDueRule(
+    skipRule.body.data.id,
+    new Date(`${skipRule.body.data.nextRunDate}T00:00:00.000Z`),
+  );
+  const skipped = await request(server)
+    .post(`/api/v1/recurring-runs/${skipRun.id}/skip`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(skipped.body.data.status, 'SKIPPED');
+  await request(server)
+    .post(`/api/v1/recurring-runs/${skipRun.id}/skip`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(
+    await prisma.entry.count({ where: { sourceType: 'RECURRING_RUN', sourceId: skipRun.id } }),
+    0,
+  );
+
+  const retryRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: '失败后重试规则',
+      idempotencyKey: `recurring-retry-${suffix}`,
+    })
+    .expect(201);
+  await prisma.category.update({
+    where: { id: personalExpenseCategory.id },
+    data: { isEnabled: false },
+  });
+  await assert.rejects(
+    recurring.materializeDueRule(
+      retryRule.body.data.id,
+      new Date(`${retryRule.body.data.nextRunDate}T00:00:00.000Z`),
+    ),
+    /RECURRING_CATEGORY_DISABLED/,
+  );
+  const failedRun = await prisma.recurringRun.findFirstOrThrow({
+    where: { ruleId: retryRule.body.data.id },
+  });
+  assert.equal(failedRun.status, 'FAILED');
+  assert.equal(failedRun.attempts, 1);
+  const failedScheduleLock = await request(server)
+    .patch(`/api/v1/recurring-rules/${retryRule.body.data.id}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ frequency: 'YEARLY' })
+    .expect(409);
+  assert.equal(failedScheduleLock.body.code, 'RECURRING_SCHEDULE_LOCKED');
+  await prisma.category.update({
+    where: { id: personalExpenseCategory.id },
+    data: { isEnabled: true },
+  });
+  const retriedRun = await recurring.materializeDueRule(
+    retryRule.body.data.id,
+    new Date(`${retryRule.body.data.nextRunDate}T00:00:00.000Z`),
+  );
+  assert.equal(retriedRun.id, failedRun.id);
+  assert.equal(retriedRun.status, 'GENERATED');
+  assert.equal(retriedRun.attempts, 2);
+
+  const coupleRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      name: '共同房租',
+      entryType: 'EXPENSE',
+      amountCent: 360000,
+      categoryId: systemCategoryId,
+      frequency: 'MONTHLY',
+      startDate: '2026-07-01',
+      generationMode: 'CONFIRM',
+      idempotencyKey: `couple-recurring-${suffix}`,
+    })
+    .expect(201);
+  await request(server)
+    .get(`/api/v1/recurring-rules/${coupleRule.body.data.id}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  await request(server)
+    .patch(`/api/v1/recurring-rules/${coupleRule.body.data.id}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ name: '成员越权修改' })
+    .expect(403);
+  const memberRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({
+      ledgerId: coupleLedgerId,
+      name: '成员创建订阅',
+      entryType: 'EXPENSE',
+      amountCent: 2500,
+      categoryId: memberCategory.body.data.id,
+      frequency: 'YEARLY',
+      startDate: '2024-02-29',
+      generationMode: 'CONFIRM',
+      idempotencyKey: `member-recurring-${suffix}`,
+    })
+    .expect(201);
+  await request(server)
+    .post(`/api/v1/recurring-rules/${memberRule.body.data.id}/pause`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const resumedMemberRule = await request(server)
+    .post(`/api/v1/recurring-rules/${memberRule.body.data.id}/resume`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(resumedMemberRule.body.data.status, 'ACTIVE');
+  const visibleRuns = await request(server)
+    .get('/api/v1/recurring-runs')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(visibleRuns.body.data.total >= 3, true);
+
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -1180,7 +1448,9 @@ async function main() {
     .expect(200);
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
-  console.log('API health, authentication, couple ledger, category, and Entry E2E passed.');
+  console.log(
+    'API health, authentication, couple ledger, category, Entry, debt, and recurring E2E passed.',
+  );
 }
 
 main().catch(async (error) => {

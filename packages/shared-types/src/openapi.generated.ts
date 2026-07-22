@@ -1201,18 +1201,46 @@ export interface components {
       /** Format: uuid */
       id: string;
       /** Format: uuid */
+      ownerUserId: string;
+      /** Format: uuid */
       ledgerId: string;
       name: string;
       entryType: components['schemas']['EntryType'];
       amountCent: components['schemas']['Cent'];
       /** Format: uuid */
       categoryId: string;
+      category: components['schemas']['EntryCategorySummary'];
       /** @enum {string} */
       frequency: 'MONTHLY' | 'YEARLY';
+      intervalValue: number;
+      startDate: components['schemas']['BusinessDate'];
+      endDate: components['schemas']['BusinessDate'] | null;
+      totalOccurrences: number | null;
+      completedOccurrences: number;
+      nextRunDate: components['schemas']['BusinessDate'] | null;
       /** @enum {string} */
       generationMode: 'AUTO' | 'CONFIRM';
       /** @enum {string} */
       status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+      reminderDaysBefore: number;
+      readonly canEdit: boolean;
+      readonly canPause: boolean;
+      readonly canResume: boolean;
+      readonly canDelete: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
+    };
+    RecurringRuleSummary: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      ledgerId: string;
+      /** Format: uuid */
+      ownerUserId: string;
+      name: string;
+      entryType: components['schemas']['EntryType'];
+      /** @enum {string} */
+      generationMode: 'AUTO' | 'CONFIRM';
     };
     RecurringRun: {
       /** Format: uuid */
@@ -1223,9 +1251,16 @@ export interface components {
       amountCent: components['schemas']['Cent'];
       status: components['schemas']['RecurringRunStatus'];
       /** Format: uuid */
-      entryId?: string | null;
+      entryId: string | null;
       attempts: number;
-      lastError?: string | null;
+      lastError: string | null;
+      lastAttemptAt: components['schemas']['Timestamp'] | null;
+      confirmedAt: components['schemas']['Timestamp'] | null;
+      readonly canConfirm: boolean;
+      readonly canSkip: boolean;
+      rule: components['schemas']['RecurringRuleSummary'];
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
     };
     SalaryProfile: {
       /** Format: uuid */
@@ -1636,6 +1671,7 @@ export interface components {
       generationMode: 'AUTO' | 'CONFIRM';
       /** @default 1 */
       reminderDaysBefore: number;
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateRecurringRuleRequest: {
       name?: string;
@@ -2698,6 +2734,7 @@ export interface operations {
       201: components['responses']['ResourceCreated'];
       400: components['responses']['ValidationFailed'];
       403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
     };
   };
   getRecurringRule: {

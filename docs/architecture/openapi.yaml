@@ -607,6 +607,7 @@ paths:
         '201': { $ref: '#/components/responses/ResourceCreated' }
         '400': { $ref: '#/components/responses/ValidationFailed' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
   /recurring-rules/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -1397,20 +1398,47 @@ components:
         createdAt: { type: string, format: date-time, readOnly: true }
     RecurringRule:
       type: object
-      required: [id, ledgerId, name, entryType, amountCent, categoryId, frequency, generationMode, status]
+      required:
+        [id, ownerUserId, ledgerId, name, entryType, amountCent, categoryId, category, frequency, intervalValue, startDate, endDate, totalOccurrences, completedOccurrences, nextRunDate, generationMode, status, reminderDaysBefore, canEdit, canPause, canResume, canDelete, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
+        ownerUserId: { type: string, format: uuid }
         ledgerId: { type: string, format: uuid }
         name: { type: string, minLength: 1, maxLength: 100 }
         entryType: { $ref: '#/components/schemas/EntryType' }
         amountCent: { $ref: '#/components/schemas/Cent' }
         categoryId: { type: string, format: uuid }
+        category: { $ref: '#/components/schemas/EntryCategorySummary' }
         frequency: { type: string, enum: [MONTHLY, YEARLY] }
+        intervalValue: { type: integer, minimum: 1, maximum: 1200 }
+        startDate: { $ref: '#/components/schemas/BusinessDate' }
+        endDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
+        totalOccurrences: { type: [integer, 'null'], minimum: 1 }
+        completedOccurrences: { type: integer, minimum: 0 }
+        nextRunDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         generationMode: { type: string, enum: [AUTO, CONFIRM] }
         status: { type: string, enum: [ACTIVE, PAUSED, COMPLETED, CANCELLED] }
+        reminderDaysBefore: { type: integer, minimum: 0, maximum: 365 }
+        canEdit: { type: boolean, readOnly: true }
+        canPause: { type: boolean, readOnly: true }
+        canResume: { type: boolean, readOnly: true }
+        canDelete: { type: boolean, readOnly: true }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+    RecurringRuleSummary:
+      type: object
+      required: [id, ledgerId, ownerUserId, name, entryType, generationMode]
+      properties:
+        id: { type: string, format: uuid }
+        ledgerId: { type: string, format: uuid }
+        ownerUserId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        entryType: { $ref: '#/components/schemas/EntryType' }
+        generationMode: { type: string, enum: [AUTO, CONFIRM] }
     RecurringRun:
       type: object
-      required: [id, ruleId, scheduledDate, amountCent, status, attempts]
+      required:
+        [id, ruleId, scheduledDate, amountCent, status, entryId, attempts, lastError, lastAttemptAt, confirmedAt, canConfirm, canSkip, rule, createdAt, updatedAt]
       properties:
         id: { type: string, format: uuid }
         ruleId: { type: string, format: uuid }
@@ -1419,7 +1447,14 @@ components:
         status: { $ref: '#/components/schemas/RecurringRunStatus' }
         entryId: { type: [string, 'null'], format: uuid }
         attempts: { type: integer, minimum: 0 }
-        lastError: { type: [string, 'null'] }
+        lastError: { type: [string, 'null'], maxLength: 500 }
+        lastAttemptAt: { anyOf: [{ $ref: '#/components/schemas/Timestamp' }, { type: 'null' }] }
+        confirmedAt: { anyOf: [{ $ref: '#/components/schemas/Timestamp' }, { type: 'null' }] }
+        canConfirm: { type: boolean, readOnly: true }
+        canSkip: { type: boolean, readOnly: true }
+        rule: { $ref: '#/components/schemas/RecurringRuleSummary' }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
     SalaryProfile:
       type: object
       required: [id, name, payDay, defaultSyncEntry]
@@ -1923,7 +1958,7 @@ components:
         note: { type: [string, 'null'], maxLength: 500 }
     CreateRecurringRuleRequest:
       type: object
-      required: [ledgerId, name, entryType, amountCent, categoryId, frequency, startDate, generationMode]
+      required: [ledgerId, name, entryType, amountCent, categoryId, frequency, startDate, generationMode, idempotencyKey]
       additionalProperties: false
       properties:
         ledgerId: { type: string, format: uuid }
@@ -1932,12 +1967,13 @@ components:
         amountCent: { $ref: '#/components/schemas/Cent' }
         categoryId: { type: string, format: uuid }
         frequency: { type: string, enum: [MONTHLY, YEARLY] }
-        intervalValue: { type: integer, minimum: 1, default: 1 }
+        intervalValue: { type: integer, minimum: 1, maximum: 1200, default: 1 }
         startDate: { $ref: '#/components/schemas/BusinessDate' }
         endDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         totalOccurrences: { type: [integer, 'null'], minimum: 1 }
         generationMode: { type: string, enum: [AUTO, CONFIRM] }
-        reminderDaysBefore: { type: integer, minimum: 0, default: 1 }
+        reminderDaysBefore: { type: integer, minimum: 0, maximum: 365, default: 1 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
     UpdateRecurringRuleRequest:
       type: object
       minProperties: 1
@@ -1948,12 +1984,12 @@ components:
         amountCent: { $ref: '#/components/schemas/Cent' }
         categoryId: { type: string, format: uuid }
         frequency: { type: string, enum: [MONTHLY, YEARLY] }
-        intervalValue: { type: integer, minimum: 1 }
+        intervalValue: { type: integer, minimum: 1, maximum: 1200 }
         startDate: { $ref: '#/components/schemas/BusinessDate' }
         endDate: { anyOf: [{ $ref: '#/components/schemas/BusinessDate' }, { type: 'null' }] }
         totalOccurrences: { type: [integer, 'null'], minimum: 1 }
         generationMode: { type: string, enum: [AUTO, CONFIRM] }
-        reminderDaysBefore: { type: integer, minimum: 0 }
+        reminderDaysBefore: { type: integer, minimum: 0, maximum: 365 }
     ConfirmRecurringRunRequest:
       type: object
       required: [amountCent, idempotencyKey]
