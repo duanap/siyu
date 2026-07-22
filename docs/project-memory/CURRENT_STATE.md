@@ -1,12 +1,12 @@
 # 当前项目状态
 
 更新时间：2026-07-22
-文档版本：v1.25.0
-代码状态：TASK-020 攒钱目标移动端页面已完成本地交付候选，等待提交、PR 与远程 CI
+文档版本：v1.26.0
+代码状态：TASK-020 攒钱目标移动端页面已合并、CI 通过并正式关闭；下一项为 TASK-021 站内通知
 
 ## 当前阶段
 
-M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，TASK-020 已完成本地开发与视觉验收。
+M3、M4、M5、M6、M7 已完成并合入 `main`；TASK-020 已正式关闭，下一项为 M8 的 TASK-021。
 
 ## 已完成
 
@@ -105,6 +105,9 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
   `canManage/canContribute/canEdit/canDelete`，操作成功后重取详情而不本地猜测汇总。
 - AC-SAVING-012 至 014 已固化移动端分页、幂等、能力字段、删除确认、状态和视觉验收边界；本任务没有修改
   攒钱 API、数据库、迁移、Worker、其他业务行为或生产依赖。
+- TASK-020 功能提交 `f1e69b99c716cfbc9b0b48aba5c0694799d282fb` 经 PR #28 合入 `main`，合并提交为
+  `4f88b8b20fec2b0790ebd84f5d863ae6cdf95a34`；PR CI Run `29937823275` 与 main push CI Run
+  `29938160014` 的 `quality`、`database`、`secret-scan` 全部通过，TASK-020 正式关闭。
 
 ## 明确未实现
 
@@ -211,6 +214,8 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
   OpenAPI 74/74、Compose、完整 PostgreSQL/Redis E2E、生产构建、文档、清单和差异检查全部通过。
 - 隔离 PostgreSQL 17 的 11 个迁移无待应用；认证、情侣、分类、Entry、借贷、周期、工资和攒钱完整 E2E
   通过。依赖审计无已知漏洞；宿主 Redis 6.0.16 仅有最低 6.2 的非阻断提示，Compose/CI 使用 Redis 7.4。
+- TASK-020 PR CI Run `29937823275` 与 main push CI Run `29938160014` 的 `quality`、`database`、
+  `secret-scan` 全部通过；两轮 `quality` 均执行完整测试、迁移、PostgreSQL/Redis E2E、构建和依赖审计。
 - 第十一迁移空库/历史升级、重复部署、status、零 diff、26 模型 introspection、47 个关键索引、73 个自定义
   约束和 15 个删除策略通过；新增 E2E 覆盖目标幂等、权限、并发贡献、状态回退、删除留痕和成员退出隔离。
 - OpenAPI 74/74 覆盖与具体统计响应 Schema 生成通过；手机入口 294 KB，统计图表独立懒加载。
@@ -226,7 +231,7 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
 
 ## 下一项动作
 
-完成 TASK-020 全仓复验、提交、PR、远程 CI、合并和正式关闭，随后进入 TASK-021 站内通知。
+进入 TASK-021 站内通知，先冻结通知读取、已读、未读计数和隐私边界，再建立跨 API/移动端 ExecPlan。
 
 ## 待负责人确认
 
