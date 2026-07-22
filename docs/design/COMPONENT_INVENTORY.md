@@ -43,6 +43,7 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | RecurringRunCard | 周期列表与详情的实例状态、计划日、金额和确认/跳过入口 |
 | RecurringRuleForm | 周期规则创建与详情编辑共享表单 |
 | SavingGoalCard | 首页、目标列表 |
+| SavingGoalForm | 目标创建和 OWNER 详情编辑，精确元分字段、日期、封面网址与备注 |
 | CoupleMemberSummary | 情侣首页、统计 |
 | CoupleLedgerManager | 情侣账本创建、邀请、成员、所有权和解散 |
 | SalaryItemEditor | 工资档案模板、月度工资项目和只读到账明细 |

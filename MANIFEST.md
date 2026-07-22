@@ -1,8 +1,8 @@
 # 交付清单
 
-生成日期：2026-07-22
+生成日期：2026-07-23
 
-文件数量（不含本清单、依赖和构建产物）：387
+文件数量（不含本清单、依赖和构建产物）：409
 
 | 文件 | SHA-256 |
 |---|---|
@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `051489837a76c1d4b25e8e6029c23566a6649ecdbd7fa9cffc7b41be62f5f33e` |
+| `VALIDATION_REPORT.md` | `7709986f8c423b5335cbb47cfb22cd714cc490f19738d9d6851ac42518608e5a` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -171,6 +171,8 @@
 | `apps/mobile-web/src/components/SalaryAnnualChart.vue` | `05488c6a00d0d20f7711ab16c03f07a19fa10b248d7c677a7d4d948e23ad8b9a` |
 | `apps/mobile-web/src/components/SalaryBalanceCard.vue` | `7a64040242e26d95743fb00ae4d0a2f07343ed56fadb96e20cda80094e2eea4e` |
 | `apps/mobile-web/src/components/SalaryItemEditor.vue` | `96ac5c8cdf49abc328b0c4ca3f6c883d80568abd1a5049284d0b277586984c74` |
+| `apps/mobile-web/src/components/SavingGoalCard.vue` | `e5951ed71c9131824703abbd1296cdb49c5f4b9ee2d9ff21acb9bf207a17cbf4` |
+| `apps/mobile-web/src/components/SavingGoalForm.vue` | `13fb63094f032ebb9ca5f082663c23f345e10ea8cefbe44ba2a0dfe217328127` |
 | `apps/mobile-web/src/components/StatisticsTrendChart.vue` | `4d37314f3a5b8b2fbe5b32f567614e58fa5fdbb346034d8973c4c379d51de963` |
 | `apps/mobile-web/src/couple-ledger.test.ts` | `b4926cbd16685646f42cd235cae82cf5b32b7de193ae728ef03c337d18fbad3b` |
 | `apps/mobile-web/src/couple-ledger.ts` | `f4885015f9437b3657f8a8e516607715d2b8340d8b697b261e638bd2952ab749` |
@@ -188,14 +190,16 @@
 | `apps/mobile-web/src/main.ts` | `ecffa4d5946ee949417966117f2a7809a406f6aa863bcd1bdc327c473f730a23` |
 | `apps/mobile-web/src/recurring.test.ts` | `5cecaacce8cbe00e6d8b5828836e61c7bb7188a6e12395c8d28e3576b1df6fc1` |
 | `apps/mobile-web/src/recurring.ts` | `dfdd553cfa59361935b1c9d8c24eb1ec24b661a9f056981111e2d1777ea0983e` |
-| `apps/mobile-web/src/router.ts` | `e5a3ab5fd4dd2466c72bd3fe9bc3bcdfd09702e7553a5aa825ed1e6829bafc25` |
+| `apps/mobile-web/src/router.ts` | `33bf49db5e3824073c91b65a310f26bc7dc2b82d1b9d6922d02fd1faad2ffba5` |
 | `apps/mobile-web/src/salary.test.ts` | `e81ad8868f0e48f547df5692fa6f34b2e86a44f843ca694d5d9e028775c7fe6c` |
 | `apps/mobile-web/src/salary.ts` | `8f1d83120dfed8121e38095ea1f95d0cd42c39eac93e03de3bcb943c3db5d10f` |
+| `apps/mobile-web/src/saving-goals.test.ts` | `6f0acaadf3be39f711684cffda78d4c1a3860f286a477ef43a6f9aec6896af94` |
+| `apps/mobile-web/src/saving-goals.ts` | `810a9d99956f7e1193d9faf5bcb1edbd3dd7b4f2f0a44615456435a1ab58feba` |
 | `apps/mobile-web/src/statistics.test.ts` | `7e6c44ebad4b262ad7a71cdf78b37a5dc7f316241958ede595dbf041eba77671` |
 | `apps/mobile-web/src/statistics.ts` | `dc03bcabc56442a978ee74f85551f1c8cae2b3354c4f8987ab6201553973c3ab` |
 | `apps/mobile-web/src/theme.ts` | `ee1933f52332978567715670203561a9ae22c2531e97450fbf34cd3432aebc8a` |
 | `apps/mobile-web/src/use-api-session.ts` | `af50f38af2b460ec84be0e32e43b9bc4d4bf1e1ee7269f0a814b71a7c33db8d6` |
-| `apps/mobile-web/src/views/AccountView.vue` | `0e3f7082ca1aa976541739743196c909bf46cf019510a4bba839981364c319f4` |
+| `apps/mobile-web/src/views/AccountView.vue` | `63cb7face807681dd2003b126aadacb9cd36f59c8e1fd5afeae759e7c78b2792` |
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
@@ -228,6 +232,10 @@
 | `apps/mobile-web/src/views/SalaryMonthView.vue` | `99472bb27dd3a95cedc65ed2a4f29eb92eeaab365d1171ab0b254e64a50132e1` |
 | `apps/mobile-web/src/views/SalaryViews.test.ts` | `c8dad9afea7f40e2d80f899b813bbfbadc0a86f4a0d87d89fde5daedf8c961b0` |
 | `apps/mobile-web/src/views/SalaryYearView.vue` | `04470592ff0f779d5d15d8f7887824ad255a8345557a019871bfcd0f9e3efb96` |
+| `apps/mobile-web/src/views/SavingGoalCreateView.vue` | `10c86467ed95af92a0bd6b0588b742ef5ba019c0661faea09f20a36da9ddc8ff` |
+| `apps/mobile-web/src/views/SavingGoalDetailView.vue` | `525fe80511b8368feac1072c2678f01c63dbb2d1b85b8a0aafcfe7ce6c039e5f` |
+| `apps/mobile-web/src/views/SavingGoalViews.test.ts` | `efeac350f65bc2db5568e4e261fc63c6f4400cb5a9fdc4fc7a7964e5d0240bea` |
+| `apps/mobile-web/src/views/SavingGoalsView.vue` | `f13ea93b8875672bbae413f4108e216d697d06e1da35cfced77fd4ae7e3565c5` |
 | `apps/mobile-web/src/views/StatisticsView.vue` | `533f226bce3c91ed6fa9d15a2cdea086f16b033e60756235ad40a5804ce4dada` |
 | `apps/mobile-web/src/views/StatisticsViews.test.ts` | `e539e8b275ce394fb8f611d828892610b765131b51143df933d7cdb35a711c3f` |
 | `apps/mobile-web/src/views/entry-view-test-utils.ts` | `e9889cf6a9e8e1dcd1013654337a9da32857cb8a40ea3c20bdc1fcae4ef6dacb` |
@@ -252,12 +260,12 @@
 | `docs/codex/OFFICIAL_REFERENCES.md` | `3a242d24ea9c14e19e1ab7616a4c4040470ba489a3bbdc58963973aabc0c9c5d` |
 | `docs/codex/REVIEW_PROMPT.md` | `e6b7524f7b2fe99d2af469ef8f0bab7ea162f82528b7d187ec04e45d4ab9823e` |
 | `docs/codex/TASK_PROMPT_TEMPLATE.md` | `af7781dadf39a3735979a11bcc2e2b7e261ed25944f38dbbdcd389637bab9a11` |
-| `docs/design/COMPONENT_INVENTORY.md` | `702f020578627fcd831111bc3b369bb8d9bb7f2c1480d693ace5bbb1c28cd542` |
+| `docs/design/COMPONENT_INVENTORY.md` | `7cf110d43c9a729efe0eb0724ff8e3eb8d5129c52fac13423eb5635d7877d162` |
 | `docs/design/DESIGN_DELIVERY_PLAN.md` | `0a18ae111d1b00d045caa3765c7acf65577b9e503f821b26ed7bc7546e1e3754` |
 | `docs/design/DESIGN_TOKENS.md` | `e67e4f5e05d93d4359ac79e5d2de4213826d471ef52d776288c3cbeab729ea22` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `d601da5ee02c75837db929e097d92e345bf7ffbae4fca22c6ca51a31d190600b` |
 | `docs/design/SCREEN_FLOW.md` | `0276ec2fdb56eff858e05824430b2248cfc45428706a6a2d7e1cba383d40dc3c` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `4ba3930d9e1b07d184e4c5e1d5cac3098619617ce742c581b25a3a59ecab0365` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `80f7f259a2459a32b219aa4aea257ab7624a7f40101f2d7b9e60f08431520b80` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -301,23 +309,24 @@
 | `docs/plans/active/TASK-017-salary-statistics.md` | `fc72ba2ef67812bc86c07b867624993d04ebda60e30d25a99b39a60b55e08f9d` |
 | `docs/plans/active/TASK-018-salary-ui.md` | `595bf2cde08aa2ea013a66e3ed38662e67dcb6018950762c3584c3e2909a57da` |
 | `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
+| `docs/plans/active/TASK-020-saving-goals-ui.md` | `3a4b8727ed59db97ccf0b199a96b8089e54a8825a896fb8959c4052207cf72b0` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `09c3db351964dc7c7d728b40c37c06f7073cf1ff41c17374f9cd1f9ea313f322` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `7f2891449b203e1c3f28860a47334dc287fc33237a1d686d7face6788e1c772c` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
 | `docs/product/BUSINESS_RULES.md` | `dae5bf7874db3b6270decfa1537468b5fd38f9af9e3b80f89d94cd37e86d0da9` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `3bbf3b4badb7ca3fd8dcdd337758911105c642d360aec5aba55d2c302ad7e885` |
-| `docs/project-memory/CURRENT_STATE.md` | `7be725f972036136facca0a766f2361c0b94734881e097aa11d2eee45407ad54` |
+| `docs/project-memory/CHANGELOG_AI.md` | `844bf709540641493c960274fb7341a9fe152f465b031b7ad065697899536ebb` |
+| `docs/project-memory/CURRENT_STATE.md` | `1d8d31da05b6babf708831f250541a13eead19e13a45ba797d8ebee7e64aafca` |
 | `docs/project-memory/DECISIONS.md` | `4b2a6e7ee99b43ec68b3e699666ffab8b0b85c5ef178a71599159c5bb4cc217a` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `f2daf33bcdfc881e2092c220736c2fab06fd0a9c3ef2c4dbdc1ca9186c1293a7` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `7acc8b54202e6566980232fccd98da537465e13e5bdfd741166231a8ac3c6f1e` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `07a22524ee140e6dcb6964dda711f1f1090535509990341281747af3036ecdef` |
+| `docs/quality/TEST_STRATEGY.md` | `60f55d0e3775ccdb6bc46093e0eaa830890d401728090f3d3f7bcad672d7c8a0` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
@@ -359,6 +368,19 @@
 | `output/playwright/salary-year-375-dark.png` | `f7703aa39a3113a839a1eb66a6ba06883b46c263611af58a3caa0c28fff222e8` |
 | `output/playwright/salary-year-375-light.png` | `23962766481c3aa9584673ae4aa76ad5b92c8acf4f5d93b8bbc074c64f39f2f7` |
 | `output/playwright/salary-year-480-light.png` | `8848415f7748356a4a33b77b53ed3508b5654d8109b59782287ee9fa3b0bb894` |
+| `output/playwright/saving-detail-375-dark.png` | `b9e313e2b034be613570e218f4788916e08b9a5ca4655792e6fe472faebdf19c` |
+| `output/playwright/saving-detail-375-light.png` | `f7a97d4ac98b6bb15310c9957e105aeb13f49a9649a65a4f565f9f28958b42bb` |
+| `output/playwright/saving-empty-375-light.png` | `3fd30325a37288a7a1e76a24c890dc96ff148a0603afb5e6e4cc10a9ee345a01` |
+| `output/playwright/saving-error-375-light.png` | `43a7eb166775f6fd7fe6247376a078f8f12790f1a90c2685343a45e20b458046` |
+| `output/playwright/saving-list-320-light.png` | `b5c77c6673175d3347db8dd32fa962097f01cc3b305e91e8c864af675754ed6a` |
+| `output/playwright/saving-list-375-dark.png` | `32b0ac91969532ab3e6b03d38c2401265e7434ad0fa38e6535c0302b294f19a3` |
+| `output/playwright/saving-list-375-light.png` | `0ec3e9781a0b217c65f17aae0b7632ff9aaa95c32a731b912190177db0667686` |
+| `output/playwright/saving-list-480-light.png` | `032a9a417bfeec65a18174ad0c6d45877451424925523860f5e8739ae71322b5` |
+| `output/playwright/saving-loading-375-dark.png` | `fc52e24c0f795265e0229b1e2e0c220369f2a1799be769f75554e2709eb23d32` |
+| `output/playwright/saving-new-320-light.png` | `24298725a078f5482a0857d71504627d53e4dc4f2e656d259ffdd2898cd202b5` |
+| `output/playwright/saving-new-375-dark.png` | `c6d0fe84536130214ba9bf4dd6ffae965c89932b9a3a41de394bfd93dc38ba80` |
+| `output/playwright/saving-readonly-375-light.png` | `913f691252c58aaa21306162b979b23050b3eef147b109538de2a94092f98f05` |
+| `output/playwright/saving-restricted-375-light.png` | `866116a592a70a1d929ac9025510ea1e150aa1d3f2aa7bd952963111767232df` |
 | `package.json` | `6a97e56eda5871881c398cd9f9786af4122c612e9a1b04af8e38e9c097a218b7` |
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
