@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `1a89baed76080449cfc2b4486178c9bcf2433ba0c5dc11eb439ed351b82cdad5` |
+| `VALIDATION_REPORT.md` | `051489837a76c1d4b25e8e6029c23566a6649ecdbd7fa9cffc7b41be62f5f33e` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -281,7 +281,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `2a68b4b69f4a0efed7f996822bd8493d9ec6fee6eda526817fa7d08367dad3d2` |
+| `docs/plans/TASK_BACKLOG.md` | `ccfa5b6d53cd9f2af917c3aa505c3e69aab793c014185359ec131d418232a462` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -300,7 +300,7 @@
 | `docs/plans/active/TASK-016-salary-mark-paid.md` | `155cdadb6901e9d67f9a2ae0fe86fcae2fb2e4c2ee97e97ac03b361169668a3e` |
 | `docs/plans/active/TASK-017-salary-statistics.md` | `fc72ba2ef67812bc86c07b867624993d04ebda60e30d25a99b39a60b55e08f9d` |
 | `docs/plans/active/TASK-018-salary-ui.md` | `595bf2cde08aa2ea013a66e3ed38662e67dcb6018950762c3584c3e2909a57da` |
-| `docs/plans/active/TASK-019-saving-goals-api.md` | `c4c6299722f10927ee469db3ce7bffe5f76be778ddc07a4cf7bdb84821141d34` |
+| `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `09c3db351964dc7c7d728b40c37c06f7073cf1ff41c17374f9cd1f9ea313f322` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -308,10 +308,10 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `1176987bbd96c6e83c1adefad65667fa95f3d0d0f11b0d4e45f0daaf8bdd937b` |
-| `docs/project-memory/CURRENT_STATE.md` | `e563f490e7ac765c6b95f4c8c833d61e1ec12739f393611f2d4b859b358a6629` |
+| `docs/project-memory/CHANGELOG_AI.md` | `3bbf3b4badb7ca3fd8dcdd337758911105c642d360aec5aba55d2c302ad7e885` |
+| `docs/project-memory/CURRENT_STATE.md` | `7be725f972036136facca0a766f2361c0b94734881e097aa11d2eee45407ad54` |
 | `docs/project-memory/DECISIONS.md` | `4b2a6e7ee99b43ec68b3e699666ffab8b0b85c5ef178a71599159c5bb4cc217a` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `58b96db1a5e22dcf089a008d5dd1bc2ceb2c057e37d9d9aaa769fcefd8fbda8f` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `f2daf33bcdfc881e2092c220736c2fab06fd0a9c3ef2c4dbdc1ca9186c1293a7` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
