@@ -853,3 +853,19 @@ TASK-019 正式关闭；下一项为 TASK-020 攒钱目标页面。
 ### 当前状态
 
 TASK-020 已完成本地开发与视觉验收；待最终全量质量门、提交、PR、远程 CI、合并和 main CI 后正式关闭。
+
+## 2026-07-22 / TASK-020 正式关闭
+
+### 关闭证据
+
+- 功能提交 `f1e69b99c716cfbc9b0b48aba5c0694799d282fb` 已推送并经 PR #28 Squash merge 合入
+  `main`；合并提交为 `4f88b8b20fec2b0790ebd84f5d863ae6cdf95a34`。
+- PR CI Run `29937823275` 与 main push CI Run `29938160014` 的 `quality`、`database`、
+  `secret-scan` 全部通过；两轮均覆盖迁移、完整 PostgreSQL/Redis E2E、构建、依赖审计和秘密扫描。
+- PR CI 首次尝试在项目代码执行前因托管 runner 的 PostgreSQL 宿主端口 `55432` 瞬时占用失败；同一 Run
+  重跑后容器初始化及所有项目门禁通过，未因此修改或弱化仓库代码、工作流或测试。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-020 正式关闭，M7 完成；下一项为 TASK-021 站内通知。

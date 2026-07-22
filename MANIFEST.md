@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `7709986f8c423b5335cbb47cfb22cd714cc490f19738d9d6851ac42518608e5a` |
+| `VALIDATION_REPORT.md` | `dd3720fd960460ce63e1ba4f85015fd19d9877639d948ffc5c22a38ff97e0d90` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -289,7 +289,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `ccfa5b6d53cd9f2af917c3aa505c3e69aab793c014185359ec131d418232a462` |
+| `docs/plans/TASK_BACKLOG.md` | `a6b021b47b18b147eb4a47e3b3027b733dcc10a18588bac2e78a6a99d7d758e1` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -309,7 +309,7 @@
 | `docs/plans/active/TASK-017-salary-statistics.md` | `fc72ba2ef67812bc86c07b867624993d04ebda60e30d25a99b39a60b55e08f9d` |
 | `docs/plans/active/TASK-018-salary-ui.md` | `595bf2cde08aa2ea013a66e3ed38662e67dcb6018950762c3584c3e2909a57da` |
 | `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
-| `docs/plans/active/TASK-020-saving-goals-ui.md` | `3a4b8727ed59db97ccf0b199a96b8089e54a8825a896fb8959c4052207cf72b0` |
+| `docs/plans/active/TASK-020-saving-goals-ui.md` | `b74a0fe8a398d79bb7d990908b502fcd2cc7eeb37c8aa7858a56e58e50cc5758` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `7f2891449b203e1c3f28860a47334dc287fc33237a1d686d7face6788e1c772c` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -317,10 +317,10 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `844bf709540641493c960274fb7341a9fe152f465b031b7ad065697899536ebb` |
-| `docs/project-memory/CURRENT_STATE.md` | `1d8d31da05b6babf708831f250541a13eead19e13a45ba797d8ebee7e64aafca` |
+| `docs/project-memory/CHANGELOG_AI.md` | `a8b1115736ac2deda3240fc015481ae3f3a1d15f921b0df67bdbf90e5120a98b` |
+| `docs/project-memory/CURRENT_STATE.md` | `9b4be9d716879d36f7757484121b77f86128f3979d6c27566a062a0ad0f33483` |
 | `docs/project-memory/DECISIONS.md` | `4b2a6e7ee99b43ec68b3e699666ffab8b0b85c5ef178a71599159c5bb4cc217a` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `7acc8b54202e6566980232fccd98da537465e13e5bdfd741166231a8ac3c6f1e` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `a34910739193bae53a1386c223cbf00e5d0c1a274f8293502af0f60b570b287d` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
