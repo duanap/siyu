@@ -837,40 +837,6 @@ async function main() {
     .set('authorization', `Bearer ${outsider.accessToken}`)
     .expect(404);
 
-  const managedEntryId = randomUUID();
-  await prisma.entry.create({
-    data: {
-      id: managedEntryId,
-      ledgerId: coupleLedgerId,
-      creatorUserId: user.id,
-      type: 'EXPENSE',
-      amountCent: 400n,
-      categoryId: systemCategoryId,
-      businessDate: new Date('2026-07-14T00:00:00.000Z'),
-      sourceType: 'SALARY',
-      sourceId: randomUUID(),
-      idempotencyKey: `managed-entry-${suffix}`,
-      createRequestHash: '8'.repeat(64),
-    },
-  });
-  const managedDetail = await request(server)
-    .get(`/api/v1/entries/${managedEntryId}`)
-    .set('authorization', `Bearer ${ownerAccess}`)
-    .expect(200);
-  assert.equal(managedDetail.body.data.canEdit, false);
-  const managedUpdate = await request(server)
-    .patch(`/api/v1/entries/${managedEntryId}`)
-    .set('authorization', `Bearer ${ownerAccess}`)
-    .send({ expectedVersion: 1, note: '普通接口不可改' })
-    .expect(409);
-  assert.equal(managedUpdate.body.code, 'ENTRY_SOURCE_MANAGED');
-  const managedDelete = await request(server)
-    .delete(`/api/v1/entries/${managedEntryId}`)
-    .query({ expectedVersion: 1 })
-    .set('authorization', `Bearer ${ownerAccess}`)
-    .expect(409);
-  assert.equal(managedDelete.body.code, 'ENTRY_SOURCE_MANAGED');
-
   const deleteResult = await request(server)
     .delete(`/api/v1/entries/${memberEntryId}`)
     .query({ expectedVersion: 4 })
@@ -1795,16 +1761,169 @@ async function main() {
     .set('authorization', `Bearer ${outsider.accessToken}`)
     .send({ items: julySalaryBody.items })
     .expect(404);
-  await prisma.salaryRecord.update({
-    where: { id: julySalaryId },
-    data: { paymentStatus: 'PAID', paidDate: new Date('2026-07-12T00:00:00.000Z') },
-  });
+
+  await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .send({
+      paidDate: '2026-07-12',
+      syncEntry: false,
+      idempotencyKey: `salary-paid-july-${suffix}`,
+    })
+    .expect(404);
+  await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      paidDate: '2026-02-30',
+      syncEntry: false,
+      idempotencyKey: `salary-paid-invalid-${suffix}`,
+    })
+    .expect(400);
+  const julyPaymentBody = {
+    paidDate: '2026-07-12',
+    syncEntry: false,
+    idempotencyKey: `salary-paid-july-${suffix}`,
+  };
+  const julyPaid = await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(julyPaymentBody)
+    .expect(200);
+  assert.equal(julyPaid.body.data.paymentStatus, 'PAID');
+  assert.equal(julyPaid.body.data.paidDate, '2026-07-12');
+  assert.equal(julyPaid.body.data.entryId, null);
+  assert.equal(julyPaid.body.data.canEdit, false);
+  assert.equal(JSON.stringify(julyPaid.body).includes('paymentRequestHash'), false);
+  assert.equal(JSON.stringify(julyPaid.body).includes('paymentIdempotencyKey'), false);
+  const julyPaidReplay = await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(julyPaymentBody)
+    .expect(200);
+  assert.equal(julyPaidReplay.body.data.id, julySalaryId);
+  assert.equal(julyPaidReplay.body.data.entryId, null);
+  const julyPaymentKeyConflict = await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...julyPaymentBody, syncEntry: true })
+    .expect(409);
+  assert.equal(julyPaymentKeyConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+  const julyAlreadyPaid = await request(server)
+    .post(`/api/v1/salary/records/${julySalaryId}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...julyPaymentBody, idempotencyKey: `salary-paid-july-again-${suffix}` })
+    .expect(409);
+  assert.equal(julyAlreadyPaid.body.code, 'SALARY_ALREADY_PAID');
   const immutablePaidSalary = await request(server)
     .patch(`/api/v1/salary/records/${julySalaryId}`)
     .set('authorization', `Bearer ${ownerAccess}`)
     .send({ items: julySalaryBody.items })
     .expect(409);
   assert.equal(immutablePaidSalary.body.code, 'SALARY_ALREADY_PAID');
+
+  const augustPaymentBody = {
+    paidDate: '2026-08-12',
+    syncEntry: true,
+    idempotencyKey: `salary-paid-august-${suffix}`,
+  };
+  const concurrentAugustPayments = await Promise.all([
+    request(server)
+      .post(`/api/v1/salary/records/${augustSalaryId}/mark-paid`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(augustPaymentBody),
+    request(server)
+      .post(`/api/v1/salary/records/${augustSalaryId}/mark-paid`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(augustPaymentBody),
+  ]);
+  assert.deepEqual(concurrentAugustPayments.map((response) => response.status).sort(), [200, 200]);
+  assert.equal(
+    concurrentAugustPayments[0].body.data.entryId,
+    concurrentAugustPayments[1].body.data.entryId,
+  );
+  const salaryEntryId = concurrentAugustPayments[0].body.data.entryId;
+  assert.equal(typeof salaryEntryId, 'string');
+  const salaryEntry = await prisma.entry.findUniqueOrThrow({
+    where: { id: salaryEntryId },
+    include: { category: true, ledger: true },
+  });
+  assert.equal(salaryEntry.type, 'INCOME');
+  assert.equal(salaryEntry.amountCent, 1_190_000n);
+  assert.equal(dateOnly(salaryEntry.businessDate), '2026-08-12');
+  assert.equal(salaryEntry.sourceType, 'SALARY');
+  assert.equal(salaryEntry.sourceId, augustSalaryId);
+  assert.equal(salaryEntry.creatorUserId, user.id);
+  assert.equal(salaryEntry.ledger.ownerUserId, user.id);
+  assert.equal(salaryEntry.ledger.type, 'PERSONAL');
+  assert.equal(salaryEntry.category.templateKey, 'income.salary');
+  assert.equal(
+    await prisma.entry.count({ where: { sourceType: 'SALARY', sourceId: augustSalaryId } }),
+    1,
+  );
+  const managedSalaryDetail = await request(server)
+    .get(`/api/v1/entries/${salaryEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(managedSalaryDetail.body.data.canEdit, false);
+  const managedSalaryUpdate = await request(server)
+    .patch(`/api/v1/entries/${salaryEntryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ expectedVersion: 1, note: '普通接口不可改' })
+    .expect(409);
+  assert.equal(managedSalaryUpdate.body.code, 'ENTRY_SOURCE_MANAGED');
+  const managedSalaryDelete = await request(server)
+    .delete(`/api/v1/entries/${salaryEntryId}`)
+    .query({ expectedVersion: 1 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(409);
+  assert.equal(managedSalaryDelete.body.code, 'ENTRY_SOURCE_MANAGED');
+  await request(server)
+    .get(`/api/v1/entries/${salaryEntryId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        action: 'SALARY_RECORD_PAID',
+        targetType: 'SALARY_RECORD',
+        targetId: augustSalaryId,
+      },
+    }),
+    1,
+  );
+
+  const septemberSalary = await request(server)
+    .post('/api/v1/salary/records')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      profileId: salaryProfileId,
+      salaryMonth: '2026-09-01',
+      copyPreviousMonth: true,
+      idempotencyKey: `salary-september-${suffix}`,
+    })
+    .expect(201);
+  const salaryCategory = await prisma.category.findFirstOrThrow({
+    where: { ledgerId: personalLedger.id, templateKey: 'income.salary' },
+  });
+  await prisma.category.update({ where: { id: salaryCategory.id }, data: { isEnabled: false } });
+  const unavailableSalaryCategory = await request(server)
+    .post(`/api/v1/salary/records/${septemberSalary.body.data.id}/mark-paid`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      paidDate: '2026-09-12',
+      syncEntry: true,
+      idempotencyKey: `salary-paid-september-${suffix}`,
+    })
+    .expect(409);
+  assert.equal(unavailableSalaryCategory.body.code, 'SALARY_SYNC_CATEGORY_UNAVAILABLE');
+  const septemberAfterRollback = await prisma.salaryRecord.findUniqueOrThrow({
+    where: { id: septemberSalary.body.data.id },
+  });
+  assert.equal(septemberAfterRollback.paymentStatus, 'UNPAID');
+  assert.equal(septemberAfterRollback.paymentIdempotencyKey, null);
+  assert.equal(septemberAfterRollback.entryId, null);
+  await prisma.category.update({ where: { id: salaryCategory.id }, data: { isEnabled: true } });
 
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)

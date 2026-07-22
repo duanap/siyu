@@ -1,7 +1,12 @@
 import { SalaryItemType } from '@prisma/client';
 import { describe, expect, it } from 'vitest';
 
-import { calculateSalaryTotals, previousSalaryMonth } from './salary.service';
+import {
+  calculateSalaryTotals,
+  parseSalaryPaidDate,
+  previousSalaryMonth,
+  salaryPaymentRequestHash,
+} from './salary.service';
 
 describe('salary domain rules (BR-SALARY-015, BR-SALARY-017)', () => {
   it('derives gross, deductions, and net from item details', () => {
@@ -32,6 +37,30 @@ describe('salary domain rules (BR-SALARY-015, BR-SALARY-017)', () => {
   it('copies only from the exact adjacent calendar month across year boundaries', () => {
     expect(previousSalaryMonth(new Date('2026-01-01T00:00:00.000Z'))).toEqual(
       new Date('2025-12-01T00:00:00.000Z'),
+    );
+  });
+});
+
+describe('salary payment rules (BR-SALARY-019)', () => {
+  it('accepts only real calendar business dates', () => {
+    expect(parseSalaryPaidDate('2028-02-29')).toEqual(new Date('2028-02-29T00:00:00.000Z'));
+    expect(() => parseSalaryPaidDate('2026-02-30')).toThrow('到账日期必须是有效业务日期');
+  });
+
+  it('binds the payment idempotency hash to record, date, and sync choice', () => {
+    const base = {
+      paidDate: '2026-07-12',
+      syncEntry: true,
+      idempotencyKey: 'salary-paid-key',
+    };
+    expect(salaryPaymentRequestHash('record-a', base)).toBe(
+      salaryPaymentRequestHash('record-a', { ...base, idempotencyKey: 'another-key' }),
+    );
+    expect(salaryPaymentRequestHash('record-a', base)).not.toBe(
+      salaryPaymentRequestHash('record-b', base),
+    );
+    expect(salaryPaymentRequestHash('record-a', base)).not.toBe(
+      salaryPaymentRequestHash('record-a', { ...base, syncEntry: false }),
     );
   });
 });

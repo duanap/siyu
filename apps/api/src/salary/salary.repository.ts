@@ -169,6 +169,58 @@ export class SalaryRepository {
     });
   }
 
+  findRecordByPaymentIdempotency(tx: Tx, userId: string, paymentIdempotencyKey: string) {
+    return tx.salaryRecord.findFirst({
+      where: { userId, paymentIdempotencyKey },
+      include: recordInclude,
+    });
+  }
+
+  findPersonalLedger(tx: Tx, userId: string) {
+    return tx.ledger.findFirst({
+      where: {
+        ownerUserId: userId,
+        type: 'PERSONAL',
+        status: 'ACTIVE',
+        deletedAt: null,
+        members: { some: { userId, role: 'OWNER', status: 'ACTIVE' } },
+      },
+      select: { id: true },
+    });
+  }
+
+  findSalaryCategory(tx: Tx, ledgerId: string) {
+    return tx.category.findFirst({
+      where: { ledgerId, type: 'INCOME', templateKey: 'income.salary', isEnabled: true },
+      select: { id: true },
+    });
+  }
+
+  createSalaryEntry(
+    tx: Tx,
+    input: {
+      ledgerId: string;
+      creatorUserId: string;
+      amountCent: bigint;
+      categoryId: string;
+      businessDate: Date;
+      sourceId: string;
+      idempotencyKey: string;
+      createRequestHash: string;
+    },
+  ) {
+    return tx.entry.create({
+      data: {
+        ...input,
+        type: 'INCOME',
+        note: '工资到账',
+        paymentMethod: null,
+        sourceType: 'SALARY',
+      },
+      select: { id: true },
+    });
+  }
+
   createRecord(
     tx: Tx,
     input: {
@@ -204,6 +256,23 @@ export class SalaryRepository {
     return tx.salaryRecord.update({
       where: { id },
       data: { ...totals, items: { deleteMany: {}, create: items } },
+      include: recordInclude,
+    });
+  }
+
+  markRecordPaid(
+    tx: Tx,
+    id: string,
+    input: {
+      paidDate: Date;
+      entryId: string | null;
+      paymentIdempotencyKey: string;
+      paymentRequestHash: string;
+    },
+  ) {
+    return tx.salaryRecord.update({
+      where: { id },
+      data: { paymentStatus: 'PAID', ...input },
       include: recordInclude,
     });
   }

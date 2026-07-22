@@ -3000,9 +3000,13 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SalaryRecordOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   skipRecurringRun: {

@@ -203,6 +203,7 @@ TASK-015 已实现以下本人工资私有接口：
 - `POST /salary/records`
 - `GET /salary/records/:id`
 - `PATCH /salary/records/:id`
+- `POST /salary/records/:id/mark-paid`
 
 MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建必须提交 `defaultItems` 和
 `idempotencyKey`；模板项目允许金额为 0，项目代码在档案内唯一。相同用户、幂等键和规范载荷重放原档案，
@@ -213,9 +214,14 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 `deductionCent` 和 `netCent` 均由服务端按明细计算，并在同一事务受数据库延迟约束校验。一个档案同一月份只能
 存在一条有效记录；已到账记录不可通过更新接口修改。工资档案和记录只按当前用户查询，越权详情统一返回 404。
 
+确认到账必须提交 `paidDate`、`syncEntry` 和到账专用 `idempotencyKey`。相同键同载荷重放到账结果；键对应
+不同载荷返回 `IDEMPOTENCY_CONFLICT`，已由其他键确认返回 `SALARY_ALREADY_PAID`。`syncEntry=false` 时只写
+到账状态；`syncEntry=true` 时在本人有效个人账本的 `income.salary` 分类下原子生成金额等于 `netCent`、业务日期
+等于 `paidDate` 的唯一 `SALARY` 来源收入。个人账本或工资分类不可用时分别返回
+`SALARY_SYNC_LEDGER_UNAVAILABLE`、`SALARY_SYNC_CATEGORY_UNAVAILABLE`，所有越权记录 ID 仍统一返回 404。
+
 以下工资能力仍由后续任务实现：
 
-- `POST /salary/records/:id/mark-paid`
 - `GET /salary/summary/:year`
 - `GET /salary/balance`
 
