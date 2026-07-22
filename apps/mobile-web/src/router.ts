@@ -79,6 +79,21 @@ export const router = createRouter({
       name: 'statistics',
       component: () => import('./views/StatisticsView.vue'),
     },
+    {
+      path: '/recurring',
+      name: 'recurring',
+      component: () => import('./views/RecurringListView.vue'),
+    },
+    {
+      path: '/recurring/new',
+      name: 'recurring-new',
+      component: () => import('./views/RecurringCreateView.vue'),
+    },
+    {
+      path: '/recurring/:id',
+      name: 'recurring-detail',
+      component: () => import('./views/RecurringDetailView.vue'),
+    },
   ],
 });
 

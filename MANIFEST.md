@@ -2,7 +2,7 @@
 
 生成日期：2026-07-22
 
-文件数量（不含本清单、依赖和构建产物）：322
+文件数量（不含本清单、依赖和构建产物）：345
 
 | 文件 | SHA-256 |
 |---|---|
@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `4599f2b89377880de1687fa2f77f879d9f3812525267f75c7d02550fc14a5c3f` |
+| `VALIDATION_REPORT.md` | `b805bde988d3ececbe3ee1b22ce546543dda367a7119fd88e1f168949e3c13ce` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -150,6 +150,9 @@
 | `apps/mobile-web/src/components/EntryListItem.vue` | `6a1ca7b960f107a226de987a76e8d1a0e82b749acbfbfb7170a05dd12c6fa188` |
 | `apps/mobile-web/src/components/LedgerSwitcher.vue` | `63fe4cb906a85111d0ef5ca12f88a049d5280d8406638fd97cbc934353c31d74` |
 | `apps/mobile-web/src/components/MonthlySummaryCard.vue` | `b92be6aa6abd44508707714a102bfd49e06a521639115e01988380d9eebcf853` |
+| `apps/mobile-web/src/components/RecurringRuleCard.vue` | `76cc495d03a56ca02fabd168ecb6e14a3a4a92c46dfa80769e9f86fc5c912387` |
+| `apps/mobile-web/src/components/RecurringRuleForm.vue` | `8d634c4763d8a21a30fde3750bcb2cba2b51f661433b7f9d4f52c934a080603d` |
+| `apps/mobile-web/src/components/RecurringRunCard.vue` | `6ff7a4c170ebb076dd00341da27ac9347f9f5aaa8ff507e1f2161d814086d8cd` |
 | `apps/mobile-web/src/components/StatisticsTrendChart.vue` | `4d37314f3a5b8b2fbe5b32f567614e58fa5fdbb346034d8973c4c379d51de963` |
 | `apps/mobile-web/src/couple-ledger.test.ts` | `b4926cbd16685646f42cd235cae82cf5b32b7de193ae728ef03c337d18fbad3b` |
 | `apps/mobile-web/src/couple-ledger.ts` | `f4885015f9437b3657f8a8e516607715d2b8340d8b697b261e638bd2952ab749` |
@@ -165,12 +168,14 @@
 | `apps/mobile-web/src/ledger-context.ts` | `f4da90f863be26bb4840a1dc6b65552fc6ae49f101ca3b1c17aedd852690a835` |
 | `apps/mobile-web/src/ledger-selection.ts` | `12e4d14eb19de40284a8596c8d179d1d9ee5dcc67b7aec6f570082d6b5b26dfe` |
 | `apps/mobile-web/src/main.ts` | `ecffa4d5946ee949417966117f2a7809a406f6aa863bcd1bdc327c473f730a23` |
-| `apps/mobile-web/src/router.ts` | `6eacca329d0585356e7402341cf8d02a4878aecf9e8d5b0fcb9dcbf4c25ad32b` |
+| `apps/mobile-web/src/recurring.test.ts` | `5cecaacce8cbe00e6d8b5828836e61c7bb7188a6e12395c8d28e3576b1df6fc1` |
+| `apps/mobile-web/src/recurring.ts` | `dfdd553cfa59361935b1c9d8c24eb1ec24b661a9f056981111e2d1777ea0983e` |
+| `apps/mobile-web/src/router.ts` | `ee1b8d8cb31ebd20a54c190a00cec3f37e5d5010a8a7eac1a3665077b4f62cb5` |
 | `apps/mobile-web/src/statistics.test.ts` | `7e6c44ebad4b262ad7a71cdf78b37a5dc7f316241958ede595dbf041eba77671` |
 | `apps/mobile-web/src/statistics.ts` | `dc03bcabc56442a978ee74f85551f1c8cae2b3354c4f8987ab6201553973c3ab` |
 | `apps/mobile-web/src/theme.ts` | `ee1933f52332978567715670203561a9ae22c2531e97450fbf34cd3432aebc8a` |
 | `apps/mobile-web/src/use-api-session.ts` | `af50f38af2b460ec84be0e32e43b9bc4d4bf1e1ee7269f0a814b71a7c33db8d6` |
-| `apps/mobile-web/src/views/AccountView.vue` | `fd4ec363558da4be5be028afdac9ccb188eb0a127fc510db0a854e8e3260c2aa` |
+| `apps/mobile-web/src/views/AccountView.vue` | `c9f100f3bbd4dda4975782709a98a77a231e6a1e945c70ac391c12d0e1758e3d` |
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
@@ -195,6 +200,10 @@
 | `apps/mobile-web/src/views/HomeView.vue` | `39c07c888fc362ef94c6b5b4e0d322f404f8018be949f3d58bc023417d894824` |
 | `apps/mobile-web/src/views/LegalView.vue` | `d9bf2c187c2172ad5392ca1561164857356b7786e284f317f9f12d66c3e06877` |
 | `apps/mobile-web/src/views/OAuthCallbackView.vue` | `f795f0d242794f5f33e55e6ffabf533803966e39049f58f81dc23842993bac4b` |
+| `apps/mobile-web/src/views/RecurringCreateView.vue` | `ec73c79e00ac8120316abbf7c97e97f6215bb756ed89f77122bcc99394969620` |
+| `apps/mobile-web/src/views/RecurringDetailView.vue` | `5e04f7cca39a9fca9647454b716de6a972467a922d872c046666df43a24133da` |
+| `apps/mobile-web/src/views/RecurringListView.vue` | `840d933f3e0e5e0eedc06ce5ad6cd5a74f0e4a07058c261487329b9cb420856e` |
+| `apps/mobile-web/src/views/RecurringViews.test.ts` | `19da9132bf9bf311fe6a6a9f62daf9c6a634870d2bcb1dbbfbb226c76175ceaf` |
 | `apps/mobile-web/src/views/StatisticsView.vue` | `533f226bce3c91ed6fa9d15a2cdea086f16b033e60756235ad40a5804ce4dada` |
 | `apps/mobile-web/src/views/StatisticsViews.test.ts` | `e539e8b275ce394fb8f611d828892610b765131b51143df933d7cdb35a711c3f` |
 | `apps/mobile-web/src/views/entry-view-test-utils.ts` | `e9889cf6a9e8e1dcd1013654337a9da32857cb8a40ea3c20bdc1fcae4ef6dacb` |
@@ -219,12 +228,12 @@
 | `docs/codex/OFFICIAL_REFERENCES.md` | `3a242d24ea9c14e19e1ab7616a4c4040470ba489a3bbdc58963973aabc0c9c5d` |
 | `docs/codex/REVIEW_PROMPT.md` | `e6b7524f7b2fe99d2af469ef8f0bab7ea162f82528b7d187ec04e45d4ab9823e` |
 | `docs/codex/TASK_PROMPT_TEMPLATE.md` | `af7781dadf39a3735979a11bcc2e2b7e261ed25944f38dbbdcd389637bab9a11` |
-| `docs/design/COMPONENT_INVENTORY.md` | `6fb477aa55522c6279e6ec89f4aae723d59a49284c6b673f1f5f50b8621be776` |
+| `docs/design/COMPONENT_INVENTORY.md` | `9b8f29a1ec6806c6763212729be4143785e68f50cf321cbe7995e2057bd740f8` |
 | `docs/design/DESIGN_DELIVERY_PLAN.md` | `0a18ae111d1b00d045caa3765c7acf65577b9e503f821b26ed7bc7546e1e3754` |
 | `docs/design/DESIGN_TOKENS.md` | `e67e4f5e05d93d4359ac79e5d2de4213826d471ef52d776288c3cbeab729ea22` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `d601da5ee02c75837db929e097d92e345bf7ffbae4fca22c6ca51a31d190600b` |
 | `docs/design/SCREEN_FLOW.md` | `0276ec2fdb56eff858e05824430b2248cfc45428706a6a2d7e1cba383d40dc3c` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `02f8fa451c52e97da4bc7633309895d3ef21c73f4e640914c1cfb31db369508f` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `c9f74fc78931905a0bcc764c591a46c17adda9c0d5e1093dbfa6b95cbae1aca2` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -248,7 +257,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `f6f407441edb5f1125e5a65de2a5c0b5e2ec06e710e1159f0cb392c036b8d174` |
+| `docs/plans/TASK_BACKLOG.md` | `c00d4e0593d96cac7e679d8daefb0c0161b2e9c7239ec6a8317c8520b42dc0f6` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -262,6 +271,7 @@
 | `docs/plans/active/TASK-011-debt-ui.md` | `9553d2db155b188ee1e46084428cf79c6b92c0d27d03888f5e2f5b4c6fef2262` |
 | `docs/plans/active/TASK-012-recurring-rules.md` | `1dbc3a34a17c67a2dda79f39d39cc8be8c137d080c3bf15d1fedd6c242e47d8e` |
 | `docs/plans/active/TASK-013-recurring-worker.md` | `5bea1366cd30f039e74e1e475c575a7892667cf4dd16fcf502d86d48a9d661f6` |
+| `docs/plans/active/TASK-014-recurring-ui.md` | `63968d3e02cd3e6c60bdd6500605904071a777c6b89e4d4c3660fc468f55128f` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `704ff166b2f0e3540a6ed89ead7f42b2291b8b08b4810a40b0bb732b9b1158ad` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -269,16 +279,16 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `a1b32760d594a8ce85975d1bad5ca15844c0024726e3fb4981b8409975e7da13` |
-| `docs/project-memory/CURRENT_STATE.md` | `3f44d80ca72a6ef7da95b8ef31362e3ff4a8a985fdaa5c6a7b56e4bcf2b50110` |
+| `docs/project-memory/CHANGELOG_AI.md` | `c6a3f1b95ba20714e3be15a750a692df50374ac858105803c316e44b03a83f34` |
+| `docs/project-memory/CURRENT_STATE.md` | `80a509ef3e7f107387d66669100f3b5d484d3e68a5f212c814b4937d8ae4a325` |
 | `docs/project-memory/DECISIONS.md` | `4b5b471c3a29164194d7954061b57b2465a1ee21697640f72b737e6e7a2b2335` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `93c15d2f683b1da6baae92a68b2ac03cc5252763e5f092309c90c731f090478c` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `ab39b8652df10ae93caf610e670b45e29d3c14ff7563a0cc042c9036342018e4` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `375e6242ecc6a5c634ac3217a0263c45453d041c42270eee0e1f974dce9f60ce` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `9d54eaef34eda5cedcc8eaa488af380ed103c540c4570b2d58074dd8930c0985` |
+| `docs/quality/TEST_STRATEGY.md` | `44a75751cd72e2b591ac387db3f320186483eb07208f1f69f20b3be251714f35` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
@@ -294,6 +304,19 @@
 | `output/playwright/debts-480-light.png` | `b0e4e923de5c8cf8aa6c195bf4fbd05c696b72e4b20859993af2cd73a963b352` |
 | `output/playwright/debts-empty-375-light.png` | `f357b2acdcbdd4bad9f8f6c6523206bc3ca321117dade7ec803c34e77de53ea2` |
 | `output/playwright/debts-error-375-light.png` | `0961a0e3b572c89dd5d08f616792b04284b7a964d8321496c617090e9f66a4b0` |
+| `output/playwright/recurring-320-light.png` | `babd27be4af63482961989a9810b7db56711fbcfa8f2df365766f70815884a86` |
+| `output/playwright/recurring-375-dark.png` | `dc53da1794166df7297a7663d02ad42aef052f1c1e1546f6492479c03a47d191` |
+| `output/playwright/recurring-375-light.png` | `a67e915b0e7043836f35cfb8ae987cc9cc3be632d1663ee9158e19e78cdebad2` |
+| `output/playwright/recurring-404-375-light.png` | `e4b38ebe25b49b702e4930a7a46315ebc535989cfb5869b9a5b242e37e76881e` |
+| `output/playwright/recurring-480-light.png` | `3ace5387d992900d8044f27690bdba7d097ea0867594db0b66935cee1c7b74b5` |
+| `output/playwright/recurring-confirm-375-dark.png` | `6d41fc7b1da3ef0119072067d17557e0e20523d729179e1cc96b8a1788c7354e` |
+| `output/playwright/recurring-detail-375-dark.png` | `12da964896d06d83342ac8021adb9ab1e28553a366120733bd5e1a3ede6d4d19` |
+| `output/playwright/recurring-detail-375-light.png` | `d06c36cfed7a4f0cec13e31c3a1cb4898c2a171bcb698a972103ea04394dea13` |
+| `output/playwright/recurring-empty-375-light.png` | `eb4f54d0c62ec2d9e4ce5421fb6f02ef499840dbc38d05fb6c97171bf64717a7` |
+| `output/playwright/recurring-error-375-light.png` | `91c5cab9ccee784a703f4baebfbd3d296ec4d795310ba993b8c583b6455892b0` |
+| `output/playwright/recurring-new-320-light.png` | `19ebad739de24fe69a7f3a539830e0051c1f6c5085b063e0365abbe3a0c9124a` |
+| `output/playwright/recurring-new-375-dark.png` | `494da06f7c938d1cd0ddac2ed6f73e21db00c744ac48604357e8dd41772ccf7f` |
+| `output/playwright/recurring-new-bottom-320-light.png` | `4aad64d5af930cfdd80a80c6713222e57c4108fdba7a017ea84f660dca9f32a4` |
 | `package.json` | `6a97e56eda5871881c398cd9f9786af4122c612e9a1b04af8e38e9c097a218b7` |
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
