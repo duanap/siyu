@@ -1,12 +1,12 @@
 # 当前项目状态
 
 更新时间：2026-07-22
-文档版本：v1.24.0
-代码状态：TASK-019 攒钱目标 API 已合并、远程 CI 通过并正式关闭；下一项为 TASK-020 攒钱目标页面
+文档版本：v1.25.0
+代码状态：TASK-020 攒钱目标移动端页面已完成本地交付候选，等待提交、PR 与远程 CI
 
 ## 当前阶段
 
-M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，准备进入 TASK-020。
+M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，TASK-020 已完成本地开发与视觉验收。
 
 ## 已完成
 
@@ -99,10 +99,16 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
 - TASK-019 功能提交 `37ac11c9f2ff91b73af07fb0dd6b85f98572d28f` 经 PR #26 合入 `main`，合并提交为
   `a04bbef97dfe1cb35527b6e6d3f2cca46db74964`；PR CI Run `29929382178` 与 main push CI Run
   `29929562773` 的 `quality`、`database`、`secret-scan` 全部通过，TASK-019 正式关闭。
+- 移动端 `/saving-goals`、`/saving-goals/new`、`/saving-goals/:id` 已实现目标完整分页、账本选择恢复、创建、
+  详情、OWNER 编辑/删除、本人存入新增/编辑/删除、成员贡献和服务端进度展示；账号页已新增入口。
+- 目标与存入创建分别保持失败重试稳定幂等键，金额精确转整数分；客户端只消费服务端
+  `canManage/canContribute/canEdit/canDelete`，操作成功后重取详情而不本地猜测汇总。
+- AC-SAVING-012 至 014 已固化移动端分页、幂等、能力字段、删除确认、状态和视觉验收边界；本任务没有修改
+  攒钱 API、数据库、迁移、Worker、其他业务行为或生产依赖。
 
 ## 明确未实现
 
-攒钱移动端页面、通知读取/已读 API、导出、人工任务重试和后台业务管理均未实现。
+通知读取/已读 API、导出、人工任务重试和后台业务管理均未实现。
 这些未实现模块的 OpenAPI 路径覆盖只表示契约完整，不表示接口已经上线。
 
 ## 当前验证状态
@@ -197,6 +203,14 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
   `secret-scan` 全部通过；两轮 `quality` 均执行迁移、完整 PostgreSQL/Redis E2E、构建与依赖审计。
 - TASK-019 Node.js 24.18.0 全仓 `pnpm verify` 与 144 项测试通过；文档、清单、format、lint、typecheck、
   Prisma validate、OpenAPI 74/74、Compose、完整 PostgreSQL/Redis E2E、生产构建和差异检查全部通过。
+- TASK-020 定向 2 个测试文件 10 项、移动端 28 个文件 92 项、移动端 typecheck 与全仓 lint 通过；首次全量
+  压力执行中既有周期快速提交用例单次抖动，单独复跑及最终完整 92 项复跑均通过。
+- TASK-020 真实 Google Chrome Headless/CDP 覆盖 13 个场景：320px、375px、480px、日间/暗色、正常、加载、
+  空、网络失败、只读、资源不可见、长文本和刷新恢复；均无横向溢出或小于 44px 的可见交互区。
+- TASK-020 Node.js 24.18.0 全仓 `pnpm verify` 与 153 项测试通过；format、lint、typecheck、Prisma validate、
+  OpenAPI 74/74、Compose、完整 PostgreSQL/Redis E2E、生产构建、文档、清单和差异检查全部通过。
+- 隔离 PostgreSQL 17 的 11 个迁移无待应用；认证、情侣、分类、Entry、借贷、周期、工资和攒钱完整 E2E
+  通过。依赖审计无已知漏洞；宿主 Redis 6.0.16 仅有最低 6.2 的非阻断提示，Compose/CI 使用 Redis 7.4。
 - 第十一迁移空库/历史升级、重复部署、status、零 diff、26 模型 introspection、47 个关键索引、73 个自定义
   约束和 15 个删除策略通过；新增 E2E 覆盖目标幂等、权限、并发贡献、状态回退、删除留痕和成员退出隔离。
 - OpenAPI 74/74 覆盖与具体统计响应 Schema 生成通过；手机入口 294 KB，统计图表独立懒加载。
@@ -212,7 +226,7 @@ M3、M4、M5、M6 已完成并合入 `main`；M7 的 TASK-019 已正式关闭，
 
 ## 下一项动作
 
-进入 TASK-020 攒钱目标移动端页面：按已批准目标/存入契约实现列表、创建、详情、贡献和完整移动端状态。
+完成 TASK-020 全仓复验、提交、PR、远程 CI、合并和正式关闭，随后进入 TASK-021 站内通知。
 
 ## 待负责人确认
 

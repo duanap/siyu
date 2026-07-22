@@ -109,6 +109,21 @@ export const router = createRouter({
       name: 'salary-month',
       component: () => import('./views/SalaryMonthView.vue'),
     },
+    {
+      path: '/saving-goals',
+      name: 'saving-goals',
+      component: () => import('./views/SavingGoalsView.vue'),
+    },
+    {
+      path: '/saving-goals/new',
+      name: 'saving-goal-new',
+      component: () => import('./views/SavingGoalCreateView.vue'),
+    },
+    {
+      path: '/saving-goals/:id',
+      name: 'saving-goal-detail',
+      component: () => import('./views/SavingGoalDetailView.vue'),
+    },
   ],
 });
 

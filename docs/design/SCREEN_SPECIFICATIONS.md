@@ -19,8 +19,9 @@
 | 11 | 工资首页 | `/salary` | 工资余额、当月实发和年度累计 | 加载、空、错误、无权限、夜间 |
 | 12 | 月度工资详情 | `/salary/:year/:month` | 收入项、扣除项、实发和到账 | 加载、空、错误、无权限、夜间 |
 | 13 | 年度工资统计 | `/salary/year/:year` | 月度趋势、五险一金与个税累计 | 加载、空、错误、无权限、夜间 |
-| 14 | 攒钱目标列表 | `/saving-goals` | 个人/情侣目标和完成进度 | 加载、空、错误、无权限、夜间 |
-| 15 | 攒钱目标详情 | `/saving-goals/:id` | 进度、存入记录和成员贡献 | 加载、空、错误、无权限、夜间 |
+| 14 | 攒钱目标列表 | `/saving-goals?ledgerId=` | 个人/情侣目标、完整分页、服务端进度和账本恢复 | 加载、空、错误、无权限、长文本、夜间 |
+| 14A | 新建攒钱目标 | `/saving-goals/new?ledgerId=` | 账本、目标/初始金额、日期、封面网址、备注和稳定幂等提交 | 错误、提交中、重复点击、长文本、夜间 |
+| 15 | 攒钱目标详情 | `/saving-goals/:id` | 服务端进度、成员贡献、存入增改删和 OWNER 目标管理 | 加载、空、错误、资源不可见、只读、提交中、长文本、夜间 |
 | 16 | 我的与设置 | `/profile` | 资料、主题、通知、导出和账号 | 加载、空、错误、无权限、夜间 |
 | 17 | 朝暮同笺管理 | `/couple/invite` | 创建账本、邀请/加入、成员、改名、转移、退出和解散 | 加载、空、错误、无权限、提交中、长昵称、夜间 |
 | 18 | 消息中心 | `/notifications` | 邀请、到期、失败、完成和未读状态 | 加载、空、错误、无权限、夜间 |
@@ -65,6 +66,15 @@
 `salary-error-375-light.png`、`salary-month-320-light.png`、`salary-month-375-dark.png`、
 `salary-paid-confirm-375-dark.png`、`salary-year-375-light.png`、`salary-year-375-dark.png` 和
 `salary-year-480-light.png`。
+
+攒钱目标列表、新建和详情已在 TASK-020 实现。列表完整读取目标分页并按账本恢复；目标与存入创建分别维护
+失败重试前稳定的幂等键，所有进度、状态和成员贡献直接消费服务端口径。目标操作只使用 `canManage/canContribute`，
+存入操作只使用 `canEdit/canDelete`，删除均二次确认，成功后重取详情。真实 Chrome 验收截图位于
+`output/playwright/saving-list-320-light.png`、`saving-list-375-light.png`、`saving-list-375-dark.png`、
+`saving-list-480-light.png`、`saving-empty-375-light.png`、`saving-error-375-light.png`、
+`saving-loading-375-dark.png`、`saving-new-320-light.png`、`saving-new-375-dark.png`、
+`saving-detail-375-light.png`、`saving-detail-375-dark.png`、`saving-readonly-375-light.png` 和
+`saving-restricted-375-light.png`。
 
 ## 页面交付要求
 
