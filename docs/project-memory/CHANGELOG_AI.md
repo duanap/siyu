@@ -762,3 +762,17 @@ TASK-017 正式关闭；下一项为 TASK-018 工资页面。
 ### 当前状态
 
 TASK-018 已完成本地交付候选与全部质量门；待提交、PR、远程 CI、合并和 main CI，尚未正式关闭。
+
+## 2026-07-22 / TASK-018 正式关闭
+
+### 关闭证据
+
+- 功能提交 `315079a2a807d97c76b07edeb9e7bc2a2cfd366a` 已推送并经 PR #24 Squash merge 合入
+  `main`；合并提交为 `2967c588b1d0d923f8ec2f6e36acc95c6270a579`。
+- PR CI Run `29922038043` 与 main push CI Run `29922213012` 的 `quality`、`database`、
+  `secret-scan` 全部通过；包含十迁移、数据库约束、完整 PostgreSQL/Redis E2E、构建、审计和秘密扫描。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-018 正式关闭，M6 完成；下一项为 TASK-019 攒钱目标 API。
