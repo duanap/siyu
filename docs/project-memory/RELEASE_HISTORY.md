@@ -112,3 +112,13 @@ PR #4 已以 Squash merge 合入 main，提交 `25dcad0a29951ba4269e318423d5ebbf
 状态：Node.js 24.18.0 全仓 123 项测试、九迁移/数据库约束、隔离 PostgreSQL 完整 E2E、生产构建和依赖
 审计已通过；功能提交 `243f2bf6a546f2fc4a6379fb4967fb71ed5ef52f` 经 PR #18 合入 `main`，PR CI Run
 `29907066496` 与 main push CI Run `29907257057` 全部通过，TASK-015 正式关闭。
+
+## v0.14.0-salary-payment
+
+日期：2026-07-22
+内容：实现工资到账终态、可选 `income.salary` 收入联动、到账独立幂等事实、同事务脱敏审计、第十迁移，
+以及工资记录与来源收入的双向延迟一致性和不可变约束。
+状态：Node.js 24.18.0 全仓 125 项测试、十迁移/数据库约束、隔离 PostgreSQL 完整 E2E、生产构建和依赖
+审计已通过；功能提交 `4b7222a649a72d9b60efc526e1bde8c72fc6b288` 经 PR #20 合入 `main`，合并提交为
+`4cfbd26ed24c42438ede27f57afef3a8c180e011`。PR CI Run `29912892385` 与 main push CI Run
+`29913079247` 全部通过，TASK-016 正式关闭。
