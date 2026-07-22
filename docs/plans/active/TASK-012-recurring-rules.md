@@ -2,7 +2,7 @@
 
 ## 状态
 
-本地交付候选，待提交、PR 与远程 CI
+已合并、远程 CI 通过并正式关闭
 
 ## 模型与推理
 
@@ -83,7 +83,7 @@
 - [x] OpenAPI、共享类型与架构文档
 - [x] 单元、数据库约束和 API E2E
 - [x] 全仓质量门、项目记忆和最终审查
-- [ ] 提交、PR、远程 CI、合并和 main CI
+- [x] 提交、PR、远程 CI、合并和 main CI
 
 ## 数据迁移与回滚
 
@@ -121,6 +121,8 @@ git diff --check
 - 2026-07-22：完成第七迁移、周期规则/实例 API、到期物化领域入口、OpenAPI/共享类型和架构文档。
 - 2026-07-22：复核修正失败实例仍可改计划与周期来源账目可被 SQL 篡改的缺口，服务和数据库双层锁定。
 - 2026-07-22：Node 24 下 103 项全仓测试、七迁移/约束、完整 API E2E、构建、审计和静态门禁通过。
+- 2026-07-22：功能提交 `558fdb8` 经 PR #12 合入 `main@0181f2e`；PR CI Run `29894967989` 与
+  main push CI Run `29895072247` 的 `quality`、`database`、`secret-scan` 全部通过。
 
 ## 决策记录
 
@@ -135,4 +137,5 @@ git diff --check
 Node.js 24.18.0 下 format、lint、typecheck、103 项全仓测试、Prisma/OpenAPI/Compose/原生配置、生产构建、
 依赖审计、七迁移历史/空库验证和完整 API E2E 全部通过。TASK-013 Worker 调度、TASK-014 页面及通知不在本任务范围。
 
-尚待：提交、推送、PR CI、合并和 main CI；这些完成前 TASK-012 不正式关闭。
+功能提交已通过 PR #12 合入 `main`；PR 与 main push 的质量、数据库和秘密扫描均通过，TASK-012 正式关闭。
+下一项为 TASK-013 BullMQ Worker 与幂等。
