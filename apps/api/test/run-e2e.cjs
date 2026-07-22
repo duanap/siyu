@@ -2055,6 +2055,265 @@ async function main() {
   assert.equal(outsiderSalaryBalance.body.data.available, false);
   assert.equal(outsiderSalaryBalance.body.data.salaryRecordId, null);
 
+  await request(server).get('/api/v1/saving-goals').expect(401);
+
+  const personalSavingBody = {
+    ledgerId: personalLedger.id,
+    name: '应急金',
+    targetCent: 50_000,
+    initialCent: 5_000,
+    targetDate: '2026-12-31',
+    note: '个人目标',
+    idempotencyKey: `saving-personal-${suffix}`,
+  };
+  const personalSaving = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(personalSavingBody)
+    .expect(201);
+  const personalSavingId = personalSaving.body.data.id;
+  assert.equal(personalSaving.body.data.savedCent, 5_000);
+  assert.equal(personalSaving.body.data.status, 'ACTIVE');
+  assert.equal(personalSaving.body.data.canManage, true);
+  assert.equal(personalSaving.body.data.canContribute, true);
+  assert.deepEqual(
+    personalSaving.body.data.contributorSummaries.map((item) => [item.userId, item.amountCent]),
+    [[userLogin.body.data.user.id, 5_000]],
+  );
+
+  const personalSavingReplay = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(personalSavingBody)
+    .expect(201);
+  assert.equal(personalSavingReplay.body.data.id, personalSavingId);
+  const personalSavingConflict = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...personalSavingBody, targetCent: 50_001 })
+    .expect(409);
+  assert.equal(personalSavingConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+
+  const outsiderPersonalGoal = await request(server)
+    .get(`/api/v1/saving-goals/${personalSavingId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  assert.equal(outsiderPersonalGoal.body.code, 'SAVING_GOAL_NOT_FOUND');
+  const outsiderPersonalCreate = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .send({
+      ...personalSavingBody,
+      idempotencyKey: `saving-outsider-${suffix}`,
+    })
+    .expect(404);
+  assert.equal(outsiderPersonalCreate.body.code, 'SAVING_LEDGER_NOT_FOUND');
+
+  const coupleSavingBody = {
+    ledgerId: coupleLedgerId,
+    name: '旅行基金',
+    targetCent: 10_000,
+    initialCent: 1_000,
+    targetDate: '2026-10-01',
+    coverUrl: 'https://example.com/saving-cover.png',
+    note: '情侣共同目标',
+    idempotencyKey: `saving-couple-${suffix}`,
+  };
+  const coupleSaving = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send(coupleSavingBody)
+    .expect(201);
+  const coupleSavingId = coupleSaving.body.data.id;
+  assert.equal(coupleSaving.body.data.creatorUserId, partner.user.id);
+  assert.equal(coupleSaving.body.data.canManage, false);
+  assert.equal(coupleSaving.body.data.canContribute, true);
+  assert.equal(coupleSaving.body.data.contributorSummaries.length, 2);
+
+  const ownerSavingDetail = await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(ownerSavingDetail.body.data.canManage, true);
+  assert.equal(ownerSavingDetail.body.data.contributions.length, 0);
+  const outsiderCoupleGoal = await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  assert.equal(outsiderCoupleGoal.body.code, 'SAVING_GOAL_NOT_FOUND');
+  const memberManageGoal = await request(server)
+    .patch(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ name: '越权修改' })
+    .expect(403);
+  assert.equal(memberManageGoal.body.code, 'SAVING_PERMISSION_DENIED');
+
+  const ownerContributionBody = {
+    amountCent: 4_000,
+    businessDate: '2026-07-20',
+    note: '本人存入',
+    idempotencyKey: `saving-owner-contribution-${suffix}`,
+  };
+  const partnerContributionBody = {
+    amountCent: 5_000,
+    businessDate: '2026-07-21',
+    note: '伴侣存入',
+    idempotencyKey: `saving-partner-contribution-${suffix}`,
+  };
+  const [ownerContribution, partnerContribution] = await Promise.all([
+    request(server)
+      .post(`/api/v1/saving-goals/${coupleSavingId}/contributions`)
+      .set('authorization', `Bearer ${ownerAccess}`)
+      .send(ownerContributionBody)
+      .expect(201),
+    request(server)
+      .post(`/api/v1/saving-goals/${coupleSavingId}/contributions`)
+      .set('authorization', `Bearer ${partner.accessToken}`)
+      .send(partnerContributionBody)
+      .expect(201),
+  ]);
+  assert.equal(ownerContribution.body.data.canEdit, true);
+  assert.equal(partnerContribution.body.data.canDelete, true);
+
+  const completedSaving = await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(completedSaving.body.data.savedCent, 10_000);
+  assert.equal(completedSaving.body.data.remainingCent, 0);
+  assert.equal(completedSaving.body.data.progressBasisPoints, 10_000);
+  assert.equal(completedSaving.body.data.status, 'COMPLETED');
+  assert.deepEqual(
+    completedSaving.body.data.contributorSummaries.map((item) => [item.userId, item.amountCent]),
+    [
+      [partner.user.id, 6_000],
+      [userLogin.body.data.user.id, 4_000],
+    ],
+  );
+
+  const ownerContributionReplay = await request(server)
+    .post(`/api/v1/saving-goals/${coupleSavingId}/contributions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(ownerContributionBody)
+    .expect(201);
+  assert.equal(ownerContributionReplay.body.data.id, ownerContribution.body.data.id);
+  const ownerContributionConflict = await request(server)
+    .post(`/api/v1/saving-goals/${coupleSavingId}/contributions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...ownerContributionBody, amountCent: 4_001 })
+    .expect(409);
+  assert.equal(ownerContributionConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+
+  const ownerCannotEditPartner = await request(server)
+    .patch(
+      `/api/v1/saving-goals/${coupleSavingId}/contributions/${partnerContribution.body.data.id}`,
+    )
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ amountCent: 1_000 })
+    .expect(404);
+  assert.equal(ownerCannotEditPartner.body.code, 'SAVING_CONTRIBUTION_NOT_FOUND');
+  await request(server)
+    .patch(
+      `/api/v1/saving-goals/${coupleSavingId}/contributions/${partnerContribution.body.data.id}`,
+    )
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .send({ amountCent: 1_000, note: null })
+    .expect(200);
+  const revertedSaving = await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(revertedSaving.body.data.savedCent, 6_000);
+  assert.equal(revertedSaving.body.data.status, 'ACTIVE');
+
+  await request(server)
+    .delete(
+      `/api/v1/saving-goals/${coupleSavingId}/contributions/${ownerContribution.body.data.id}`,
+    )
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  await request(server)
+    .delete(
+      `/api/v1/saving-goals/${coupleSavingId}/contributions/${ownerContribution.body.data.id}`,
+    )
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  const deletedContributionReplay = await request(server)
+    .post(`/api/v1/saving-goals/${coupleSavingId}/contributions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(ownerContributionBody)
+    .expect(409);
+  assert.equal(deletedContributionReplay.body.code, 'SAVING_CONTRIBUTION_DELETED');
+
+  const completedByTarget = await request(server)
+    .patch(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ targetCent: 1_500, note: null })
+    .expect(200);
+  assert.equal(completedByTarget.body.data.savedCent, 2_000);
+  assert.equal(completedByTarget.body.data.status, 'COMPLETED');
+  const activeByTarget = await request(server)
+    .patch(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ targetCent: 5_000 })
+    .expect(200);
+  assert.equal(activeByTarget.body.data.status, 'ACTIVE');
+
+  const filteredSavingList = await request(server)
+    .get('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .query({ ledgerId: coupleLedgerId, page: 1, pageSize: 1 })
+    .expect(200);
+  assert.equal(filteredSavingList.body.data.total, 1);
+  assert.equal(filteredSavingList.body.data.items[0].id, coupleSavingId);
+  assert.equal(filteredSavingList.body.data.hasNext, false);
+
+  const personalContribution = await request(server)
+    .post(`/api/v1/saving-goals/${personalSavingId}/contributions`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      amountCent: 2_000,
+      businessDate: '2026-07-22',
+      idempotencyKey: `saving-personal-contribution-${suffix}`,
+    })
+    .expect(201);
+  const deletedPersonalGoal = await request(server)
+    .delete(`/api/v1/saving-goals/${personalSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(deletedPersonalGoal.body.data.deleted, true);
+  await request(server)
+    .get(`/api/v1/saving-goals/${personalSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  const deletedGoalReplay = await request(server)
+    .post('/api/v1/saving-goals')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(personalSavingBody)
+    .expect(409);
+  assert.equal(deletedGoalReplay.body.code, 'SAVING_GOAL_DELETED');
+  assert.equal(
+    await prisma.savingContribution.count({
+      where: { id: personalContribution.body.data.id, goalId: personalSavingId },
+    }),
+    1,
+  );
+  assert.equal(
+    await prisma.savingGoal.count({
+      where: { id: personalSavingId, status: 'CANCELLED', deletedAt: { not: null } },
+    }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        targetId: { in: [personalSavingId, ownerContribution.body.data.id] },
+        action: { in: ['SAVING_GOAL_DELETE', 'SAVING_CONTRIBUTION_DELETE'] },
+      },
+    }),
+    2,
+  );
+
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -2085,9 +2344,18 @@ async function main() {
     .set('authorization', `Bearer ${ownerAccess}`)
     .expect(404);
   await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(404);
+  await request(server)
     .get(`/api/v1/ledgers/${coupleLedgerId}`)
     .set('authorization', `Bearer ${partner.accessToken}`)
     .expect(200);
+  const newOwnerSavingDetail = await request(server)
+    .get(`/api/v1/saving-goals/${coupleSavingId}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.equal(newOwnerSavingDetail.body.data.canManage, true);
 
   await request(server)
     .delete(`/api/v1/couple-ledgers/${coupleLedgerId}`)
@@ -2138,7 +2406,7 @@ async function main() {
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
   console.log(
-    'API health, authentication, couple ledger, category, Entry, debt, recurring, and salary E2E passed.',
+    'API health, authentication, couple ledger, category, Entry, debt, recurring, salary, and saving goal E2E passed.',
   );
 }
 

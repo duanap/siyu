@@ -10,6 +10,7 @@ import { EntriesModule } from './entries/entries.module';
 import { LedgersModule } from './ledgers/ledgers.module';
 import { RecurringModule } from './recurring/recurring.module';
 import { SalaryModule } from './salary/salary.module';
+import { SavingGoalsModule } from './saving-goals/saving-goals.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { UsersModule } from './users/users.module';
 
@@ -24,6 +25,7 @@ import { UsersModule } from './users/users.module';
     EntriesModule,
     RecurringModule,
     SalaryModule,
+    SavingGoalsModule,
     StatisticsModule,
   ],
   controllers: [HealthController],

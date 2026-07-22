@@ -249,6 +249,20 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 - `PATCH /saving-goals/:goalId/contributions/:id`
 - `DELETE /saving-goals/:goalId/contributions/:id`
 
+目标列表可选按 `ledgerId` 过滤，只返回当前用户仍是有效成员的未删除目标；目标详情返回有效存入记录和按用户
+归属的贡献汇总。初始金额计入创建者贡献但不生成虚构存入记录。列表和详情均返回 `savedCent`、
+`remainingCent`、整数万分比 `progressBasisPoints`、`canManage` 与 `canContribute`；存入记录返回
+`canEdit/canDelete`。
+
+创建目标与创建存入必须携带 `idempotencyKey`。同一用户和操作下同键同载荷重放原资源，同键异载荷或已删除
+原结果返回 409。个人账本 OWNER 与情侣双方有效成员可创建、读取及添加本人存入；只有账本 OWNER 可更新/
+删除目标，每位成员只能更新/删除本人存入。所有金额或目标金额变化在目标级事务锁内重新聚合并自动切换
+`ACTIVE/COMPLETED`；删除目标设置 `CANCELLED` 并保留历史存入。
+
+攒钱接口使用 `SAVING_GOAL_NOT_FOUND`、`SAVING_LEDGER_NOT_FOUND`、`SAVING_PERMISSION_DENIED`、
+`SAVING_GOAL_DELETED`、`SAVING_CONTRIBUTION_NOT_FOUND`、`SAVING_CONTRIBUTION_DELETED`、
+`SAVING_AMOUNT_OVERFLOW` 与通用 `IDEMPOTENCY_CONFLICT` 错误码。
+
 ### 统计、通知和导出
 
 - `GET /statistics/overview`

@@ -22,6 +22,7 @@ DECLARE
   required_indexes integer;
   required_constraints integer;
   required_delete_actions integer;
+  required_triggers integer;
 BEGIN
   SELECT count(*) INTO required_tables
   FROM information_schema.tables
@@ -83,10 +84,13 @@ BEGIN
       'salary_records_user_id_idempotency_key_key',
       'salary_records_user_payment_idempotency_key',
       'salary_items_salary_record_id_item_code_key',
-      'salary_records_user_id_salary_month_id_idx'
+      'salary_records_user_id_salary_month_id_idx',
+      'saving_goals_creator_user_id_idempotency_key_key',
+      'saving_goals_active_ledger_created_idx',
+      'saving_contributions_active_goal_date_idx'
     );
-  IF required_indexes <> 44 THEN
-    RAISE EXCEPTION 'Expected 44 critical indexes, found %', required_indexes;
+  IF required_indexes <> 47 THEN
+    RAISE EXCEPTION 'Expected 47 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -124,10 +128,15 @@ BEGIN
     'salary_profile_items_text_valid', 'salary_profile_items_amount_valid',
     'salary_records_idempotency_valid', 'salary_records_payment_idempotency_valid',
     'salary_records_entry_reference_valid', 'entries_salary_source_valid',
-    'salary_items_text_valid'
+    'salary_items_text_valid',
+    'saving_goals_creator_user_id_idempotency_key_key',
+    'saving_goals_creator_membership_fkey', 'saving_goals_text_valid',
+    'saving_goals_idempotency_valid', 'saving_goals_status_consistent',
+    'saving_contributions_text_valid', 'saving_contributions_idempotency_valid',
+    'saving_contributions_request_hash_valid'
   );
-  IF required_constraints <> 65 THEN
-    RAISE EXCEPTION 'Expected 65 custom constraints, found %', required_constraints;
+  IF required_constraints <> 73 THEN
+    RAISE EXCEPTION 'Expected 73 custom constraints, found %', required_constraints;
   END IF;
 
   SELECT count(*) INTO required_delete_actions
@@ -144,12 +153,28 @@ BEGIN
     ('entries_creator_membership_fkey', 'r'),
     ('recurring_rules_category_scope_fkey', 'r'),
     ('recurring_rules_owner_membership_fkey', 'r'),
+    ('saving_goals_creator_membership_fkey', 'r'),
     ('recurring_runs_confirmation_user_id_fkey', 'r'),
     ('ledger_invitations_accepted_by_user_id_fkey', 'n'),
     ('audit_logs_actor_user_id_fkey', 'n')
   );
-  IF required_delete_actions <> 14 THEN
-    RAISE EXCEPTION 'Expected 14 critical delete actions, found %', required_delete_actions;
+  IF required_delete_actions <> 15 THEN
+    RAISE EXCEPTION 'Expected 15 critical delete actions, found %', required_delete_actions;
+  END IF;
+
+  SELECT count(*) INTO required_triggers
+  FROM pg_trigger
+  WHERE NOT tgisinternal
+    AND tgname IN (
+      'saving_goals_active_creator',
+      'saving_contributions_active_member',
+      'saving_goals_create_facts_immutable',
+      'saving_contributions_create_facts_immutable',
+      'saving_goals_summary_consistent',
+      'saving_contributions_summary_consistent'
+    );
+  IF required_triggers <> 6 THEN
+    RAISE EXCEPTION 'Expected 6 saving integrity triggers, found %', required_triggers;
   END IF;
 
   IF EXISTS (
@@ -164,6 +189,18 @@ BEGIN
       AND indexdef NOT LIKE '%WHERE (deleted_at IS NULL)%'
   ) THEN
     RAISE EXCEPTION 'Expected all normal Entry query indexes to be partial on deleted_at IS NULL';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname IN (
+        'saving_goals_active_ledger_created_idx',
+        'saving_contributions_active_goal_date_idx'
+      )
+      AND indexdef NOT LIKE '%WHERE (deleted_at IS NULL)%'
+  ) THEN
+    RAISE EXCEPTION 'Expected saving query indexes to be partial on deleted_at IS NULL';
   END IF;
 END $$;
 
@@ -403,15 +440,47 @@ SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, pro
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, idempotency_key, create_request_hash, payment_idempotency_key, payment_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', '40000000-0000-4000-8000-000000000045', 'salary-record-075', repeat('c', 64), 'salary-paid-075', repeat('2', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'salary entry unique');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, idempotency_key, create_request_hash, payment_idempotency_key, payment_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', 'salary-record-075', repeat('c', 64), 'salary-paid-071', repeat('2', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'salary payment idempotency unique');
 
-INSERT INTO saving_goals (id, ledger_id, creator_user_id, name, target_cent, initial_cent, saved_cent, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', '旅行', 100000, 1000, 1000, CURRENT_TIMESTAMP);
+INSERT INTO saving_goals (
+  id, ledger_id, creator_user_id, name, target_cent, initial_cent, saved_cent,
+  idempotency_key, create_request_hash, updated_at
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000010',
+  '00000000-0000-0000-0000-000000000001', '旅行', 100000, 1000, 1000,
+  'saving-goal-080', repeat('1', 64), CURRENT_TIMESTAMP
+);
 SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_goals SET target_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000080'$sql$, '23514', 'saving goal target');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_goals SET saved_cent = 999 WHERE id = '00000000-0000-0000-0000-000000000080'$sql$, '23514', 'saving goal saved amount');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_goals SET creator_user_id = '00000000-0000-0000-0000-000000000002' WHERE id = '00000000-0000-0000-0000-000000000080'$sql$, '23514', 'saving goal create facts immutable');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_goals (id, ledger_id, creator_user_id, name, target_cent, initial_cent, saved_cent, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000083', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', '重复目标', 1000, 0, 0, 'saving-goal-080', repeat('2', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'saving goal idempotency unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_goals (id, ledger_id, creator_user_id, name, target_cent, initial_cent, saved_cent, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000084', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', '越权目标', 1000, 0, 0, 'saving-goal-084', repeat('3', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'saving goal creator active membership');
 
-INSERT INTO saving_contributions (id, goal_id, user_id, amount_cent, business_date, idempotency_key, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000081', '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', CURRENT_TIMESTAMP);
+BEGIN;
+INSERT INTO saving_contributions (
+  id, goal_id, user_id, amount_cent, business_date, idempotency_key, create_request_hash, updated_at
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000081', '00000000-0000-0000-0000-000000000080',
+  '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', repeat('4', 64),
+  CURRENT_TIMESTAMP
+);
+UPDATE saving_goals SET saved_cent = 1100 WHERE id = '00000000-0000-0000-0000-000000000080';
+COMMIT;
 SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_contributions SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000081'$sql$, '23514', 'saving contribution amount');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_contributions (id, goal_id, user_id, amount_cent, business_date, idempotency_key, updated_at) VALUES ('00000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', CURRENT_TIMESTAMP)$sql$, '23505', 'saving contribution idempotency unique');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_contributions SET create_request_hash = repeat('5', 64) WHERE id = '00000000-0000-0000-0000-000000000081'$sql$, '23514', 'saving contribution create facts immutable');
+BEGIN;
+SET CONSTRAINTS saving_goals_summary_consistent IMMEDIATE;
+SELECT pg_temp.expect_sqlstate($sql$UPDATE saving_goals SET saved_cent = 1101 WHERE id = '00000000-0000-0000-0000-000000000080'$sql$, '23514', 'saving goal deferred summary');
+ROLLBACK;
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_contributions (id, goal_id, user_id, amount_cent, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000082', '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000001', 100, '2026-07-11', 'shared-key', repeat('6', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'saving contribution idempotency unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO saving_contributions (id, goal_id, user_id, amount_cent, business_date, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000085', '00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000002', 100, '2026-07-11', 'saving-member-085', repeat('7', 64), CURRENT_TIMESTAMP)$sql$, '23514', 'saving contribution active membership');
+BEGIN;
+UPDATE saving_goals SET target_cent = 1100, status = 'COMPLETED' WHERE id = '00000000-0000-0000-0000-000000000080';
+COMMIT;
+BEGIN;
+UPDATE saving_contributions SET deleted_at = CURRENT_TIMESTAMP WHERE id = '00000000-0000-0000-0000-000000000081';
+UPDATE saving_goals SET saved_cent = 1000, status = 'ACTIVE' WHERE id = '00000000-0000-0000-0000-000000000080';
+COMMIT;
 
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '40000000-0000-4000-8000-000000000043'$sql$, '23503', 'debt-linked entry delete restrict');
 SELECT pg_temp.expect_sqlstate($sql$DELETE FROM entries WHERE id = '40000000-0000-4000-8000-000000000042'$sql$, '23503', 'recurring-linked entry delete restrict');

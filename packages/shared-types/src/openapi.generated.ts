@@ -1391,20 +1391,43 @@ export interface components {
       data: components['schemas']['SalaryBalance'];
       requestId: string;
     };
+    SavingContributorSummary: {
+      /** Format: uuid */
+      userId: string;
+      contributorName: string;
+      amountCent: components['schemas']['NonNegativeCent'];
+    };
     SavingGoal: {
       /** Format: uuid */
       id: string;
       /** Format: uuid */
       ledgerId: string;
+      ledgerName: string;
+      /** @enum {string} */
+      ledgerType: 'PERSONAL' | 'COUPLE';
       /** Format: uuid */
       creatorUserId: string;
+      creatorName: string;
       name: string;
       targetCent: components['schemas']['Cent'];
       initialCent: components['schemas']['NonNegativeCent'];
       savedCent: components['schemas']['NonNegativeCent'];
-      targetDate?: components['schemas']['BusinessDate'] | null;
+      remainingCent: components['schemas']['NonNegativeCent'];
+      progressBasisPoints: number;
+      targetDate: components['schemas']['BusinessDate'] | null;
       /** @enum {string} */
       status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+      /** Format: uri */
+      coverUrl: string | null;
+      note: string | null;
+      contributorSummaries: components['schemas']['SavingContributorSummary'][];
+      readonly canManage: boolean;
+      readonly canContribute: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
+    };
+    SavingGoalDetail: components['schemas']['SavingGoal'] & {
+      contributions: components['schemas']['SavingContribution'][];
     };
     SavingContribution: {
       /** Format: uuid */
@@ -1413,9 +1436,14 @@ export interface components {
       goalId: string;
       /** Format: uuid */
       userId: string;
+      contributorName: string;
       amountCent: components['schemas']['Cent'];
       businessDate: components['schemas']['BusinessDate'];
-      note?: string | null;
+      note: string | null;
+      readonly canEdit: boolean;
+      readonly canDelete: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
     };
     Notification: {
       /** Format: uuid */
@@ -1526,6 +1554,47 @@ export interface components {
         pageSize: number;
         total: number;
         hasNext: boolean;
+      };
+      requestId: string;
+    };
+    SavingGoalResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SavingGoal'];
+      requestId: string;
+    };
+    SavingGoalDetailResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SavingGoalDetail'];
+      requestId: string;
+    };
+    SavingGoalListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['SavingGoal'][];
+        page: number;
+        pageSize: number;
+        total: number;
+        hasNext: boolean;
+      };
+      requestId: string;
+    };
+    SavingContributionResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SavingContribution'];
+      requestId: string;
+    };
+    SavingDeleteResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        /** Format: uuid */
+        id: string;
+        /** @constant */
+        deleted: true;
       };
       requestId: string;
     };
@@ -1884,6 +1953,7 @@ export interface components {
       /** Format: uri */
       coverUrl?: string | null;
       note?: string | null;
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateSavingGoalRequest: {
       name?: string;
@@ -2126,6 +2196,60 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['SalaryBalanceResponse'];
+      };
+    };
+    /** @description 当前用户可见的攒钱目标分页查询成功 */
+    SavingGoalListOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingGoalListResponse'];
+      };
+    };
+    /** @description 攒钱目标创建或幂等重放成功 */
+    SavingGoalCreated: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingGoalResponse'];
+      };
+    };
+    /** @description 攒钱目标详情查询或更新成功 */
+    SavingGoalDetailOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingGoalDetailResponse'];
+      };
+    };
+    /** @description 存入记录创建或幂等重放成功 */
+    SavingContributionCreated: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingContributionResponse'];
+      };
+    };
+    /** @description 本人存入记录更新成功 */
+    SavingContributionOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingContributionResponse'];
+      };
+    };
+    /** @description 目标或本人存入记录软删除成功 */
+    SavingDeleteOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SavingDeleteResponse'];
       };
     };
     /** @description CSV 文件 */
@@ -3293,7 +3417,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['SavingGoalListOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
     };
   };
@@ -3310,9 +3435,12 @@ export interface operations {
       };
     };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['SavingGoalCreated'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
     };
   };
   getSavingGoal: {
@@ -3326,7 +3454,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SavingGoalDetailOk'];
+      401: components['responses']['Unauthorized'];
       404: components['responses']['NotFound'];
     };
   };
@@ -3341,7 +3470,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['SavingDeleteOk'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
     };
@@ -3361,7 +3491,9 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SavingGoalDetailOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
     };
@@ -3381,7 +3513,10 @@ export interface operations {
       };
     };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['SavingContributionCreated'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
     };
@@ -3398,7 +3533,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['SavingDeleteOk'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
     };
@@ -3419,7 +3555,9 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SavingContributionOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
     };
