@@ -222,7 +222,14 @@ onMounted(initialize);
           </div>
         </section>
 
-        <p class="module-note">工资、借贷、周期和攒钱模块上线后，相关首页卡片才会在这里出现。</p>
+        <RouterLink
+          v-if="selectedLedger?.type === 'PERSONAL'"
+          class="debt-entry surface-card"
+          to="/debts"
+          ><span><b>个人借贷</b><small>查看负债、待收款、到期与处理记录</small></span
+          ><strong>进入 ›</strong></RouterLink
+        >
+        <p class="module-note">工资、周期和攒钱模块上线后，相关首页卡片才会在这里出现。</p>
       </template>
     </template>
   </main>
@@ -337,6 +344,32 @@ onMounted(initialize);
   font-size: 12px;
   line-height: 1.7;
   text-align: center;
+}
+.debt-entry {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+  color: var(--siyu-text);
+  text-decoration: none;
+}
+.debt-entry span {
+  min-width: 0;
+}
+.debt-entry b,
+.debt-entry small {
+  display: block;
+}
+.debt-entry small {
+  margin-top: 5px;
+  color: var(--siyu-text-secondary);
+  line-height: 1.5;
+}
+.debt-entry strong {
+  flex: 0 0 auto;
+  color: var(--siyu-primary);
 }
 @media (max-width: 340px) {
   .dashboard-controls,

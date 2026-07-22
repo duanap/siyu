@@ -67,6 +67,13 @@ export const router = createRouter({
     { path: '/entries', name: 'entries', component: EntriesView },
     { path: '/entries/new', name: 'entry-new', component: EntryCreateView },
     { path: '/entries/:id', name: 'entry-detail', component: EntryDetailView },
+    { path: '/debts', name: 'debts', component: () => import('./views/DebtsView.vue') },
+    { path: '/debts/new', name: 'debt-new', component: () => import('./views/DebtCreateView.vue') },
+    {
+      path: '/debts/:id',
+      name: 'debt-detail',
+      component: () => import('./views/DebtDetailView.vue'),
+    },
     {
       path: '/statistics',
       name: 'statistics',

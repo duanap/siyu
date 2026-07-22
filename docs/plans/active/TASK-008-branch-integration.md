@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation and local validation complete; publication pending.
+Completed and merged into `main` through PR #9.
 
 ## Goal
 
@@ -36,7 +36,7 @@ without regressing TASK-009 statistics, TASK-010 debt APIs, or native runtime su
 - [x] Merge `task/TASK-008-entry-ui` into the integration branch.
 - [x] Resolve code and documentation conflicts in favor of the newest complete behavior.
 - [x] Run mobile and repository quality gates.
-- [ ] Push, open a PR, pass CI, and merge into `main`.
+- [x] Push, open PR #9, pass CI, and merge into `main`.
 
 ## Validation
 
@@ -62,3 +62,5 @@ database integration gate for this branch.
 - Lint, typecheck, Prisma validation, OpenAPI 74/74 coverage, build, manifest, and
   required-document checks pass. Redocly validates the contract but its Windows process
   exits with a libuv assertion after success; GitHub CI remains the authoritative Linux gate.
+- PR #9 merged as `2b4b384c7dcac23e58e2042f0a3f43ea79679277`; main push CI Run
+  `29571310880` passed `quality`, `database`, and `secret-scan`. TASK-008 is formally closed.
