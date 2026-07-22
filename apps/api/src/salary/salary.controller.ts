@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
   ParseUUIDPipe,
@@ -19,6 +20,7 @@ import {
   CreateSalaryProfileDto,
   CreateSalaryRecordDto,
   ListSalaryRecordsDto,
+  MarkSalaryPaidDto,
   UpdateSalaryProfileDto,
   UpdateSalaryRecordDto,
 } from './salary.dto';
@@ -104,6 +106,20 @@ export class SalaryController {
     return this.success(
       request,
       await this.salary.updateRecord(request.auth.userId, id, body, request.requestId),
+    );
+  }
+
+  @Post('records/:id/mark-paid')
+  @HttpCode(200)
+  async markPaid(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() body: MarkSalaryPaidDto,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<object> {
+    await this.rateLimit.consume('salary-write', request.auth.userId, 60, 600);
+    return this.success(
+      request,
+      await this.salary.markPaid(request.auth.userId, id, body, request.requestId),
     );
   }
 }

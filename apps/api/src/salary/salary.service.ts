@@ -14,6 +14,7 @@ import type {
   CreateSalaryProfileDto,
   CreateSalaryRecordDto,
   ListSalaryRecordsDto,
+  MarkSalaryPaidDto,
   SalaryRecordItemDto,
   SalaryTemplateItemDto,
   UpdateSalaryProfileDto,
@@ -53,6 +54,12 @@ function parseMonth(value: string): Date {
   }
   return parsed;
 }
+export function parseSalaryPaidDate(value: string): Date {
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || dateOnly(parsed) !== value)
+    throw invalid('SALARY_PAID_DATE_INVALID', '到账日期必须是有效业务日期');
+  return parsed;
+}
 export function previousSalaryMonth(value: Date): Date {
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth() - 1, 1));
 }
@@ -86,6 +93,34 @@ function recordHash(input: CreateSalaryRecordDto): string {
     salaryMonth: input.salaryMonth,
     copyPreviousMonth: input.copyPreviousMonth,
     items: input.items ? canonicalItems(input.items) : null,
+  });
+}
+export function salaryPaymentRequestHash(recordId: string, input: MarkSalaryPaidDto): string {
+  return requestHash({
+    contractVersion: 1,
+    recordId,
+    paidDate: input.paidDate,
+    syncEntry: input.syncEntry,
+  });
+}
+function salaryEntryHash(input: {
+  ledgerId: string;
+  categoryId: string;
+  amountCent: bigint;
+  paidDate: string;
+  recordId: string;
+}): string {
+  return requestHash({
+    contractVersion: 1,
+    ledgerId: input.ledgerId,
+    type: 'INCOME',
+    amountCent: input.amountCent.toString(),
+    categoryId: input.categoryId,
+    businessDate: input.paidDate,
+    note: '工资到账',
+    paymentMethod: null,
+    sourceType: 'SALARY',
+    sourceId: input.recordId,
   });
 }
 
@@ -394,6 +429,87 @@ export class SalaryService {
         targetId: id,
         requestId,
         afterJson: { itemCount: items.length },
+      });
+      return recordView(actor, updated);
+    });
+  }
+
+  async markPaid(
+    userId: string,
+    id: string,
+    input: MarkSalaryPaidDto,
+    requestId: string,
+  ): Promise<object> {
+    const paidDate = parseSalaryPaidDate(input.paidDate);
+    const hash = salaryPaymentRequestHash(id, input);
+    return this.repository.transaction(async (tx) => {
+      await this.repository.lock(tx, [
+        `siyu:salary-record:${id}`,
+        `siyu:salary-payment:${userId}:${input.idempotencyKey}`,
+      ]);
+      const actor = await this.repository.findActor(tx, userId);
+      const current = await this.repository.findRecord(tx, userId, id);
+      if (!actor || !current) throw invisible();
+      if (actor.status !== 'ACTIVE') throw forbidden();
+
+      const replay = await this.repository.findRecordByPaymentIdempotency(
+        tx,
+        userId,
+        input.idempotencyKey,
+      );
+      if (replay) {
+        if (
+          replay.id === id &&
+          replay.deletedAt === null &&
+          replay.paymentStatus === 'PAID' &&
+          replay.paymentRequestHash === hash
+        )
+          return recordView(actor, replay);
+        throw conflict('IDEMPOTENCY_CONFLICT', '幂等键已用于不同的工资到账请求');
+      }
+      if (current.paymentStatus === 'PAID')
+        throw conflict('SALARY_ALREADY_PAID', '工资记录已经确认到账');
+
+      let entryId: string | null = null;
+      if (input.syncEntry) {
+        const ledger = await this.repository.findPersonalLedger(tx, userId);
+        if (!ledger)
+          throw conflict('SALARY_SYNC_LEDGER_UNAVAILABLE', '个人账本不可用，无法同步收入');
+        const category = await this.repository.findSalaryCategory(tx, ledger.id);
+        if (!category)
+          throw conflict('SALARY_SYNC_CATEGORY_UNAVAILABLE', '工资收入分类已停用，无法同步收入');
+        const entry = await this.repository.createSalaryEntry(tx, {
+          ledgerId: ledger.id,
+          creatorUserId: userId,
+          amountCent: current.netCent,
+          categoryId: category.id,
+          businessDate: paidDate,
+          sourceId: id,
+          idempotencyKey: `salary-paid:${id}`,
+          createRequestHash: salaryEntryHash({
+            ledgerId: ledger.id,
+            categoryId: category.id,
+            amountCent: current.netCent,
+            paidDate: input.paidDate,
+            recordId: id,
+          }),
+        });
+        entryId = entry.id;
+      }
+
+      const updated = await this.repository.markRecordPaid(tx, id, {
+        paidDate,
+        entryId,
+        paymentIdempotencyKey: input.idempotencyKey,
+        paymentRequestHash: hash,
+      });
+      await this.repository.audit(tx, {
+        actorUserId: userId,
+        action: 'SALARY_RECORD_PAID',
+        targetType: 'SALARY_RECORD',
+        targetId: id,
+        requestId,
+        afterJson: { syncEntry: input.syncEntry, entryLinked: entryId !== null },
       });
       return recordView(actor, updated);
     });

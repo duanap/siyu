@@ -530,27 +530,30 @@ model SalaryProfileItem {
 }
 
 model SalaryRecord {
-  id                String              @id @default(uuid()) @db.Uuid
-  userId            String              @map("user_id") @db.Uuid
-  profileId         String              @map("profile_id") @db.Uuid
-  salaryMonth       DateTime            @map("salary_month") @db.Date
-  grossCent         BigInt              @map("gross_cent")
-  deductionCent     BigInt              @map("deduction_cent")
-  netCent           BigInt              @map("net_cent")
-  paymentStatus     SalaryPaymentStatus @default(UNPAID) @map("payment_status")
-  paidDate          DateTime?           @map("paid_date") @db.Date
-  entryId           String?             @unique @map("entry_id") @db.Uuid
-  idempotencyKey    String              @map("idempotency_key")
-  createRequestHash String              @map("create_request_hash")
-  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt         DateTime?           @map("deleted_at") @db.Timestamptz
+  id                    String              @id @default(uuid()) @db.Uuid
+  userId                String              @map("user_id") @db.Uuid
+  profileId             String              @map("profile_id") @db.Uuid
+  salaryMonth           DateTime            @map("salary_month") @db.Date
+  grossCent             BigInt              @map("gross_cent")
+  deductionCent         BigInt              @map("deduction_cent")
+  netCent               BigInt              @map("net_cent")
+  paymentStatus         SalaryPaymentStatus @default(UNPAID) @map("payment_status")
+  paidDate              DateTime?           @map("paid_date") @db.Date
+  entryId               String?             @unique @map("entry_id") @db.Uuid
+  idempotencyKey        String              @map("idempotency_key")
+  createRequestHash     String              @map("create_request_hash")
+  paymentIdempotencyKey String?             @map("payment_idempotency_key")
+  paymentRequestHash    String?             @map("payment_request_hash")
+  createdAt             DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt             DateTime?           @map("deleted_at") @db.Timestamptz
 
   user    User          @relation(fields: [userId], references: [id])
   profile SalaryProfile @relation(fields: [profileId], references: [id])
-  entry   Entry?        @relation(fields: [entryId], references: [id])
+  entry   Entry?        @relation(fields: [entryId], references: [id], onDelete: Restrict)
   items   SalaryItem[]
 
+  @@unique([userId, paymentIdempotencyKey], map: "salary_records_user_payment_idempotency_key")
   @@index([userId, salaryMonth])
   @@map("salary_records")
 }

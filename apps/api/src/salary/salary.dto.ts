@@ -19,6 +19,7 @@ import { SalaryItemType } from '@prisma/client';
 
 const MAX_SAFE_CENT = Number.MAX_SAFE_INTEGER;
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-01$/;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const IDEMPOTENCY_PATTERN = /^[A-Za-z0-9._:-]+$/;
 const ITEM_CODE_PATTERN = /^[a-z][a-z0-9_]{0,49}$/;
 const trim = ({ value }: { value: unknown }): unknown =>
@@ -192,4 +193,19 @@ export class UpdateSalaryRecordDto {
   @ValidateNested({ each: true })
   @Type(() => SalaryRecordItemDto)
   items!: SalaryRecordItemDto[];
+}
+
+export class MarkSalaryPaidDto {
+  @IsString()
+  @Matches(DATE_PATTERN)
+  paidDate!: string;
+
+  @IsBoolean()
+  syncEntry!: boolean;
+
+  @Transform(trim)
+  @IsString()
+  @Length(8, 128)
+  @Matches(IDEMPOTENCY_PATTERN)
+  idempotencyKey!: string;
 }
