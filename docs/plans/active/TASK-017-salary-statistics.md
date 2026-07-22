@@ -2,7 +2,7 @@
 
 ## 状态
 
-本地交付候选
+已完成并正式关闭
 
 ## 模型与推理
 
@@ -79,7 +79,7 @@
 - [x] 将两个 OpenAPI 操作细化为具体响应并生成共享类型
 - [x] 补齐单元测试和完整 API E2E
 - [x] 全仓质量门、文档、项目记忆和清单
-- [ ] 提交、PR、CI、合并、main CI 与正式关闭
+- [x] 提交、PR、CI、合并、main CI 与正式关闭
 
 ## 数据迁移与回滚
 
@@ -120,7 +120,12 @@ git diff --check
 - 2026-07-22：format、lint、typecheck、Prisma validate/migrate test、OpenAPI 74/74、Compose、生产构建、
   依赖审计和差异检查通过；最终 E2E 首次因隔离 PostgreSQL 未运行在注册阶段失败，恢复容器并部署十次迁移后
   无代码改动即完整通过，确认不是实现回归。
+- 2026-07-22：功能提交 `23420de1a434b0a3b299b90e2438b991bc30bfb7` 经 PR #22 Squash merge 合入
+  `main`，合并提交为 `e972fe54c6228ff6079494f10b32a38fc50415af`。
+- 2026-07-22：PR CI Run `29917586181` 与 main push CI Run `29917758079` 的 `quality`、`database`、
+  `secret-scan` 全部通过；项目记忆、任务清单、发布历史和验证报告同步，TASK-017 正式关闭。
 
 ## 完成结果
 
-TASK-017 已完成本地交付候选与全部质量门；待提交、PR、远程 CI、合并和 main CI，尚未正式关闭。
+工资年度汇总、当前工资周期余额、短月/时区边界、本人个人账本固定与日常支出口径已完成；本地完整质量门、
+PR CI 与 main CI 全部通过，TASK-017 正式关闭。下一项为 TASK-018 工资页面。

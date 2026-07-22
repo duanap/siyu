@@ -715,3 +715,17 @@ TASK-016 正式关闭；下一项为 TASK-017 工资余额与年度统计。
 ### 当前状态
 
 TASK-017 已完成本地交付候选与全部质量门；待提交、PR、远程 CI、合并和 main CI，尚未正式关闭。
+
+## 2026-07-22 / TASK-017 正式关闭
+
+### 关闭证据
+
+- 功能提交 `23420de1a434b0a3b299b90e2438b991bc30bfb7` 已推送并经 PR #22 Squash merge 合入
+  `main`；合并提交为 `e972fe54c6228ff6079494f10b32a38fc50415af`。
+- PR CI Run `29917586181` 与 main push CI Run `29917758079` 的 `quality`、`database`、
+  `secret-scan` 全部通过；包含十迁移、数据库约束、完整 PostgreSQL/Redis E2E 和秘密扫描。
+- 项目状态、任务清单、发布历史、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-017 正式关闭；下一项为 TASK-018 工资页面。
