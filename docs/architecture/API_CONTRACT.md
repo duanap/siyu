@@ -194,6 +194,8 @@ DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_
 
 ### 工资
 
+TASK-015 已实现以下本人工资私有接口：
+
 - `GET /salary/profiles`
 - `POST /salary/profiles`
 - `PATCH /salary/profiles/:id`
@@ -201,9 +203,26 @@ DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_
 - `POST /salary/records`
 - `GET /salary/records/:id`
 - `PATCH /salary/records/:id`
+
+MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建必须提交 `defaultItems` 和
+`idempotencyKey`；模板项目允许金额为 0，项目代码在档案内唯一。相同用户、幂等键和规范载荷重放原档案，
+不同载荷返回 `IDEMPOTENCY_CONFLICT`。
+
+月度记录创建必须在 `items` 与 `copyPreviousMonth=true` 中二选一并携带 `idempotencyKey`。复制只读取同一档案
+紧邻的上一个自然月，不跨月回退；月度项目金额必须为正、代码在记录内唯一且至少含一项收入。`grossCent`、
+`deductionCent` 和 `netCent` 均由服务端按明细计算，并在同一事务受数据库延迟约束校验。一个档案同一月份只能
+存在一条有效记录；已到账记录不可通过更新接口修改。工资档案和记录只按当前用户查询，越权详情统一返回 404。
+
+以下工资能力仍由后续任务实现：
+
 - `POST /salary/records/:id/mark-paid`
 - `GET /salary/summary/:year`
 - `GET /salary/balance`
+
+工资接口使用 `SALARY_NOT_FOUND`、`SALARY_PERMISSION_DENIED`、`SALARY_PROFILE_EXISTS`、
+`SALARY_MONTH_DUPLICATE`、`SALARY_PREVIOUS_MONTH_NOT_FOUND`、`SALARY_ITEM_SOURCE_INVALID`、
+`SALARY_ITEM_DUPLICATE`、`SALARY_EARNING_REQUIRED`、`SALARY_DEDUCTION_EXCEEDS_GROSS`、
+`SALARY_ALREADY_PAID` 与通用 `IDEMPOTENCY_CONFLICT` 错误码。
 
 ### 攒钱目标
 

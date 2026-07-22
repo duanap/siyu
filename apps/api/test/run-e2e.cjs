@@ -1607,6 +1607,205 @@ async function main() {
   await activeWorkerRuntime.close();
   activeWorkerRuntime = undefined;
 
+  const salaryProfileKey = `salary-profile-${suffix}`;
+  const salaryProfileBody = {
+    name: '主工资',
+    employerName: '测试公司',
+    payDay: 10,
+    defaultSyncEntry: true,
+    defaultItems: [
+      {
+        itemType: 'EARNING',
+        itemCode: 'base_salary',
+        itemName: '基本工资',
+        amountCent: 1_200_000,
+        sortOrder: 100,
+      },
+      {
+        itemType: 'DEDUCTION',
+        itemCode: 'income_tax',
+        itemName: '个人所得税',
+        amountCent: 100_000,
+        sortOrder: 200,
+      },
+    ],
+    idempotencyKey: salaryProfileKey,
+  };
+  const salaryProfile = await request(server)
+    .post('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(salaryProfileBody)
+    .expect(201);
+  const salaryProfileId = salaryProfile.body.data.id;
+  assert.equal(salaryProfile.body.data.defaultItems.length, 2);
+  assert.equal(JSON.stringify(salaryProfile.body).includes('createRequestHash'), false);
+  assert.equal(JSON.stringify(salaryProfile.body).includes('idempotencyKey'), false);
+  const salaryProfileReplay = await request(server)
+    .post('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(salaryProfileBody)
+    .expect(201);
+  assert.equal(salaryProfileReplay.body.data.id, salaryProfileId);
+  const salaryProfileConflict = await request(server)
+    .post('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...salaryProfileBody, name: '不同工资', idempotencyKey: salaryProfileKey })
+    .expect(409);
+  assert.equal(salaryProfileConflict.body.code, 'IDEMPOTENCY_CONFLICT');
+  const secondSalaryProfile = await request(server)
+    .post('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...salaryProfileBody, name: '第二工资', idempotencyKey: `salary-second-${suffix}` })
+    .expect(409);
+  assert.equal(secondSalaryProfile.body.code, 'SALARY_PROFILE_EXISTS');
+  await request(server)
+    .patch(`/api/v1/salary/profiles/${salaryProfileId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ employerName: null, payDay: 12 })
+    .expect(200);
+  const ownerSalaryProfiles = await request(server)
+    .get('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(ownerSalaryProfiles.body.data.items.length, 1);
+  const outsiderSalaryProfiles = await request(server)
+    .get('/api/v1/salary/profiles')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(200);
+  assert.equal(outsiderSalaryProfiles.body.data.items.length, 0);
+
+  const julySalaryBody = {
+    profileId: salaryProfileId,
+    salaryMonth: '2026-07-01',
+    items: [
+      {
+        itemType: 'EARNING',
+        itemCode: 'base_salary',
+        itemName: '基本工资',
+        amountCent: 1_200_000,
+        sortOrder: 100,
+      },
+      {
+        itemType: 'EARNING',
+        itemCode: 'bonus',
+        itemName: '奖金',
+        amountCent: 50_000,
+        sortOrder: 150,
+      },
+      {
+        itemType: 'DEDUCTION',
+        itemCode: 'income_tax',
+        itemName: '个人所得税',
+        amountCent: 100_000,
+        sortOrder: 200,
+      },
+    ],
+    idempotencyKey: `salary-july-${suffix}`,
+  };
+  const julySalary = await request(server)
+    .post('/api/v1/salary/records')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(julySalaryBody)
+    .expect(201);
+  const julySalaryId = julySalary.body.data.id;
+  assert.equal(julySalary.body.data.grossCent, 1_250_000);
+  assert.equal(julySalary.body.data.deductionCent, 100_000);
+  assert.equal(julySalary.body.data.netCent, 1_150_000);
+  assert.equal(julySalary.body.data.canEdit, true);
+  const julySalaryReplay = await request(server)
+    .post('/api/v1/salary/records')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send(julySalaryBody)
+    .expect(201);
+  assert.equal(julySalaryReplay.body.data.id, julySalaryId);
+  const duplicateJulySalary = await request(server)
+    .post('/api/v1/salary/records')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ...julySalaryBody, idempotencyKey: `salary-july-duplicate-${suffix}` })
+    .expect(409);
+  assert.equal(duplicateJulySalary.body.code, 'SALARY_MONTH_DUPLICATE');
+
+  const augustSalary = await request(server)
+    .post('/api/v1/salary/records')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      profileId: salaryProfileId,
+      salaryMonth: '2026-08-01',
+      copyPreviousMonth: true,
+      idempotencyKey: `salary-august-${suffix}`,
+    })
+    .expect(201);
+  const augustSalaryId = augustSalary.body.data.id;
+  assert.equal(augustSalary.body.data.grossCent, 1_250_000);
+  assert.deepEqual(
+    augustSalary.body.data.items.map((item) => ({
+      itemType: item.itemType,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      amountCent: item.amountCent,
+      sortOrder: item.sortOrder,
+    })),
+    julySalary.body.data.items.map((item) => ({
+      itemType: item.itemType,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      amountCent: item.amountCent,
+      sortOrder: item.sortOrder,
+    })),
+  );
+  const updatedAugustSalary = await request(server)
+    .patch(`/api/v1/salary/records/${augustSalaryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      items: [
+        {
+          itemType: 'EARNING',
+          itemCode: 'base_salary',
+          itemName: '基本工资',
+          amountCent: 1_300_000,
+          sortOrder: 100,
+        },
+        {
+          itemType: 'DEDUCTION',
+          itemCode: 'income_tax',
+          itemName: '个人所得税',
+          amountCent: 110_000,
+          sortOrder: 200,
+        },
+      ],
+    })
+    .expect(200);
+  assert.equal(updatedAugustSalary.body.data.netCent, 1_190_000);
+  const salaryList = await request(server)
+    .get('/api/v1/salary/records')
+    .query({ year: 2026, profileId: salaryProfileId })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(salaryList.body.data.total, 2);
+  assert.deepEqual(
+    salaryList.body.data.items.map((item) => item.salaryMonth),
+    ['2026-08-01', '2026-07-01'],
+  );
+  await request(server)
+    .get(`/api/v1/salary/records/${julySalaryId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+  await request(server)
+    .patch(`/api/v1/salary/records/${julySalaryId}`)
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .send({ items: julySalaryBody.items })
+    .expect(404);
+  await prisma.salaryRecord.update({
+    where: { id: julySalaryId },
+    data: { paymentStatus: 'PAID', paidDate: new Date('2026-07-12T00:00:00.000Z') },
+  });
+  const immutablePaidSalary = await request(server)
+    .patch(`/api/v1/salary/records/${julySalaryId}`)
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ items: julySalaryBody.items })
+    .expect(409);
+  assert.equal(immutablePaidSalary.body.code, 'SALARY_ALREADY_PAID');
+
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -1690,7 +1889,7 @@ async function main() {
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
   console.log(
-    'API health, authentication, couple ledger, category, Entry, debt, and recurring E2E passed.',
+    'API health, authentication, couple ledger, category, Entry, debt, recurring, and salary E2E passed.',
   );
 }
 
