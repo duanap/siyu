@@ -666,3 +666,17 @@ TASK-015 正式关闭；下一项为 TASK-016 工资到账与收入联动。
 ### 当前状态
 
 TASK-016 已完成本地交付候选与全部质量门；待提交、PR、远程 CI、合并和 main CI，尚未正式关闭。
+
+## 2026-07-22 / TASK-016 正式关闭
+
+### 关闭证据
+
+- 功能提交 `4b7222a649a72d9b60efc526e1bde8c72fc6b288` 已推送并经 PR #20 Squash merge 合入
+  `main`；合并提交为 `4cfbd26ed24c42438ede27f57afef3a8c180e011`。
+- PR CI Run `29912892385` 与 main push CI Run `29913079247` 的 `quality`、`database`、
+  `secret-scan` 全部通过；包含十迁移、数据库约束、完整 PostgreSQL/Redis E2E 和秘密扫描。
+- 项目状态、任务清单、发布历史、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-016 正式关闭；下一项为 TASK-017 工资余额与年度统计。
