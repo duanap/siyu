@@ -895,3 +895,17 @@ TASK-020 正式关闭，M7 完成；下一项为 TASK-021 站内通知。
 ### 当前状态
 
 TASK-021 已完成本地交付候选；待提交、PR、远程 CI、合并和 main CI 后正式关闭。
+
+## 2026-07-22 / TASK-021 正式关闭
+
+### 关闭证据
+
+- 功能提交 `1e9b6582951ef33fd8970f6bb746b4d6bb688783` 已推送并经 PR #30 Squash merge 合入
+  `main`；合并提交为 `1b87e87c45af5fa5e361374719f6f0b70c8b886a`。
+- PR CI Run `29943627794` 与 main push CI Run `29943823960` 的 `quality`、`database`、
+  `secret-scan` 全部通过；两轮均覆盖迁移、完整 PostgreSQL/Redis E2E、构建、依赖审计和秘密扫描。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-021 正式关闭；下一项为 TASK-022 最小管理后台。

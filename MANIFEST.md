@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `3cbb1a0f0656873658dba26c04e2ab60e41270dce9a0cdfca9e385cfc5a5cffb` |
+| `VALIDATION_REPORT.md` | `f00af94437222e46e830aa101fc4cbef1810cf5b5a6697f5309038ee2e29f1a8` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -300,7 +300,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `c9b929adf4f009c331246e0617e5a12519891181251ca7356c94068775ae1f38` |
+| `docs/plans/TASK_BACKLOG.md` | `9ab1cbdbf74caa9461a64885211787ba8e975777e9d158673a711f423bd95fb2` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -321,7 +321,7 @@
 | `docs/plans/active/TASK-018-salary-ui.md` | `595bf2cde08aa2ea013a66e3ed38662e67dcb6018950762c3584c3e2909a57da` |
 | `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
 | `docs/plans/active/TASK-020-saving-goals-ui.md` | `b74a0fe8a398d79bb7d990908b502fcd2cc7eeb37c8aa7858a56e58e50cc5758` |
-| `docs/plans/active/TASK-021-notifications.md` | `15fe45c334a3ad9222770bb3239974fd1712227dc44081bb67aef500e9a256dc` |
+| `docs/plans/active/TASK-021-notifications.md` | `f6a7342c9126506eb342d39c0ef2971563b709833cdc01ead8b4fc4242cf228c` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `3a1600adff6fc7d3b5010e5a0affe8770902909fc5999595e9a297ec10fe27fa` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -329,10 +329,10 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `6aa1e2ea99d827c8d8575b5fed6e2b1fe6506a5b24013939568738fa744736a9` |
-| `docs/project-memory/CURRENT_STATE.md` | `a2ad2978b1dcaae226cef68c338cd9b7b83e4cb71b0ec6a566de4ada6c8bc787` |
+| `docs/project-memory/CHANGELOG_AI.md` | `77e15bd803620636a6347cfc922935919abf75bda06d02f005f469b1b95517d2` |
+| `docs/project-memory/CURRENT_STATE.md` | `885d4dbb7a646d927df81a7f3b724d5a78adca508fc5b1c58f2e12d9957a9761` |
 | `docs/project-memory/DECISIONS.md` | `3574467159dc47e374dc4ce3984c8019b8271ab0a41da8c228cec23b31aba3ca` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `866613fc4cd46692e8db825e30d7fef91d8fab8fefd06cc367c51a027244d92b` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `d23a7b971e4bf8a4fb9d44d1146a8e9a515858c720001c200b4bce7732da1143` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
