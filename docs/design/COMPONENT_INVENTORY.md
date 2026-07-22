@@ -39,7 +39,9 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | DebtSummaryCard | 借贷完整汇总、完整性加载与失败状态 |
 | DebtProgressCard | 借贷列表方向、进度、到期和剩余金额 |
 | DebtEditorForm | 借贷新增与详情编辑的共享表单 |
-| RecurringBillCard | 首页、周期列表 |
+| RecurringRuleCard | 周期列表的规则状态、计划、金额、期数和服务端能力入口 |
+| RecurringRunCard | 周期列表与详情的实例状态、计划日、金额和确认/跳过入口 |
+| RecurringRuleForm | 周期规则创建与详情编辑共享表单 |
 | SavingGoalCard | 首页、目标列表 |
 | CoupleMemberSummary | 情侣首页、统计 |
 | CoupleLedgerManager | 情侣账本创建、邀请、成员、所有权和解散 |

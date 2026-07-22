@@ -15,6 +15,7 @@
 | 08 | 借贷详情 | `/debts/:id` | 进度、处理记录、还款或收款 | 加载、空、错误、无权限、夜间 |
 | 09 | 周期记账 | `/recurring` | 到期、待确认、规则状态和分期 | 加载、空、错误、无权限、夜间 |
 | 10 | 创建周期账目 | `/recurring/new` | 频率、模式、期数、账本和提醒 | 加载、空、错误、无权限、夜间 |
+| 10A | 周期规则详情 | `/recurring/:id` | 执行记录、编辑、暂停、恢复、删除、确认与跳过 | 加载、空、错误、无权限、提交中、夜间 |
 | 11 | 工资首页 | `/salary` | 工资余额、当月实发和年度累计 | 加载、空、错误、无权限、夜间 |
 | 12 | 月度工资详情 | `/salary/:year/:month` | 收入项、扣除项、实发和到账 | 加载、空、错误、无权限、夜间 |
 | 13 | 年度工资统计 | `/salary/year/:year` | 月度趋势、五险一金与个税累计 | 加载、空、错误、无权限、夜间 |
@@ -47,6 +48,14 @@
 `debts-480-light.png`、`debt-new-320-light.png`、`debt-new-375-dark.png`、
 `debt-detail-375-light.png`、`debt-detail-375-dark.png`、`debt-process-375-dark.png`、`debts-empty-375-light.png`、
 `debts-error-375-light.png` 和 `debt-404-375-light.png`。
+
+周期列表、创建和详情已在 TASK-014 实现。列表完整读取规则与待确认实例分页，不用局部数据伪造月度汇总；
+创建和确认失败重试复用稳定幂等键，编辑、暂停、恢复、删除、确认和跳过只消费服务端能力字段。真实 Chrome
+验收截图位于 `output/playwright/recurring-320-light.png`、`recurring-375-light.png`、
+`recurring-375-dark.png`、`recurring-480-light.png`、`recurring-empty-375-light.png`、
+`recurring-error-375-light.png`、`recurring-new-320-light.png`、`recurring-new-bottom-320-light.png`、
+`recurring-new-375-dark.png`、`recurring-detail-375-light.png`、`recurring-detail-375-dark.png`、
+`recurring-confirm-375-dark.png` 和 `recurring-404-375-light.png`。
 
 ## 页面交付要求
 
