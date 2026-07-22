@@ -11,6 +11,7 @@
 | 05 | 账目明细 | `/entries` | 日期分组、月份和类型筛选、搜索 | 加载、空、错误、无权限、夜间 |
 | 06 | 统计 | `/statistics` | 概览、趋势、分类占比和排行 | 加载、空、错误、无权限、夜间 |
 | 07 | 借贷列表 | `/debts` | 我欠别人的/别人欠我的、汇总和逾期 | 加载、空、错误、无权限、夜间 |
+| 07A | 新增借贷 | `/debts/new` | 方向、对方、整数分金额、业务日期、到期和提醒偏好 | 错误、提交中、重复点击、长文本、夜间 |
 | 08 | 借贷详情 | `/debts/:id` | 进度、处理记录、还款或收款 | 加载、空、错误、无权限、夜间 |
 | 09 | 周期记账 | `/recurring` | 到期、待确认、规则状态和分期 | 加载、空、错误、无权限、夜间 |
 | 10 | 创建周期账目 | `/recurring/new` | 频率、模式、期数、账本和提醒 | 加载、空、错误、无权限、夜间 |
@@ -39,6 +40,13 @@
 `output/playwright/home-320-light.png`、`home-375-dark.png`、`statistics-320-light.png`、
 `statistics-375-dark.png`、`statistics-480-light.png`、`statistics-375-empty-light.png` 和
 `statistics-375-no-access-light.png`。
+
+借贷列表、新增和详情已在 TASK-011 本地实现。借贷只在个人入口出现，汇总必须完整读取分页和详情；新增与处理
+失败重试复用幂等键，删除使用服务端能力字段和二次确认。真实 Chrome 验收截图位于
+`output/playwright/debts-320-light.png`、`debts-375-light.png`、`debts-375-dark.png`、
+`debts-480-light.png`、`debt-new-320-light.png`、`debt-new-375-dark.png`、
+`debt-detail-375-light.png`、`debt-detail-375-dark.png`、`debt-process-375-dark.png`、`debts-empty-375-light.png`、
+`debts-error-375-light.png` 和 `debt-404-375-light.png`。
 
 ## 页面交付要求
 

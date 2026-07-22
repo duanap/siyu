@@ -168,7 +168,7 @@ describe('TASK-009 home and statistics views', () => {
     expect(wrapper.text()).toContain('¥ 3,268.00');
     expect(wrapper.text()).toContain('这是一个用于验证长文本的成员昵称');
     expect(wrapper.text()).toContain('晚餐');
-    expect(wrapper.text()).toContain('工资、借贷、周期和攒钱模块上线后');
+    expect(wrapper.text()).toContain('工资、周期和攒钱模块上线后');
     expect(wrapper.text()).not.toContain('工资还剩多少');
     expect(localStorage.getItem('siyu-current-ledger-id')).toBe(ledger.id);
   });

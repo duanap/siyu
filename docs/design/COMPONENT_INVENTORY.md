@@ -36,8 +36,9 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | EntryDetailCard | 账目完整字段、来源和历史分类状态 |
 | MonthlySummaryCard | 首页 |
 | SalaryBalanceCard | 个人首页、工资首页 |
-| DebtSummaryCard | 首页、借贷 |
-| DebtProgressCard | 借贷列表 |
+| DebtSummaryCard | 借贷完整汇总、完整性加载与失败状态 |
+| DebtProgressCard | 借贷列表方向、进度、到期和剩余金额 |
+| DebtEditorForm | 借贷新增与详情编辑的共享表单 |
 | RecurringBillCard | 首页、周期列表 |
 | SavingGoalCard | 首页、目标列表 |
 | CoupleMemberSummary | 情侣首页、统计 |

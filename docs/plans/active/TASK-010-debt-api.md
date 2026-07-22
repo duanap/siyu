@@ -2,7 +2,7 @@
 
 ## 状态
 
-阻塞（实现完成；数据库迁移与隔离 E2E 等待 Docker/PostgreSQL/Redis 环境）
+已合并进 `main`、数据库与隔离 E2E 在 GitHub CI 通过并正式关闭
 
 ## 模型与推理
 
@@ -45,7 +45,7 @@
 - TASK-007 已提供只读来源账目边界、来源唯一键、个人账本与默认分类。
 - Debt/DebtTransaction 基础模型已存在，但没有业务模块、创建请求哈希、借贷创建幂等和完整来源一致性触发器。
 - 负责人于 2026-07-16 批准 `1A 2A 3A 4A`；TASK-010 的 KI-006 阻塞已解除。
-- 当前源码快照没有 `.git`，无法取得未提交 diff 或形成分支/提交/远端 CI 证据。
+- 实现已由 PR #8 合入 `main`，并经 PR #9 的完整分支整合复验。
 
 ## 风险
 
@@ -61,9 +61,9 @@
 - [x] 设计或数据契约
 - [x] 实现
 - [x] 单元测试
-- [ ] 集成/E2E
+- [x] 集成/E2E
 - [x] 文档和项目记忆
-- [ ] 最终审查
+- [x] 最终审查
 
 ## 数据迁移与回滚
 
@@ -93,9 +93,13 @@ pnpm verify
 - 2026-07-16：加入原生运行回归后全仓 61 项测试、lint、typecheck、Prisma validate、OpenAPI lint/74 覆盖、Compose 静态检查和 build 通过。
 - 2026-07-16：本机无 Docker/PostgreSQL/Redis；`pnpm test:e2e` 在 Redis `ECONNREFUSED` 停止，迁移回放和数据库黑盒验收待环境恢复。
 - 2026-07-16：新增不依赖 Docker 的原生运行模式，可连接本机或云 PostgreSQL/Redis，并直接启动 API、Worker、Vite 或生产静态网关；当前机器仍未安装数据库服务。
+- 2026-07-17：PR #8 合并为 `3060ebf0ffb2ef3de5d5f974c07ac18cadd0c88b`；PR 与 main push CI 的
+  `quality`、`database`、`secret-scan` 全部通过。`quality` 执行借贷黑盒 `test:e2e`，`database` 执行
+  第六迁移部署和数据库约束脚本。
+- 2026-07-17：PR #9 完整整合提交 `2b4b384c7dcac23e58e2042f0a3f43ea79679277` 再次通过全部 CI 作业。
 
 ## 完成结果
 
-借贷实现和非数据库质量门已完成。由于当前机器没有 Docker CLI、PostgreSQL、Redis 或 psql，尚未执行第六迁移
-回放、数据库约束及隔离 E2E；在这些门通过前 TASK-010 不标记完成。当前源码快照无 `.git`，也无法形成提交、
-远端 CI 或 `git diff --check` 证据。
+借贷 API、第六迁移、数据库约束、隐私、并发幂等、来源账目联动和删除边界均已实现。虽然原开发机器
+缺少 Docker/PostgreSQL/Redis，本任务要求的迁移、约束和隔离 E2E 已由 Linux GitHub CI 补验通过；
+TASK-010 正式关闭，后续由 TASK-011 实现移动端借贷页面和统计。
