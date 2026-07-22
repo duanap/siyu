@@ -89,6 +89,8 @@ flowchart TB
 - Auth 模块实现邮箱密码和 QQ OAuth；Session/Refresh、RBAC 和密码重置均持久化到 PostgreSQL，
   OAuth state 与认证限流使用 Redis。
 - Worker 只消费 BullMQ 任务，不暴露业务 HTTP 接口，不复制领域规则。
+- 周期 Worker 通过 Nest 应用上下文复用 `RecurringService`；稳定账期 Job ID 只负责投递去重，最终幂等仍由
+  PostgreSQL 的规则锁、实例唯一键、来源唯一键和通知条件唯一索引保证。
 - TASK-000 只建立两个入口和 Redis 连接能力，不注册业务 Controller、Repository 或 Job。
 
 ## 统计

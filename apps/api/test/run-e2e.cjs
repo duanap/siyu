@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 
-const { Queue } = require('bullmq');
+const { Queue, QueueEvents } = require('bullmq');
 const IORedis = require('ioredis');
 const request = require('supertest');
 
@@ -10,16 +10,34 @@ const { createApp } = require('../dist/app');
 const { loadEnvironmentFile, readConfig } = require('../dist/config');
 const { PrismaService } = require('../dist/database/prisma.service');
 const { RecurringService } = require('../dist/recurring/recurring.service');
+const { businessToday, dateOnly } = require('../dist/recurring/recurring.dates');
+const {
+  RECURRING_MATERIALIZE_JOB,
+  RECURRING_QUEUE,
+  RECURRING_SCAN_JOB,
+  RECURRING_SCAN_SCHEDULER,
+  recurringMaterializeJobId,
+} = require('../dist/recurring/recurring.jobs');
+const { startWorker } = require('../dist/worker');
 
 let activeApp;
 let activePrisma;
 let activeQueue;
+let activeQueueEvents;
+let activeWorkerRuntime;
+let activeSecondWorkerRuntime;
 
 async function closeResources() {
+  await activeQueueEvents?.close();
+  await activeSecondWorkerRuntime?.close();
+  await activeWorkerRuntime?.close();
   await activeQueue?.close();
   await activePrisma?.$disconnect();
   await activeApp?.close();
   activeQueue = undefined;
+  activeQueueEvents = undefined;
+  activeWorkerRuntime = undefined;
+  activeSecondWorkerRuntime = undefined;
   activePrisma = undefined;
   activeApp = undefined;
 }
@@ -1185,6 +1203,17 @@ async function main() {
     confirmScheduledDate,
   );
   assert.equal(pendingRun.status, 'PENDING');
+  assert.equal(
+    await prisma.notification.count({
+      where: {
+        userId: user.id,
+        type: 'RECURRING_CONFIRMATION_DUE',
+        relatedType: 'RECURRING_RUN',
+        relatedId: pendingRun.id,
+      },
+    }),
+    1,
+  );
   const lockedSchedule = await request(server)
     .patch(`/api/v1/recurring-rules/${confirmRule.body.data.id}`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -1360,11 +1389,223 @@ async function main() {
     .set('authorization', `Bearer ${ownerAccess}`)
     .expect(200);
   assert.equal(resumedMemberRule.body.data.status, 'ACTIVE');
+  const memberRuleScheduledDate = new Date(
+    `${resumedMemberRule.body.data.nextRunDate}T00:00:00.000Z`,
+  );
+  const memberPendingRun = await recurring.materializeDueRule(
+    memberRule.body.data.id,
+    memberRuleScheduledDate,
+  );
+  assert.equal(memberPendingRun.status, 'PENDING');
+  assert.deepEqual(
+    (
+      await prisma.notification.findMany({
+        where: {
+          type: 'RECURRING_CONFIRMATION_DUE',
+          relatedType: 'RECURRING_RUN',
+          relatedId: memberPendingRun.id,
+        },
+        orderBy: { userId: 'asc' },
+        select: { userId: true },
+      })
+    ).map((notification) => notification.userId),
+    [user.id, partner.user.id].sort(),
+  );
   const visibleRuns = await request(server)
     .get('/api/v1/recurring-runs')
     .set('authorization', `Bearer ${ownerAccess}`)
     .expect(200);
   assert.equal(visibleRuns.body.data.total >= 3, true);
+
+  const workerNow = new Date();
+  const workerBusinessDate = dateOnly(businessToday(user.timezone, workerNow));
+  const workerRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: 'Worker 自动入账',
+      startDate: workerBusinessDate,
+      totalOccurrences: 1,
+      idempotencyKey: `recurring-worker-${suffix}`,
+    })
+    .expect(201);
+  const workerLogs = [];
+  activeWorkerRuntime = await startWorker({
+    enqueueStartupScan: false,
+    now: () => workerNow,
+    log: (record) => workerLogs.push(record),
+  });
+  activeSecondWorkerRuntime = await startWorker({
+    registerScheduler: false,
+    enqueueStartupScan: false,
+    now: () => workerNow,
+    log: (record) => workerLogs.push(record),
+  });
+  assert.ok(await activeWorkerRuntime.recurringQueue.getJobScheduler(RECURRING_SCAN_SCHEDULER));
+  activeQueueEvents = new QueueEvents(RECURRING_QUEUE, {
+    connection: { url: readConfig().redisUrl },
+  });
+  await activeQueueEvents.waitUntilReady();
+  const scanJob = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_SCAN_JOB,
+    { trigger: 'test' },
+    { jobId: `recurring-scan-e2e-${suffix}`, removeOnComplete: false },
+  );
+  await scanJob.waitUntilFinished(activeQueueEvents, 15_000);
+  const workerMaterializeId = recurringMaterializeJobId(
+    workerRule.body.data.id,
+    workerBusinessDate,
+  );
+  const workerMaterializeJob = await activeWorkerRuntime.recurringQueue.getJob(workerMaterializeId);
+  assert.ok(workerMaterializeJob);
+  await workerMaterializeJob.waitUntilFinished(activeQueueEvents, 15_000);
+  const workerRun = await prisma.recurringRun.findFirstOrThrow({
+    where: { ruleId: workerRule.body.data.id },
+  });
+  assert.equal(workerRun.status, 'GENERATED');
+  assert.equal(workerRun.attempts, 1);
+  assert.equal(
+    await prisma.entry.count({ where: { sourceType: 'RECURRING_RUN', sourceId: workerRun.id } }),
+    1,
+  );
+  const duplicateWorkerJob = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_MATERIALIZE_JOB,
+    { ruleId: workerRule.body.data.id, scheduledDate: workerBusinessDate },
+    { jobId: workerMaterializeId },
+  );
+  assert.equal(duplicateWorkerJob.id, workerMaterializeId);
+  await duplicateWorkerJob.waitUntilFinished(activeQueueEvents, 15_000);
+  assert.equal(
+    (
+      await prisma.recurringRun.findFirstOrThrow({
+        where: { ruleId: workerRule.body.data.id },
+      })
+    ).attempts,
+    1,
+  );
+
+  const workerConfirmRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: 'Worker 待确认账目',
+      startDate: workerBusinessDate,
+      totalOccurrences: 1,
+      generationMode: 'CONFIRM',
+      idempotencyKey: `recurring-worker-confirm-${suffix}`,
+    })
+    .expect(201);
+  const workerConfirmJob = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_MATERIALIZE_JOB,
+    { ruleId: workerConfirmRule.body.data.id, scheduledDate: workerBusinessDate },
+    {
+      jobId: recurringMaterializeJobId(workerConfirmRule.body.data.id, workerBusinessDate),
+    },
+  );
+  await workerConfirmJob.waitUntilFinished(activeQueueEvents, 15_000);
+  const workerPendingRun = await prisma.recurringRun.findFirstOrThrow({
+    where: { ruleId: workerConfirmRule.body.data.id },
+  });
+  assert.equal(workerPendingRun.status, 'PENDING');
+  assert.equal(
+    await prisma.notification.count({
+      where: {
+        userId: user.id,
+        type: 'RECURRING_CONFIRMATION_DUE',
+        relatedType: 'RECURRING_RUN',
+        relatedId: workerPendingRun.id,
+      },
+    }),
+    1,
+  );
+
+  const staleRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: 'Worker 过期任务',
+      startDate: workerBusinessDate,
+      totalOccurrences: 1,
+      idempotencyKey: `recurring-worker-stale-${suffix}`,
+    })
+    .expect(201);
+  const staleDate = dateOnly(
+    new Date(new Date(`${workerBusinessDate}T00:00:00.000Z`).getTime() - 86_400_000),
+  );
+  const staleJob = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_MATERIALIZE_JOB,
+    { ruleId: staleRule.body.data.id, scheduledDate: staleDate },
+    { jobId: recurringMaterializeJobId(staleRule.body.data.id, staleDate) },
+  );
+  assert.deepEqual(await staleJob.waitUntilFinished(activeQueueEvents, 15_000), {
+    materialized: false,
+  });
+  assert.equal(await prisma.recurringRun.count({ where: { ruleId: staleRule.body.data.id } }), 0);
+
+  const failedWorkerRule = await request(server)
+    .post('/api/v1/recurring-rules')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ...autoRulePayload,
+      name: 'Worker 业务失败',
+      startDate: workerBusinessDate,
+      totalOccurrences: 1,
+      idempotencyKey: `recurring-worker-failed-${suffix}`,
+    })
+    .expect(201);
+  await prisma.category.update({
+    where: { id: personalExpenseCategory.id },
+    data: { isEnabled: false },
+  });
+  const failedWorkerJob = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_MATERIALIZE_JOB,
+    { ruleId: failedWorkerRule.body.data.id, scheduledDate: workerBusinessDate },
+    {
+      jobId: recurringMaterializeJobId(failedWorkerRule.body.data.id, workerBusinessDate),
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 100 },
+      removeOnFail: false,
+    },
+  );
+  await assert.rejects(
+    failedWorkerJob.waitUntilFinished(activeQueueEvents, 15_000),
+    /RECURRING_CATEGORY_DISABLED/,
+  );
+  const failedWorkerRun = await prisma.recurringRun.findFirstOrThrow({
+    where: { ruleId: failedWorkerRule.body.data.id },
+  });
+  assert.equal(failedWorkerRun.status, 'FAILED');
+  assert.equal(failedWorkerRun.attempts, 1);
+  assert.equal(failedWorkerRun.lastError, 'RECURRING_CATEGORY_DISABLED');
+  const failureRescan = await activeWorkerRuntime.recurringQueue.add(
+    RECURRING_SCAN_JOB,
+    { trigger: 'test' },
+    { jobId: `recurring-failure-rescan-${suffix}`, removeOnComplete: false },
+  );
+  await failureRescan.waitUntilFinished(activeQueueEvents, 15_000);
+  assert.equal(
+    (
+      await prisma.recurringRun.findFirstOrThrow({
+        where: { ruleId: failedWorkerRule.body.data.id },
+      })
+    ).attempts,
+    1,
+  );
+  await prisma.category.update({
+    where: { id: personalExpenseCategory.id },
+    data: { isEnabled: true },
+  });
+  assert.equal(JSON.stringify(workerLogs).includes('amountCent'), false);
+  assert.equal(JSON.stringify(workerLogs).includes('Worker 自动入账'), false);
+  await activeQueueEvents.close();
+  activeQueueEvents = undefined;
+  await activeSecondWorkerRuntime.close();
+  activeSecondWorkerRuntime = undefined;
+  await activeWorkerRuntime.close();
+  activeWorkerRuntime = undefined;
 
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)

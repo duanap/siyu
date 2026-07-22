@@ -13,7 +13,25 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://siyu:siyu_test_only@localhost:55432/siyu_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: siyu-ci-test-only-jwt-secret-at-least-32-characters
+      SIYU_MAIL_PROVIDER: test
     services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: siyu_test
+          POSTGRES_USER: siyu
+          POSTGRES_PASSWORD: siyu_test_only
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U siyu -d siyu_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
       redis:
         image: redis:7-alpine
         ports:
@@ -44,6 +62,7 @@ jobs:
       - run: pnpm openapi:generate && git diff --exit-code -- packages/shared-types/src/openapi.generated.ts
       - run: pnpm compose:check
       - run: docker compose config --quiet
+      - run: pnpm --filter @siyu/api prisma:migrate:deploy
       - run: pnpm test:e2e
       - run: pnpm build
       - run: pnpm audit --audit-level moderate

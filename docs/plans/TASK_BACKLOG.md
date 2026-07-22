@@ -15,7 +15,7 @@
 | TASK-010 | 借贷数据和 API（已合并、CI 通过并正式关闭） | M4 | Sol | High | TASK-007 |
 | TASK-011 | 借贷页面和统计（已合并、CI 通过并正式关闭） | M4 | Terra | Medium | TASK-010 |
 | TASK-012 | 周期规则和实例（已合并、CI 通过并正式关闭） | M5 | Sol | Extra High | TASK-007 |
-| TASK-013 | BullMQ Worker 与幂等 | M5 | Sol | Extra High | TASK-012 |
+| TASK-013 | BullMQ Worker 与幂等（本地交付候选，待 PR/CI） | M5 | Sol | Extra High | TASK-012 |
 | TASK-014 | 周期记账页面 | M5 | Terra | Medium | TASK-012 |
 | TASK-015 | 工资档案和月度记录 | M6 | Sol | High | TASK-007 |
 | TASK-016 | 工资到账与收入联动 | M6 | Sol | Extra High | TASK-015 |
