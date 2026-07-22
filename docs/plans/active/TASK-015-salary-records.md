@@ -2,7 +2,7 @@
 
 ## 状态
 
-本地交付候选；待提交、PR、远程 CI、合并与正式关闭
+已完成并正式关闭
 
 ## 模型与推理
 
@@ -80,7 +80,7 @@
 - [x] 补齐具体 OpenAPI 请求/响应/错误和共享类型
 - [x] 单元、数据库约束、并发与完整 API E2E
 - [x] 全仓质量门、文档与项目记忆
-- [ ] 提交、PR、CI、合并、main CI 与正式关闭
+- [x] 提交、PR、CI、合并、main CI 与正式关闭
 
 ## 数据迁移与回滚
 
@@ -120,7 +120,11 @@ git diff --check
   BullMQ 最低版本提示，Compose/CI 基线继续使用 Redis 7.4。
 - 2026-07-22：Node.js 24.18.0 全仓 `pnpm verify`、123 项测试、真实 PostgreSQL E2E、生产构建、文档、
   清单、差异检查和依赖审计通过；九迁移完整回放复验通过。
+- 2026-07-22：功能提交 `243f2bf6a546f2fc4a6379fb4967fb71ed5ef52f` 经 PR #18 Squash merge 合入
+  `main`，合并提交为 `8d3bb4f012a4e4c275e3f96d2ebc54c39ceb6fe4`；PR CI Run `29907066496` 与
+  main push CI Run `29907257057` 的 `quality`、`database`、`secret-scan` 全部通过。
 
 ## 完成结果
 
-本地实现与完整质量门已完成；提交、PR、远程 CI、合并和 main CI 尚待执行，因此 TASK-015 尚未正式关闭。
+工资档案、默认模板、月度记录、第九迁移、具体 API 契约、数据库约束、完整 E2E、PR CI 与 main CI 均已
+通过，TASK-015 正式关闭；下一项为 TASK-016 工资到账与收入联动。
