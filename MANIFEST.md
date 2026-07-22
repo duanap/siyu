@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `1ffbbc6c97b2e9751aadf12e6cc7848882d473c87ee76b0ce3b1dbaa83d1a089` |
+| `VALIDATION_REPORT.md` | `477ce83d7e3ad8a1095a9f2a9de986f4630a55aa1c74e1f0d88d87cc7148f998` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -234,7 +234,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `3be824342b5db9478281c77b67959db5a3f606757784c1bcc10d9fdbd141f1c5` |
+| `docs/plans/TASK_BACKLOG.md` | `b04da197af9ca5a9aec42d469cbfb3729910181130fc119a525fde6f4f6c86d4` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -245,7 +245,7 @@
 | `docs/plans/active/TASK-008-entry-ui.md` | `24f870ee4c85e8af62d4c72e434dec267666c1e8b0aadfa323c61b4c2099ab96` |
 | `docs/plans/active/TASK-009-home-statistics.md` | `77852e4f1f1ad263be936a60f365c3bdc1b556565cbcd85500238ac609a52433` |
 | `docs/plans/active/TASK-010-debt-api.md` | `95d2e882798a9ae7497a92d012d054007138be14e80dd9269105cc06b4b7dbd0` |
-| `docs/plans/active/TASK-011-debt-ui.md` | `aaad3cb94bf3206e0695055173d69bffe28914a383ed2d6a4e081f13300c0173` |
+| `docs/plans/active/TASK-011-debt-ui.md` | `9553d2db155b188ee1e46084428cf79c6b92c0d27d03888f5e2f5b4c6fef2262` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `bf6bcc09b3f1dad9a2270babd2475972930c47708fbee9c2a440b9596aaf7dca` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -253,11 +253,11 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `0b796a4bab39c3a491438af16c14dd7fca68f0e4ddbaf722a3e48e24e56f94d7` |
-| `docs/project-memory/CURRENT_STATE.md` | `e41de569e36ed1e49ad721a5481f7c46fb0f92a115ae903a2f44ecf6c40bf417` |
+| `docs/project-memory/CHANGELOG_AI.md` | `dfcf9def77eb3ddc4a94188213953135ac15b976fd04979e7a505c4ef710a01c` |
+| `docs/project-memory/CURRENT_STATE.md` | `7343b8ed47c4b99b46fdaa377cf6ee2460ebd87ebd74b7877491a21741e8569c` |
 | `docs/project-memory/DECISIONS.md` | `b82382281cc9776e510f2379f2e9fd18ed8abb72794b69bfbb7eb3fea013fa66` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `4026d5aa4b986214527fb0afd05cb99af6ffcf4bf87699b7b012e33fb5a30182` |
-| `docs/project-memory/RELEASE_HISTORY.md` | `4e5d77493d318015473a9f1a80af11f76f25e7d09dd8bbc7b64e1b7fb0c699a2` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `1e7696f853f49a672610a9e4dc51ec9e2d05b2cfd47280c646e880a03a4c6bde` |
+| `docs/project-memory/RELEASE_HISTORY.md` | `fb0d5ce04151bf2de742f096e41fa4173db2904c748e988842b12d31f5f8e03f` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
