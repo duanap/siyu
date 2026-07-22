@@ -19,7 +19,7 @@
 | TASK-014 | 周期记账页面（已合并、CI 通过并正式关闭） | M5 | Terra | Medium | TASK-012 |
 | TASK-015 | 工资档案和月度记录（已合并、CI 通过并正式关闭） | M6 | Sol | High | TASK-007 |
 | TASK-016 | 工资到账与收入联动（已合并、CI 通过并正式关闭） | M6 | Sol | Extra High | TASK-015 |
-| TASK-017 | 工资余额和年度统计 | M6 | Sol | High | TASK-016 |
+| TASK-017 | 工资余额和年度统计（已合并、CI 通过并正式关闭） | M6 | Sol | High | TASK-016 |
 | TASK-018 | 工资页面 | M6 | Terra | Medium | TASK-015,TASK-017 |
 | TASK-019 | 攒钱目标 API | M7 | Sol | High | TASK-005 |
 | TASK-020 | 攒钱目标页面 | M7 | Terra | Medium | TASK-019 |
