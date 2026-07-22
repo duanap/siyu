@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `29e0a2bf1593821baab8b975a6d6ed6192033841e1c9b627a0698167c1a724ce` |
+| `VALIDATION_REPORT.md` | `650515e1cba3d0de4dec457555532f6ca1f9d3cb267c85aa7824d1e7af6300ba` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -264,7 +264,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `c76ec545ce238f35e284796871cef574f3038917c1635bfb648ca887230772e7` |
+| `docs/plans/TASK_BACKLOG.md` | `70d7ccd528449d5c9d07beb10f63c707970f48f9554ec4019ca22d5fad4776b2` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -279,7 +279,7 @@
 | `docs/plans/active/TASK-012-recurring-rules.md` | `1dbc3a34a17c67a2dda79f39d39cc8be8c137d080c3bf15d1fedd6c242e47d8e` |
 | `docs/plans/active/TASK-013-recurring-worker.md` | `5bea1366cd30f039e74e1e475c575a7892667cf4dd16fcf502d86d48a9d661f6` |
 | `docs/plans/active/TASK-014-recurring-ui.md` | `842490fb5809f66ce481ce118c6e0215f986190435ae5d59bf9b7ca023b96dc2` |
-| `docs/plans/active/TASK-015-salary-records.md` | `8807c1622ab95c40e57bc0e753564dd0de829e3482eac09963a7afd6e1ce0594` |
+| `docs/plans/active/TASK-015-salary-records.md` | `49b71a72a2cb80bda6cd355d2a7b74a4c72a19c5371ffffbb265bb5c39b4d6f8` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `8aec018c0bab4d4ff567d904177e1e2417e54fb49207d890336c78823a3aca45` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -287,11 +287,11 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `d7f5be0e17fbde25844b6e1afdefb127ffe9aec74ca15baefc9145e737d1b486` |
-| `docs/project-memory/CURRENT_STATE.md` | `42d429b5cd11da6a91235c75437c9c3c91affcce2b05ebf981020e14764b9e6c` |
+| `docs/project-memory/CHANGELOG_AI.md` | `759814c1a70f1d5d41cca123c408189a48e3fe81c2c884fe959371724f6c229b` |
+| `docs/project-memory/CURRENT_STATE.md` | `eeabd53a6520f048dfa0229ed522a6232ed099dd5559ea814d7a57af61e1cb52` |
 | `docs/project-memory/DECISIONS.md` | `169e78ff7de7d436ca80fdf9aae88234f91ced075b374516b98ac440b2cc79c8` |
 | `docs/project-memory/KNOWN_ISSUES.md` | `babc563d3aa03d2c512fe508af5fa8f0317552897a4d245d5b957fddedadfeca` |
-| `docs/project-memory/RELEASE_HISTORY.md` | `663f3fc412f1ef31a2c7088ee39f958dcf8fcd7b82785ae6b06cf68640aefb23` |
+| `docs/project-memory/RELEASE_HISTORY.md` | `56a20e4ac2c84e0206776de78dc9c86aadad7fba3f66d05c60a8c599394e6754` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
