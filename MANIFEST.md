@@ -10,7 +10,7 @@
 | `.env.example` | `df2b93fe6d3caeb25b9657169d30e4e59847ddf729268fd0555d49e66d14c66a` |
 | `.env.native.example` | `7ab78f024778009c52f8d34d186af17b786fd4d87805983d68dd818a82d8f127` |
 | `.env.test.example` | `3b4a02d5031fbd11e3fc1bab1b6c279605e163fd67c61dd2b6fc0710c53abf0c` |
-| `.github/workflows/ci.yml` | `fc87a4be290b7f12962732d8d812db46488f9f6593958c5f0aa20080eb88486d` |
+| `.github/workflows/ci.yml` | `4b412181837243852e762bd15e75f9c28be3be8afad55326bebeb52a2b520b8b` |
 | `.gitignore` | `34177e6b1d67f1d10e749343c75fdfa085b734ee30a3e902749edbc46ad17109` |
 | `.prettierignore` | `69bbb9b129e2fbcb1f2906a328a9c40c00c01e80e39297d7e7fd64fc87e8b903` |
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
