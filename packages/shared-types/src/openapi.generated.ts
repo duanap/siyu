@@ -1266,29 +1266,62 @@ export interface components {
       /** Format: uuid */
       id: string;
       name: string;
-      employerName?: string | null;
+      employerName: string | null;
       payDay: number;
       defaultSyncEntry: boolean;
+      /** @enum {string} */
+      status: 'ACTIVE' | 'INACTIVE';
+      defaultItems: components['schemas']['SalaryProfileItem'][];
+      readonly canEdit: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
+    };
+    SalaryProfileItem: {
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      itemType: 'EARNING' | 'DEDUCTION';
+      itemCode: string;
+      itemName: string;
+      amountCent: components['schemas']['NonNegativeCent'];
+      sortOrder: number;
+    };
+    SalaryProfileSummary: {
+      /** Format: uuid */
+      id: string;
+      name: string;
+      employerName: string | null;
+      payDay: number;
     };
     SalaryRecord: {
       /** Format: uuid */
       id: string;
       /** Format: uuid */
       profileId: string;
+      profile: components['schemas']['SalaryProfileSummary'];
       salaryMonth: components['schemas']['BusinessDate'];
       grossCent: components['schemas']['NonNegativeCent'];
       deductionCent: components['schemas']['NonNegativeCent'];
       netCent: components['schemas']['NonNegativeCent'];
       /** @enum {string} */
       paymentStatus: 'UNPAID' | 'PAID';
+      paidDate: components['schemas']['BusinessDate'] | null;
+      /** Format: uuid */
+      entryId: string | null;
       items: components['schemas']['SalaryItem'][];
+      readonly canEdit: boolean;
+      createdAt: components['schemas']['Timestamp'];
+      updatedAt: components['schemas']['Timestamp'];
     };
     SalaryItem: {
+      /** Format: uuid */
+      id: string;
       /** @enum {string} */
       itemType: 'EARNING' | 'DEDUCTION';
       itemCode: string;
       itemName: string;
       amountCent: components['schemas']['Cent'];
+      sortOrder: number;
     };
     SavingGoal: {
       /** Format: uuid */
@@ -1343,6 +1376,38 @@ export interface components {
       /** @constant */
       success: true;
       data: components['schemas']['DomainResource'];
+      requestId: string;
+    };
+    SalaryProfileResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SalaryProfile'];
+      requestId: string;
+    };
+    SalaryProfileListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['SalaryProfile'][];
+      };
+      requestId: string;
+    };
+    SalaryRecordResponse: {
+      /** @constant */
+      success: true;
+      data: components['schemas']['SalaryRecord'];
+      requestId: string;
+    };
+    SalaryRecordListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['SalaryRecord'][];
+        page: number;
+        pageSize: number;
+        total: number;
+        hasNext: boolean;
+      };
       requestId: string;
     };
     EntryResponse: {
@@ -1698,21 +1763,52 @@ export interface components {
       employerName?: string | null;
       payDay: number;
       defaultSyncEntry: boolean;
+      defaultItems: components['schemas']['SalaryTemplateItemInput'][];
+      idempotencyKey: components['schemas']['IdempotencyKey'];
     };
     UpdateSalaryProfileRequest: {
       name?: string;
       employerName?: string | null;
       payDay?: number;
       defaultSyncEntry?: boolean;
+      defaultItems?: components['schemas']['SalaryTemplateItemInput'][];
+    };
+    SalaryTemplateItemInput: {
+      /** @enum {string} */
+      itemType: 'EARNING' | 'DEDUCTION';
+      itemCode: string;
+      itemName: string;
+      amountCent: components['schemas']['NonNegativeCent'];
+      sortOrder: number;
+    };
+    SalaryRecordItemInput: {
+      /** @enum {string} */
+      itemType: 'EARNING' | 'DEDUCTION';
+      itemCode: string;
+      itemName: string;
+      amountCent: components['schemas']['Cent'];
+      sortOrder: number;
     };
     CreateSalaryRecordRequest: {
       /** Format: uuid */
       profileId: string;
       salaryMonth: string;
-      items: components['schemas']['SalaryItem'][];
-    };
+      items?: components['schemas']['SalaryRecordItemInput'][];
+      /** @default false */
+      copyPreviousMonth: boolean;
+      idempotencyKey: components['schemas']['IdempotencyKey'];
+    } & (
+      | {
+          /** @constant */
+          copyPreviousMonth?: false;
+        }
+      | {
+          /** @constant */
+          copyPreviousMonth: true;
+        }
+    );
     UpdateSalaryRecordRequest: {
-      items: components['schemas']['SalaryItem'][];
+      items: components['schemas']['SalaryRecordItemInput'][];
     };
     MarkSalaryPaidRequest: {
       paidDate: components['schemas']['BusinessDate'];
@@ -1852,6 +1948,60 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['ActionResponse'];
+      };
+    };
+    /** @description 本人工资档案查询或更新成功 */
+    SalaryProfileOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryProfileResponse'];
+      };
+    };
+    /** @description 本人工资档案创建或幂等重放成功 */
+    SalaryProfileCreated: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryProfileResponse'];
+      };
+    };
+    /** @description 本人工资档案列表查询成功 */
+    SalaryProfileListOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryProfileListResponse'];
+      };
+    };
+    /** @description 本人工资记录查询或更新成功 */
+    SalaryRecordOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryRecordResponse'];
+      };
+    };
+    /** @description 本人工资记录创建或幂等重放成功 */
+    SalaryRecordCreated: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryRecordResponse'];
+      };
+    };
+    /** @description 本人工资记录分页查询成功 */
+    SalaryRecordListOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['SalaryRecordListResponse'];
       };
     };
     /** @description 认证成功并通过 HttpOnly Cookie 设置轮换用 Refresh Token */
@@ -2880,7 +3030,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['SalaryProfileListOk'];
       401: components['responses']['Unauthorized'];
     };
   };
@@ -2897,8 +3047,12 @@ export interface operations {
       };
     };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['SalaryProfileCreated'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   updateSalaryProfile: {
@@ -2916,8 +3070,12 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SalaryProfileOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
     };
   };
   listSalaryRecords: {
@@ -2926,6 +3084,7 @@ export interface operations {
         page?: components['parameters']['Page'];
         pageSize?: components['parameters']['PageSize'];
         year?: number;
+        profileId?: string;
       };
       header?: never;
       path?: never;
@@ -2933,7 +3092,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['SalaryRecordListOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
     };
   };
@@ -2950,9 +3110,13 @@ export interface operations {
       };
     };
     responses: {
-      201: components['responses']['ResourceCreated'];
+      201: components['responses']['SalaryRecordCreated'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   getSalaryRecord: {
@@ -2966,7 +3130,8 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SalaryRecordOk'];
+      401: components['responses']['Unauthorized'];
       404: components['responses']['NotFound'];
     };
   };
@@ -2985,9 +3150,13 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ResourceOk'];
+      200: components['responses']['SalaryRecordOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   markSalaryPaid: {

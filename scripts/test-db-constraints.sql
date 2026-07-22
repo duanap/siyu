@@ -29,11 +29,11 @@ BEGIN
     AND table_name IN (
       'users', 'ledgers', 'ledger_members', 'ledger_invitations', 'categories',
       'entries', 'debts', 'debt_transactions', 'recurring_rules', 'recurring_runs',
-      'salary_profiles', 'salary_records', 'salary_items', 'saving_goals',
+      'salary_profiles', 'salary_profile_items', 'salary_records', 'salary_items', 'saving_goals',
       'saving_contributions', 'notifications', 'audit_logs'
     );
-  IF required_tables <> 17 THEN
-    RAISE EXCEPTION 'Expected 17 application tables, found %', required_tables;
+  IF required_tables <> 18 THEN
+    RAISE EXCEPTION 'Expected 18 application tables, found %', required_tables;
   END IF;
 
   SELECT count(*) INTO required_indexes
@@ -75,10 +75,17 @@ BEGIN
       'recurring_runs_confirmation_idempotency_key',
       'recurring_runs_rule_scheduled_created_idx',
       'notifications_user_type_related_idx',
-      'notifications_recurring_confirmation_unique'
+      'notifications_recurring_confirmation_unique',
+      'salary_profiles_user_id_idempotency_key_key',
+      'salary_profiles_one_active_per_user',
+      'salary_profile_items_profile_id_item_code_key',
+      'salary_profile_items_profile_id_item_type_sort_order_idx',
+      'salary_records_user_id_idempotency_key_key',
+      'salary_items_salary_record_id_item_code_key',
+      'salary_records_user_id_salary_month_id_idx'
     );
-  IF required_indexes <> 36 THEN
-    RAISE EXCEPTION 'Expected 36 critical indexes, found %', required_indexes;
+  IF required_indexes <> 43 THEN
+    RAISE EXCEPTION 'Expected 43 critical indexes, found %', required_indexes;
   END IF;
 
   SELECT count(*) INTO required_constraints
@@ -111,10 +118,13 @@ BEGIN
     'recurring_rules_next_run_valid', 'recurring_runs_confirmation_user_id_fkey',
     'recurring_runs_error_valid', 'recurring_runs_confirmation_valid',
     'recurring_runs_failure_consistent', 'recurring_runs_entry_reference_valid',
-    'entries_recurring_source_valid'
+    'entries_recurring_source_valid',
+    'salary_profiles_text_valid', 'salary_profiles_idempotency_valid',
+    'salary_profile_items_text_valid', 'salary_profile_items_amount_valid',
+    'salary_records_idempotency_valid', 'salary_items_text_valid'
   );
-  IF required_constraints <> 56 THEN
-    RAISE EXCEPTION 'Expected 56 custom constraints, found %', required_constraints;
+  IF required_constraints <> 62 THEN
+    RAISE EXCEPTION 'Expected 62 custom constraints, found %', required_constraints;
   END IF;
 
   SELECT count(*) INTO required_delete_actions
@@ -123,6 +133,7 @@ BEGIN
     ('debt_transactions_entry_id_fkey', 'r'),
     ('recurring_runs_entry_id_fkey', 'r'),
     ('salary_records_entry_id_fkey', 'n'),
+    ('salary_profile_items_profile_id_fkey', 'c'),
     ('salary_items_salary_record_id_fkey', 'c'),
     ('categories_ledger_id_fkey', 'r'),
     ('categories_creator_user_id_fkey', 'r'),
@@ -134,8 +145,8 @@ BEGIN
     ('ledger_invitations_accepted_by_user_id_fkey', 'n'),
     ('audit_logs_actor_user_id_fkey', 'n')
   );
-  IF required_delete_actions <> 13 THEN
-    RAISE EXCEPTION 'Expected 13 critical delete actions, found %', required_delete_actions;
+  IF required_delete_actions <> 14 THEN
+    RAISE EXCEPTION 'Expected 14 critical delete actions, found %', required_delete_actions;
   END IF;
 
   IF EXISTS (
@@ -338,26 +349,40 @@ INSERT INTO notifications (id, user_id, type, title, content, related_type, rela
 VALUES ('00000000-0000-4000-8000-000000000064', '00000000-0000-0000-0000-000000000001', 'RECURRING_CONFIRMATION_DUE', '周期账目待确认', '测试通知', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000061');
 SELECT pg_temp.expect_sqlstate($sql$INSERT INTO notifications (id, user_id, type, title, content, related_type, related_id) VALUES ('00000000-0000-4000-8000-000000000065', '00000000-0000-0000-0000-000000000001', 'RECURRING_CONFIRMATION_DUE', '周期账目待确认', '重复通知', 'RECURRING_RUN', '00000000-0000-0000-0000-000000000061')$sql$, '23505', 'recurring confirmation notification unique per recipient and run');
 
-INSERT INTO salary_profiles (id, user_id, name, pay_day, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', '主工资', 10, CURRENT_TIMESTAMP);
+INSERT INTO salary_profiles (id, user_id, name, pay_day, idempotency_key, create_request_hash, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000070', '00000000-0000-0000-0000-000000000001', '主工资', 10, 'salary-profile-070', repeat('7', 64), CURRENT_TIMESTAMP);
+INSERT INTO salary_profile_items (id, profile_id, item_type, item_code, item_name, amount_cent)
+VALUES ('00000000-0000-0000-0000-000000000069', '00000000-0000-0000-0000-000000000070', 'EARNING', 'base', '基本工资', 0);
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_profiles SET pay_day = 0 WHERE id = '00000000-0000-0000-0000-000000000070'$sql$, '23514', 'salary pay day');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_profiles SET idempotency_key = 'salary-profile-changed' WHERE id = '00000000-0000-0000-0000-000000000070'$sql$, '23514', 'salary profile creation facts immutable');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_profile_items SET amount_cent = -1 WHERE id = '00000000-0000-0000-0000-000000000069'$sql$, '23514', 'salary profile item amount');
 
-INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'PAID', '2026-07-10', '40000000-0000-4000-8000-000000000045', CURRENT_TIMESTAMP);
-INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, deleted_at, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+BEGIN;
+INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, idempotency_key, create_request_hash, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'salary-record-071', repeat('8', 64), CURRENT_TIMESTAMP);
+INSERT INTO salary_items (id, salary_record_id, item_type, item_code, item_name, amount_cent)
+VALUES
+  ('00000000-0000-0000-0000-000000000076', '00000000-0000-0000-0000-000000000071', 'EARNING', 'base', '基本工资', 10000),
+  ('00000000-0000-0000-0000-000000000077', '00000000-0000-0000-0000-000000000071', 'DEDUCTION', 'tax', '个人所得税', 1000);
+UPDATE salary_records
+SET payment_status = 'PAID', paid_date = '2026-07-10', entry_id = '40000000-0000-4000-8000-000000000045'
+WHERE id = '00000000-0000-0000-0000-000000000071';
+INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, idempotency_key, create_request_hash, deleted_at, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'salary-record-072', repeat('9', 64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO salary_items (id, salary_record_id, item_type, item_code, item_name, amount_cent)
+VALUES
+  ('00000000-0000-0000-0000-000000000078', '00000000-0000-0000-0000-000000000072', 'EARNING', 'base', '基本工资', 10000),
+  ('00000000-0000-0000-0000-000000000079', '00000000-0000-0000-0000-000000000072', 'DEDUCTION', 'tax', '个人所得税', 1000);
+COMMIT;
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET salary_month = '2026-07-02' WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'salary month normalized');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET net_cent = 8000 WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'salary amount equation');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET payment_status = 'UNPAID' WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'unpaid salary consistency');
 SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET paid_date = NULL WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'paid salary date required');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, CURRENT_TIMESTAMP)$sql$, '23503', 'salary profile owner composite fk');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, updated_at) VALUES ('00000000-0000-0000-0000-000000000074', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, CURRENT_TIMESTAMP)$sql$, '23505', 'active salary month unique');
-SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', '40000000-0000-4000-8000-000000000045', CURRENT_TIMESTAMP)$sql$, '23505', 'salary entry unique');
-
-INSERT INTO salary_items (id, salary_record_id, item_type, item_code, item_name, amount_cent)
-VALUES ('00000000-0000-0000-0000-000000000076', '00000000-0000-0000-0000-000000000071', 'EARNING', 'base', '基本工资', 10000);
-SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_items SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000076'$sql$, '23514', 'salary item amount');
-SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_items SET sort_order = -1 WHERE id = '00000000-0000-0000-0000-000000000076'$sql$, '23514', 'salary item sort');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_records SET idempotency_key = 'salary-record-changed' WHERE id = '00000000-0000-0000-0000-000000000071'$sql$, '23514', 'salary record creation facts immutable');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_items SET amount_cent = 9000 WHERE id = '00000000-0000-0000-0000-000000000076'$sql$, '23514', 'paid salary item immutable');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'salary-record-073', repeat('a', 64), CURRENT_TIMESTAMP)$sql$, '23503', 'salary profile owner composite fk');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000074', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-07-01', 10000, 1000, 9000, 'salary-record-074', repeat('b', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'active salary month unique');
+SELECT pg_temp.expect_sqlstate($sql$INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, payment_status, paid_date, entry_id, idempotency_key, create_request_hash, updated_at) VALUES ('00000000-0000-0000-0000-000000000075', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-08-01', 10000, 1000, 9000, 'PAID', '2026-08-10', '40000000-0000-4000-8000-000000000045', 'salary-record-075', repeat('c', 64), CURRENT_TIMESTAMP)$sql$, '23505', 'salary entry unique');
 
 INSERT INTO saving_goals (id, ledger_id, creator_user_id, name, target_cent, initial_cent, saved_cent, updated_at)
 VALUES ('00000000-0000-0000-0000-000000000080', '00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', '旅行', 100000, 1000, 1000, CURRENT_TIMESTAMP);
@@ -402,10 +427,14 @@ DO $$ BEGIN
   END IF;
 END $$;
 
-INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, updated_at)
-VALUES ('00000000-0000-0000-0000-000000000092', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-09-01', 10000, 1000, 9000, CURRENT_TIMESTAMP);
+BEGIN;
+INSERT INTO salary_records (id, user_id, profile_id, salary_month, gross_cent, deduction_cent, net_cent, idempotency_key, create_request_hash, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000092', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000070', '2026-09-01', 10000, 0, 10000, 'salary-record-092', repeat('d', 64), CURRENT_TIMESTAMP);
 INSERT INTO salary_items (id, salary_record_id, item_type, item_code, item_name, amount_cent)
 VALUES ('00000000-0000-0000-0000-000000000093', '00000000-0000-0000-0000-000000000092', 'EARNING', 'cascade', '级联测试', 10000);
+COMMIT;
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_items SET amount_cent = 0 WHERE id = '00000000-0000-0000-0000-000000000093'$sql$, '23514', 'salary item amount');
+SELECT pg_temp.expect_sqlstate($sql$UPDATE salary_items SET sort_order = -1 WHERE id = '00000000-0000-0000-0000-000000000093'$sql$, '23514', 'salary item sort');
 DELETE FROM salary_records WHERE id = '00000000-0000-0000-0000-000000000092';
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM salary_items WHERE id = '00000000-0000-0000-0000-000000000093') THEN

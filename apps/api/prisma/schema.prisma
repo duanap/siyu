@@ -492,38 +492,59 @@ model RecurringRun {
 }
 
 model SalaryProfile {
-  id               String    @id @default(uuid()) @db.Uuid
-  userId           String    @map("user_id") @db.Uuid
-  name             String
-  employerName     String?   @map("employer_name")
-  payDay           Int       @map("pay_day")
-  defaultSyncEntry Boolean   @default(true) @map("default_sync_entry")
-  status           String    @default("ACTIVE")
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  name              String
+  employerName      String?   @map("employer_name")
+  payDay            Int       @map("pay_day")
+  defaultSyncEntry  Boolean   @default(true) @map("default_sync_entry")
+  status            String    @default("ACTIVE")
+  idempotencyKey    String    @map("idempotency_key")
+  createRequestHash String    @map("create_request_hash")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz
 
-  user    User           @relation(fields: [userId], references: [id])
+  user    User                @relation(fields: [userId], references: [id])
   records SalaryRecord[]
+  items   SalaryProfileItem[]
 
   @@index([userId, status])
   @@map("salary_profiles")
 }
 
+model SalaryProfileItem {
+  id         String         @id @default(uuid()) @db.Uuid
+  profileId  String         @map("profile_id") @db.Uuid
+  itemType   SalaryItemType @map("item_type")
+  itemCode   String         @map("item_code")
+  itemName   String         @map("item_name")
+  amountCent BigInt         @default(0) @map("amount_cent")
+  sortOrder  Int            @default(0) @map("sort_order")
+
+  profile SalaryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, itemCode])
+  @@index([profileId, itemType, sortOrder])
+  @@map("salary_profile_items")
+}
+
 model SalaryRecord {
-  id            String              @id @default(uuid()) @db.Uuid
-  userId        String              @map("user_id") @db.Uuid
-  profileId     String              @map("profile_id") @db.Uuid
-  salaryMonth   DateTime            @map("salary_month") @db.Date
-  grossCent     BigInt              @map("gross_cent")
-  deductionCent BigInt              @map("deduction_cent")
-  netCent       BigInt              @map("net_cent")
-  paymentStatus SalaryPaymentStatus @default(UNPAID) @map("payment_status")
-  paidDate      DateTime?           @map("paid_date") @db.Date
-  entryId       String?             @unique @map("entry_id") @db.Uuid
-  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime            @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime?           @map("deleted_at") @db.Timestamptz
+  id                String              @id @default(uuid()) @db.Uuid
+  userId            String              @map("user_id") @db.Uuid
+  profileId         String              @map("profile_id") @db.Uuid
+  salaryMonth       DateTime            @map("salary_month") @db.Date
+  grossCent         BigInt              @map("gross_cent")
+  deductionCent     BigInt              @map("deduction_cent")
+  netCent           BigInt              @map("net_cent")
+  paymentStatus     SalaryPaymentStatus @default(UNPAID) @map("payment_status")
+  paidDate          DateTime?           @map("paid_date") @db.Date
+  entryId           String?             @unique @map("entry_id") @db.Uuid
+  idempotencyKey    String              @map("idempotency_key")
+  createRequestHash String              @map("create_request_hash")
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt         DateTime?           @map("deleted_at") @db.Timestamptz
 
   user    User          @relation(fields: [userId], references: [id])
   profile SalaryProfile @relation(fields: [profileId], references: [id])
@@ -545,6 +566,7 @@ model SalaryItem {
 
   record SalaryRecord @relation(fields: [salaryRecordId], references: [id], onDelete: Cascade)
 
+  @@unique([salaryRecordId, itemCode])
   @@index([salaryRecordId, itemType])
   @@map("salary_items")
 }

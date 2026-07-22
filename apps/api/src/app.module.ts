@@ -9,6 +9,7 @@ import { DebtsModule } from './debts/debts.module';
 import { EntriesModule } from './entries/entries.module';
 import { LedgersModule } from './ledgers/ledgers.module';
 import { RecurringModule } from './recurring/recurring.module';
+import { SalaryModule } from './salary/salary.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { UsersModule } from './users/users.module';
 
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     DebtsModule,
     EntriesModule,
     RecurringModule,
+    SalaryModule,
     StatisticsModule,
   ],
   controllers: [HealthController],
