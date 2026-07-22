@@ -24,6 +24,7 @@ async function logout(): Promise<void> {
       <RouterLink class="entry-link" to="/recurring">管理周期记账</RouterLink>
       <RouterLink class="entry-link" to="/salary">管理个人工资</RouterLink>
       <RouterLink class="entry-link" to="/saving-goals">管理攒钱目标</RouterLink>
+      <RouterLink class="entry-link" to="/notifications">查看消息中心</RouterLink>
       <RouterLink class="account-link" to="/categories">管理收支分类</RouterLink>
       <RouterLink class="couple-link" to="/couple/invite">管理朝暮同笺</RouterLink>
       <button type="button" @click="logout">退出登录</button>

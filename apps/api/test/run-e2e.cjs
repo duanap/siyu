@@ -1377,6 +1377,90 @@ async function main() {
     ).map((notification) => notification.userId),
     [user.id, partner.user.id].sort(),
   );
+  const ownerNotifications = await prisma.notification.findMany({
+    where: { userId: user.id },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  });
+  const partnerNotifications = await prisma.notification.findMany({
+    where: { userId: partner.user.id },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  });
+  const ownerUnreadBefore = ownerNotifications.filter(
+    (notification) => !notification.readAt,
+  ).length;
+  const ownerNotification = ownerNotifications.find(
+    (notification) => notification.relatedId === memberPendingRun.id,
+  );
+  const partnerNotification = partnerNotifications.find(
+    (notification) => notification.relatedId === memberPendingRun.id,
+  );
+  assert.ok(ownerNotification);
+  assert.ok(partnerNotification);
+
+  const ownerNotificationPage = await request(server)
+    .get('/api/v1/notifications?page=1&pageSize=1')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(ownerNotificationPage.body.data.items.length, 1);
+  assert.equal(ownerNotificationPage.body.data.items[0].id, ownerNotifications[0].id);
+  assert.equal(ownerNotificationPage.body.data.total, ownerNotifications.length);
+  assert.equal(ownerNotificationPage.body.data.unreadCount, ownerUnreadBefore);
+  assert.equal(ownerNotificationPage.body.data.hasNext, ownerNotifications.length > 1);
+  assert.equal(ownerNotificationPage.body.data.items[0].userId, undefined);
+
+  const partnerNotificationPage = await request(server)
+    .get('/api/v1/notifications?page=1&pageSize=100')
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.deepEqual(
+    partnerNotificationPage.body.data.items.map((notification) => notification.id),
+    partnerNotifications.map((notification) => notification.id),
+  );
+  assert.equal(
+    partnerNotificationPage.body.data.items.some(
+      (notification) => notification.id === ownerNotification.id,
+    ),
+    false,
+  );
+
+  const markOwnerRead = await request(server)
+    .post('/api/v1/notifications/read')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ids: [ownerNotification.id, partnerNotification.id, randomUUID()] })
+    .expect(200);
+  assert.equal(markOwnerRead.body.data.markedCount, 1);
+  assert.equal(markOwnerRead.body.data.unreadCount, ownerUnreadBefore - 1);
+  const ownerReadAt = (
+    await prisma.notification.findUniqueOrThrow({ where: { id: ownerNotification.id } })
+  ).readAt;
+  assert.ok(ownerReadAt);
+  const replayOwnerRead = await request(server)
+    .post('/api/v1/notifications/read')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ids: [ownerNotification.id, partnerNotification.id, randomUUID()] })
+    .expect(200);
+  assert.equal(replayOwnerRead.body.data.markedCount, 0);
+  assert.equal(replayOwnerRead.body.data.unreadCount, ownerUnreadBefore - 1);
+  assert.equal(
+    (
+      await prisma.notification.findUniqueOrThrow({ where: { id: ownerNotification.id } })
+    ).readAt.toISOString(),
+    ownerReadAt.toISOString(),
+  );
+  assert.equal(
+    (await prisma.notification.findUniqueOrThrow({ where: { id: partnerNotification.id } })).readAt,
+    null,
+  );
+  await request(server)
+    .post('/api/v1/notifications/read')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ids: [] })
+    .expect(400);
+  await request(server)
+    .post('/api/v1/notifications/read')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({ ids: [ownerNotification.id, ownerNotification.id] })
+    .expect(400);
   const visibleRuns = await request(server)
     .get('/api/v1/recurring-runs')
     .set('authorization', `Bearer ${ownerAccess}`)

@@ -1451,7 +1451,9 @@ export interface components {
       type: string;
       title: string;
       content: string;
-      readAt?: components['schemas']['Timestamp'] | null;
+      relatedType: string | null;
+      relatedId: string | null;
+      readAt: components['schemas']['Timestamp'] | null;
       createdAt: components['schemas']['Timestamp'];
     };
     DomainResource:
@@ -1615,6 +1617,28 @@ export interface components {
       success: true;
       data: {
         status: string;
+      };
+      requestId: string;
+    };
+    NotificationListResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        items: components['schemas']['Notification'][];
+        page: number;
+        pageSize: number;
+        total: number;
+        hasNext: boolean;
+        unreadCount: number;
+      };
+      requestId: string;
+    };
+    MarkNotificationsReadResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        markedCount: number;
+        unreadCount: number;
       };
       requestId: string;
     };
@@ -2241,6 +2265,24 @@ export interface components {
       };
       content: {
         'application/json': components['schemas']['SavingContributionResponse'];
+      };
+    };
+    /** @description 本人站内通知稳定分页与跨页未读总数查询成功 */
+    NotificationListOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['NotificationListResponse'];
+      };
+    };
+    /** @description 本人通知批量已读操作完成 */
+    MarkNotificationsReadOk: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['MarkNotificationsReadResponse'];
       };
     };
     /** @description 目标或本人存入记录软删除成功 */
@@ -3646,7 +3688,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      200: components['responses']['ResourceListOk'];
+      200: components['responses']['NotificationListOk'];
       401: components['responses']['Unauthorized'];
     };
   };
@@ -3663,8 +3705,9 @@ export interface operations {
       };
     };
     responses: {
-      200: components['responses']['ActionOk'];
+      200: components['responses']['MarkNotificationsReadOk'];
       400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
     };
   };
   exportEntriesCsv: {

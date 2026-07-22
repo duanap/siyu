@@ -48,7 +48,7 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | CoupleLedgerManager | 情侣账本创建、邀请、成员、所有权和解散 |
 | SalaryItemEditor | 工资档案模板、月度工资项目和只读到账明细 |
 | SalaryAnnualChart | 工资首页、年度工资的 12 月实发趋势 |
-| NotificationItem | 消息中心 |
+| NotificationItem | 消息中心的未读状态、类型图标、长文本、时间和安全关联入口 |
 
 ## 状态要求
 
