@@ -94,6 +94,21 @@ export const router = createRouter({
       name: 'recurring-detail',
       component: () => import('./views/RecurringDetailView.vue'),
     },
+    {
+      path: '/salary',
+      name: 'salary',
+      component: () => import('./views/SalaryHomeView.vue'),
+    },
+    {
+      path: '/salary/year/:year',
+      name: 'salary-year',
+      component: () => import('./views/SalaryYearView.vue'),
+    },
+    {
+      path: '/salary/:year/:month',
+      name: 'salary-month',
+      component: () => import('./views/SalaryMonthView.vue'),
+    },
   ],
 });
 

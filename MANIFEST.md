@@ -2,7 +2,7 @@
 
 生成日期：2026-07-22
 
-文件数量（不含本清单、依赖和构建产物）：356
+文件数量（不含本清单、依赖和构建产物）：379
 
 | 文件 | SHA-256 |
 |---|---|
@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `4e7b6693f04f7729b1817b186d87a3795d111fba150bb48c770181f2fe52e5b7` |
+| `VALIDATION_REPORT.md` | `7224a8a0473bb00c20aec12548b73bd2e24f557aad5023a226c4a47318add7d2` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -161,6 +161,9 @@
 | `apps/mobile-web/src/components/RecurringRuleCard.vue` | `76cc495d03a56ca02fabd168ecb6e14a3a4a92c46dfa80769e9f86fc5c912387` |
 | `apps/mobile-web/src/components/RecurringRuleForm.vue` | `8d634c4763d8a21a30fde3750bcb2cba2b51f661433b7f9d4f52c934a080603d` |
 | `apps/mobile-web/src/components/RecurringRunCard.vue` | `6ff7a4c170ebb076dd00341da27ac9347f9f5aaa8ff507e1f2161d814086d8cd` |
+| `apps/mobile-web/src/components/SalaryAnnualChart.vue` | `05488c6a00d0d20f7711ab16c03f07a19fa10b248d7c677a7d4d948e23ad8b9a` |
+| `apps/mobile-web/src/components/SalaryBalanceCard.vue` | `7a64040242e26d95743fb00ae4d0a2f07343ed56fadb96e20cda80094e2eea4e` |
+| `apps/mobile-web/src/components/SalaryItemEditor.vue` | `96ac5c8cdf49abc328b0c4ca3f6c883d80568abd1a5049284d0b277586984c74` |
 | `apps/mobile-web/src/components/StatisticsTrendChart.vue` | `4d37314f3a5b8b2fbe5b32f567614e58fa5fdbb346034d8973c4c379d51de963` |
 | `apps/mobile-web/src/couple-ledger.test.ts` | `b4926cbd16685646f42cd235cae82cf5b32b7de193ae728ef03c337d18fbad3b` |
 | `apps/mobile-web/src/couple-ledger.ts` | `f4885015f9437b3657f8a8e516607715d2b8340d8b697b261e638bd2952ab749` |
@@ -178,12 +181,14 @@
 | `apps/mobile-web/src/main.ts` | `ecffa4d5946ee949417966117f2a7809a406f6aa863bcd1bdc327c473f730a23` |
 | `apps/mobile-web/src/recurring.test.ts` | `5cecaacce8cbe00e6d8b5828836e61c7bb7188a6e12395c8d28e3576b1df6fc1` |
 | `apps/mobile-web/src/recurring.ts` | `dfdd553cfa59361935b1c9d8c24eb1ec24b661a9f056981111e2d1777ea0983e` |
-| `apps/mobile-web/src/router.ts` | `ee1b8d8cb31ebd20a54c190a00cec3f37e5d5010a8a7eac1a3665077b4f62cb5` |
+| `apps/mobile-web/src/router.ts` | `e5a3ab5fd4dd2466c72bd3fe9bc3bcdfd09702e7553a5aa825ed1e6829bafc25` |
+| `apps/mobile-web/src/salary.test.ts` | `e81ad8868f0e48f547df5692fa6f34b2e86a44f843ca694d5d9e028775c7fe6c` |
+| `apps/mobile-web/src/salary.ts` | `8f1d83120dfed8121e38095ea1f95d0cd42c39eac93e03de3bcb943c3db5d10f` |
 | `apps/mobile-web/src/statistics.test.ts` | `7e6c44ebad4b262ad7a71cdf78b37a5dc7f316241958ede595dbf041eba77671` |
 | `apps/mobile-web/src/statistics.ts` | `dc03bcabc56442a978ee74f85551f1c8cae2b3354c4f8987ab6201553973c3ab` |
 | `apps/mobile-web/src/theme.ts` | `ee1933f52332978567715670203561a9ae22c2531e97450fbf34cd3432aebc8a` |
 | `apps/mobile-web/src/use-api-session.ts` | `af50f38af2b460ec84be0e32e43b9bc4d4bf1e1ee7269f0a814b71a7c33db8d6` |
-| `apps/mobile-web/src/views/AccountView.vue` | `c9f100f3bbd4dda4975782709a98a77a231e6a1e945c70ac391c12d0e1758e3d` |
+| `apps/mobile-web/src/views/AccountView.vue` | `0e3f7082ca1aa976541739743196c909bf46cf019510a4bba839981364c319f4` |
 | `apps/mobile-web/src/views/AuthenticationView.vue` | `aaf54de0d248fcdc315d4f48b4108a7e981693e7fd30ac059d176cc47c6791a3` |
 | `apps/mobile-web/src/views/BootstrapView.test.ts` | `7a148933f3cdc819ee6b45a4e96bf203d40aaa7684aa6706fc3b1fa3d32577ae` |
 | `apps/mobile-web/src/views/BootstrapView.vue` | `8e607c4eb1c479239829d9363395b5119fa81a2b760674c6600e7caa13acc19e` |
@@ -212,6 +217,10 @@
 | `apps/mobile-web/src/views/RecurringDetailView.vue` | `5e04f7cca39a9fca9647454b716de6a972467a922d872c046666df43a24133da` |
 | `apps/mobile-web/src/views/RecurringListView.vue` | `840d933f3e0e5e0eedc06ce5ad6cd5a74f0e4a07058c261487329b9cb420856e` |
 | `apps/mobile-web/src/views/RecurringViews.test.ts` | `19da9132bf9bf311fe6a6a9f62daf9c6a634870d2bcb1dbbfbb226c76175ceaf` |
+| `apps/mobile-web/src/views/SalaryHomeView.vue` | `8ef4db445fc7b779884fc768c2f97cca17335767d25abda6f7fe3e0e71c5d7f7` |
+| `apps/mobile-web/src/views/SalaryMonthView.vue` | `99472bb27dd3a95cedc65ed2a4f29eb92eeaab365d1171ab0b254e64a50132e1` |
+| `apps/mobile-web/src/views/SalaryViews.test.ts` | `c8dad9afea7f40e2d80f899b813bbfbadc0a86f4a0d87d89fde5daedf8c961b0` |
+| `apps/mobile-web/src/views/SalaryYearView.vue` | `04470592ff0f779d5d15d8f7887824ad255a8345557a019871bfcd0f9e3efb96` |
 | `apps/mobile-web/src/views/StatisticsView.vue` | `533f226bce3c91ed6fa9d15a2cdea086f16b033e60756235ad40a5804ce4dada` |
 | `apps/mobile-web/src/views/StatisticsViews.test.ts` | `e539e8b275ce394fb8f611d828892610b765131b51143df933d7cdb35a711c3f` |
 | `apps/mobile-web/src/views/entry-view-test-utils.ts` | `e9889cf6a9e8e1dcd1013654337a9da32857cb8a40ea3c20bdc1fcae4ef6dacb` |
@@ -236,12 +245,12 @@
 | `docs/codex/OFFICIAL_REFERENCES.md` | `3a242d24ea9c14e19e1ab7616a4c4040470ba489a3bbdc58963973aabc0c9c5d` |
 | `docs/codex/REVIEW_PROMPT.md` | `e6b7524f7b2fe99d2af469ef8f0bab7ea162f82528b7d187ec04e45d4ab9823e` |
 | `docs/codex/TASK_PROMPT_TEMPLATE.md` | `af7781dadf39a3735979a11bcc2e2b7e261ed25944f38dbbdcd389637bab9a11` |
-| `docs/design/COMPONENT_INVENTORY.md` | `9b8f29a1ec6806c6763212729be4143785e68f50cf321cbe7995e2057bd740f8` |
+| `docs/design/COMPONENT_INVENTORY.md` | `702f020578627fcd831111bc3b369bb8d9bb7f2c1480d693ace5bbb1c28cd542` |
 | `docs/design/DESIGN_DELIVERY_PLAN.md` | `0a18ae111d1b00d045caa3765c7acf65577b9e503f821b26ed7bc7546e1e3754` |
 | `docs/design/DESIGN_TOKENS.md` | `e67e4f5e05d93d4359ac79e5d2de4213826d471ef52d776288c3cbeab729ea22` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `d601da5ee02c75837db929e097d92e345bf7ffbae4fca22c6ca51a31d190600b` |
 | `docs/design/SCREEN_FLOW.md` | `0276ec2fdb56eff858e05824430b2248cfc45428706a6a2d7e1cba383d40dc3c` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `c9f74fc78931905a0bcc764c591a46c17adda9c0d5e1093dbfa6b95cbae1aca2` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `4ba3930d9e1b07d184e4c5e1d5cac3098619617ce742c581b25a3a59ecab0365` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -265,7 +274,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `b36097a2e12d7c94bc68d4eeba55262722ffe84780060f4f12f01f6319bf433c` |
+| `docs/plans/TASK_BACKLOG.md` | `3d8617d087646377c90ff99ff0328e4a6759d7cae3c0007685356d1ad820d881` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -283,23 +292,24 @@
 | `docs/plans/active/TASK-015-salary-records.md` | `49b71a72a2cb80bda6cd355d2a7b74a4c72a19c5371ffffbb265bb5c39b4d6f8` |
 | `docs/plans/active/TASK-016-salary-mark-paid.md` | `155cdadb6901e9d67f9a2ae0fe86fcae2fb2e4c2ee97e97ac03b361169668a3e` |
 | `docs/plans/active/TASK-017-salary-statistics.md` | `fc72ba2ef67812bc86c07b867624993d04ebda60e30d25a99b39a60b55e08f9d` |
+| `docs/plans/active/TASK-018-salary-ui.md` | `ae73c0f871489bb64e3f918f842f2be166ba654a66e67be3cd87a88d7431b380` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `1399d200c38ab6fa6ff640159cae575586163833d0b717acf8842459e386c128` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `fe67a8b0fa72b738de9592d7bb77cb74fa5dc9a41259c01ef346e06b73f2d4b8` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
 | `docs/product/BUSINESS_RULES.md` | `e1d6d1c2ccb67c8bfaa1c6342937887f5a5c04faa58a802a8dbe6a044afa71d2` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `e136f03006c6dc518684ceccc669c185d5246cdb104c62dacec6580071c75a91` |
-| `docs/project-memory/CURRENT_STATE.md` | `5809fc6deb4bc520494bacc87972059c129cb58e94ad4cd204cd878f9ba4f7bf` |
+| `docs/project-memory/CHANGELOG_AI.md` | `c520b2ad3130288d1cd97ee81089c63e3a909b60bbc1cbec35cc371921c44af2` |
+| `docs/project-memory/CURRENT_STATE.md` | `af3d93c158de86b1f7a441b5d2e8a41bef6000b979d31f7c31becad47ff986ae` |
 | `docs/project-memory/DECISIONS.md` | `4b2a6e7ee99b43ec68b3e699666ffab8b0b85c5ef178a71599159c5bb4cc217a` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `d036bb7f83903fcf22348e8f3394070aab9b09eb5b07298d0666861a12712fbd` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `bbe0361ec94d3fefdcac8a9318d219348ce6c63b103f535c5597239b2ccb3fd2` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `8c9aa48c91c4f656e977935518ff80589628ce172c23630ccd915e0b87748ea1` |
+| `docs/quality/TEST_STRATEGY.md` | `accfda41c5020617c22759dfc63c98a2fce693e4045b02f6d0ea26cf6c21c5b3` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
@@ -328,6 +338,19 @@
 | `output/playwright/recurring-new-320-light.png` | `19ebad739de24fe69a7f3a539830e0051c1f6c5085b063e0365abbe3a0c9124a` |
 | `output/playwright/recurring-new-375-dark.png` | `494da06f7c938d1cd0ddac2ed6f73e21db00c744ac48604357e8dd41772ccf7f` |
 | `output/playwright/recurring-new-bottom-320-light.png` | `4aad64d5af930cfdd80a80c6713222e57c4108fdba7a017ea84f660dca9f32a4` |
+| `output/playwright/salary-320-light.png` | `10bccb9e0fd13ac8b55887412ddef78de025c181a158ee308cbfc711b2a40859` |
+| `output/playwright/salary-375-dark.png` | `37114b6f7854a08f9d1198bd42da6d4737ebababc53835f1bcb56001c07c9c6a` |
+| `output/playwright/salary-375-light.png` | `b3cc03ad493a553fb610acb28c596455582e73f04f7a3d7338767e4aef912e8f` |
+| `output/playwright/salary-480-light.png` | `6fee455e93dff58cf1a5c4f63d42e1e33b473f8ee329c745e501a854ead569a9` |
+| `output/playwright/salary-empty-375-light.png` | `4f61e83253511a78a89fe17645542605c10e5834e8e677d204590f945127ce08` |
+| `output/playwright/salary-error-375-light.png` | `a453d0f05fa658babb7d3f8aa577e6171c94814c1837c580dfd70b6f76df2b4e` |
+| `output/playwright/salary-month-320-light.png` | `36a1b2c35fa3c16090b15c1e387aadb55a72d408d20cd46c3a34839a3c8406ba` |
+| `output/playwright/salary-month-375-dark.png` | `e162794c14e6d28bbfaa61d371863e343b010d82f66f14836ba9fdd4c170d75a` |
+| `output/playwright/salary-paid-confirm-375-dark.png` | `34c1d7617386ce5db36369cf429610ae01a9b3596e988ae065595fd129fbe01a` |
+| `output/playwright/salary-profile-375-light.png` | `df823b2cd77b8059c31ac510436b9a926c3f143338d108eb119b123ddc6daf45` |
+| `output/playwright/salary-year-375-dark.png` | `f7703aa39a3113a839a1eb66a6ba06883b46c263611af58a3caa0c28fff222e8` |
+| `output/playwright/salary-year-375-light.png` | `23962766481c3aa9584673ae4aa76ad5b92c8acf4f5d93b8bbc074c64f39f2f7` |
+| `output/playwright/salary-year-480-light.png` | `8848415f7748356a4a33b77b53ed3508b5654d8109b59782287ee9fa3b0bb894` |
 | `package.json` | `6a97e56eda5871881c398cd9f9786af4122c612e9a1b04af8e38e9c097a218b7` |
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |

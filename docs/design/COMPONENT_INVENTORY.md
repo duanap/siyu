@@ -35,7 +35,7 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | EntryEditorForm | 新增和编辑共享字段与提交状态 |
 | EntryDetailCard | 账目完整字段、来源和历史分类状态 |
 | MonthlySummaryCard | 首页 |
-| SalaryBalanceCard | 个人首页、工资首页 |
+| SalaryBalanceCard | 工资首页的当前周期余额、固定/日常支出和日均可用 |
 | DebtSummaryCard | 借贷完整汇总、完整性加载与失败状态 |
 | DebtProgressCard | 借贷列表方向、进度、到期和剩余金额 |
 | DebtEditorForm | 借贷新增与详情编辑的共享表单 |
@@ -45,8 +45,8 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | SavingGoalCard | 首页、目标列表 |
 | CoupleMemberSummary | 情侣首页、统计 |
 | CoupleLedgerManager | 情侣账本创建、邀请、成员、所有权和解散 |
-| SalaryItemEditor | 月度工资 |
-| SalaryAnnualSummary | 年度工资 |
+| SalaryItemEditor | 工资档案模板、月度工资项目和只读到账明细 |
+| SalaryAnnualChart | 工资首页、年度工资的 12 月实发趋势 |
 | NotificationItem | 消息中心 |
 
 ## 状态要求

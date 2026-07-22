@@ -57,6 +57,15 @@
 `recurring-new-375-dark.png`、`recurring-detail-375-light.png`、`recurring-detail-375-dark.png`、
 `recurring-confirm-375-dark.png` 和 `recurring-404-375-light.png`。
 
+工资首页、月度详情和年度统计已在 TASK-018 实现。首页只呈现本人档案、服务端工资周期余额、当前月记录和
+年度汇总；月度页支持模板项目、服务端复制紧邻上月、未到账编辑和到账二次确认，已到账事实保持只读；年度页
+直接展示服务端 12 个月趋势，并固定声明数据不代表官方账户余额。真实 Chrome 验收截图位于
+`output/playwright/salary-320-light.png`、`salary-375-light.png`、`salary-375-dark.png`、
+`salary-480-light.png`、`salary-profile-375-light.png`、`salary-empty-375-light.png`、
+`salary-error-375-light.png`、`salary-month-320-light.png`、`salary-month-375-dark.png`、
+`salary-paid-confirm-375-dark.png`、`salary-year-375-light.png`、`salary-year-375-dark.png` 和
+`salary-year-480-light.png`。
+
 ## 页面交付要求
 
 每张页面实现时必须同时提交：
