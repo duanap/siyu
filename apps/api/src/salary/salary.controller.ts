@@ -21,6 +21,7 @@ import {
   CreateSalaryRecordDto,
   ListSalaryRecordsDto,
   MarkSalaryPaidDto,
+  SalaryYearParamDto,
   UpdateSalaryProfileDto,
   UpdateSalaryRecordDto,
 } from './salary.dto';
@@ -74,6 +75,22 @@ export class SalaryController {
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
     return this.success(request, await this.salary.listRecords(request.auth.userId, query));
+  }
+
+  @Get('summary/:year')
+  async getSummary(
+    @Param() params: SalaryYearParamDto,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<object> {
+    return this.success(
+      request,
+      await this.salary.getAnnualSummary(request.auth.userId, params.year),
+    );
+  }
+
+  @Get('balance')
+  async getBalance(@Req() request: AuthenticatedRequest): Promise<object> {
+    return this.success(request, await this.salary.getBalance(request.auth.userId));
   }
 
   @Post('records')

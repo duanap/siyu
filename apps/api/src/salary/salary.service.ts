@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import type { SalaryItemType, UserStatus } from '@prisma/client';
@@ -27,7 +28,30 @@ import {
   type SalaryRecordRecord,
 } from './salary.repository';
 
-type Actor = { id: string; status: UserStatus };
+type Actor = { id: string; status: UserStatus; timezone: string };
+
+const DAY_MS = 86_400_000;
+const SPECIAL_ITEM_CODES = {
+  bonus: { key: 'bonusCent', itemType: 'EARNING' },
+  pension_insurance: { key: 'pensionInsuranceCent', itemType: 'DEDUCTION' },
+  medical_insurance: { key: 'medicalInsuranceCent', itemType: 'DEDUCTION' },
+  unemployment_insurance: { key: 'unemploymentInsuranceCent', itemType: 'DEDUCTION' },
+  housing_provident_fund: { key: 'housingProvidentFundCent', itemType: 'DEDUCTION' },
+  income_tax: { key: 'incomeTaxCent', itemType: 'DEDUCTION' },
+} as const;
+
+type SpecialSalaryKey = (typeof SPECIAL_ITEM_CODES)[keyof typeof SPECIAL_ITEM_CODES]['key'];
+type SalaryTotals = {
+  grossCent: bigint;
+  deductionCent: bigint;
+  netCent: bigint;
+  bonusCent: bigint;
+  pensionInsuranceCent: bigint;
+  medicalInsuranceCent: bigint;
+  unemploymentInsuranceCent: bigint;
+  housingProvidentFundCent: bigint;
+  incomeTaxCent: bigint;
+};
 
 function invisible(): NotFoundException {
   return new NotFoundException({ code: 'SALARY_NOT_FOUND', message: '工资档案或记录不存在' });
@@ -46,6 +70,95 @@ function invalid(code: string, message: string): BadRequestException {
 }
 function dateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
+}
+
+function emptySalaryTotals(): SalaryTotals {
+  return {
+    grossCent: 0n,
+    deductionCent: 0n,
+    netCent: 0n,
+    bonusCent: 0n,
+    pensionInsuranceCent: 0n,
+    medicalInsuranceCent: 0n,
+    unemploymentInsuranceCent: 0n,
+    housingProvidentFundCent: 0n,
+    incomeTaxCent: 0n,
+  };
+}
+
+function toSafeCent(value: bigint): number {
+  if (value > BigInt(Number.MAX_SAFE_INTEGER) || value < BigInt(Number.MIN_SAFE_INTEGER)) {
+    throw new InternalServerErrorException({
+      code: 'SALARY_STATISTICS_AMOUNT_OVERFLOW',
+      message: '工资统计金额超出安全返回范围',
+    });
+  }
+  return Number(value);
+}
+
+function salaryTotalsView(totals: SalaryTotals) {
+  return Object.fromEntries(
+    Object.entries(totals).map(([key, value]) => [key, toSafeCent(value)]),
+  ) as Record<keyof SalaryTotals, number>;
+}
+
+function addSalaryRecordTotals(target: SalaryTotals, record: SalaryRecordRecord): void {
+  target.grossCent += record.grossCent;
+  target.deductionCent += record.deductionCent;
+  target.netCent += record.netCent;
+  for (const item of record.items) {
+    const special = SPECIAL_ITEM_CODES[item.itemCode as keyof typeof SPECIAL_ITEM_CODES];
+    if (!special || item.itemType !== special.itemType) continue;
+    target[special.key as SpecialSalaryKey] += item.amountCent;
+  }
+}
+
+function tryZonedToday(timezone: string, now: Date): Date | null {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(now);
+    const value = (type: Intl.DateTimeFormatPartTypes): number =>
+      Number(parts.find((part) => part.type === type)?.value);
+    const year = value('year');
+    const month = value('month');
+    const day = value('day');
+    if ([year, month, day].every(Number.isInteger)) return new Date(Date.UTC(year, month - 1, day));
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function zonedToday(timezone: string, now: Date): Date {
+  return (
+    tryZonedToday(timezone, now) ??
+    tryZonedToday('Asia/Shanghai', now) ??
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  );
+}
+
+export function nextExpectedSalaryDate(paidDate: Date, payDay: number): Date {
+  const year = paidDate.getUTCFullYear();
+  const targetMonth = paidDate.getUTCMonth() + 1;
+  const lastDay = new Date(Date.UTC(year, targetMonth + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, targetMonth, Math.min(payDay, lastDay)));
+}
+
+export function salaryBalancePeriod(
+  paidDate: Date,
+  payDay: number,
+  today: Date,
+): { nextPayDate: Date; periodEndDate: Date; remainingDays: number } {
+  const nextPayDate = nextExpectedSalaryDate(paidDate, payDay);
+  return {
+    nextPayDate,
+    periodEndDate: new Date(nextPayDate.getTime() - DAY_MS),
+    remainingDays: Math.max(0, Math.round((nextPayDate.getTime() - today.getTime()) / DAY_MS)),
+  };
 }
 function parseMonth(value: string): Date {
   const parsed = new Date(`${value}T00:00:00.000Z`);
@@ -328,6 +441,119 @@ export class SalaryService {
       const record = await this.repository.findRecord(tx, userId, id);
       if (!actor || !record) throw invisible();
       return recordView(actor, record);
+    });
+  }
+
+  async getAnnualSummary(userId: string, year: number): Promise<object> {
+    return this.repository.transaction(async (tx) => {
+      const actor = await this.repository.findActor(tx, userId);
+      if (!actor) throw invisible();
+      const records = await this.repository.listAnnualRecords(tx, userId, year);
+      const annual = emptySalaryTotals();
+      const monthly = Array.from({ length: 12 }, () => emptySalaryTotals());
+      const recordedMonths = new Set<number>();
+      for (const record of records) {
+        const monthIndex = record.salaryMonth.getUTCMonth();
+        const monthTotals = monthly[monthIndex];
+        if (!monthTotals) {
+          throw new InternalServerErrorException({
+            code: 'SALARY_MONTH_FACT_INVALID',
+            message: '工资月份事实不合法',
+          });
+        }
+        addSalaryRecordTotals(annual, record);
+        addSalaryRecordTotals(monthTotals, record);
+        recordedMonths.add(monthIndex);
+      }
+      return {
+        year,
+        recordCount: records.length,
+        recordedMonthCount: recordedMonths.size,
+        ...salaryTotalsView(annual),
+        averageMonthlyNetCent:
+          recordedMonths.size === 0 ? 0 : toSafeCent(annual.netCent / BigInt(recordedMonths.size)),
+        items: monthly.map((totals, index) => ({
+          month: `${year}-${String(index + 1).padStart(2, '0')}`,
+          ...salaryTotalsView(totals),
+        })),
+        officialBalanceDisclaimer: true,
+      };
+    });
+  }
+
+  async getBalance(userId: string, now = new Date()): Promise<object> {
+    return this.repository.transaction(async (tx) => {
+      const actor = await this.repository.findActor(tx, userId);
+      if (!actor) throw invisible();
+      const today = zonedToday(actor.timezone, now);
+      const current = await this.repository.findCurrentPaidRecord(tx, userId, today);
+      if (!current) {
+        return {
+          available: false,
+          asOfDate: dateOnly(today),
+          salaryRecordId: null,
+          profileId: null,
+          salaryMonth: null,
+          paidDate: null,
+          nextExpectedPayDate: null,
+          periodStartDate: null,
+          periodEndDate: null,
+          netSalaryCent: 0,
+          fixedExpenseCent: 0,
+          dailyExpenseCent: 0,
+          totalExpenseCent: 0,
+          remainingCent: 0,
+          remainingDays: 0,
+          dailyAvailableCent: null,
+        };
+      }
+      const ledger = await this.repository.findPersonalLedger(tx, userId);
+      if (!ledger) {
+        throw new InternalServerErrorException({
+          code: 'SALARY_BALANCE_LEDGER_UNAVAILABLE',
+          message: '个人账本不可用，无法计算工资余额',
+        });
+      }
+      const paidDate = current.paidDate;
+      if (!paidDate) {
+        throw new InternalServerErrorException({
+          code: 'SALARY_PAYMENT_FACT_INVALID',
+          message: '工资到账事实不完整',
+        });
+      }
+      const period = salaryBalancePeriod(paidDate, current.profile.payDay, today);
+      const rows = await this.repository.salaryCycleExpenses(
+        tx,
+        ledger.id,
+        paidDate,
+        period.nextPayDate,
+      );
+      const fixedExpenseCent =
+        rows.find((row) => row.sourceType === 'RECURRING_RUN')?._sum.amountCent ?? 0n;
+      const totalExpenseCent = rows.reduce((total, row) => total + (row._sum.amountCent ?? 0n), 0n);
+      const dailyExpenseCent = totalExpenseCent - fixedExpenseCent;
+      const remainingCent = current.netCent - totalExpenseCent;
+      return {
+        available: true,
+        asOfDate: dateOnly(today),
+        salaryRecordId: current.id,
+        profileId: current.profileId,
+        salaryMonth: dateOnly(current.salaryMonth),
+        paidDate: dateOnly(paidDate),
+        nextExpectedPayDate: dateOnly(period.nextPayDate),
+        periodStartDate: dateOnly(paidDate),
+        periodEndDate: dateOnly(period.periodEndDate),
+        netSalaryCent: toSafeCent(current.netCent),
+        fixedExpenseCent: toSafeCent(fixedExpenseCent),
+        dailyExpenseCent: toSafeCent(dailyExpenseCent),
+        totalExpenseCent: toSafeCent(totalExpenseCent),
+        remainingCent: toSafeCent(remainingCent),
+        remainingDays: period.remainingDays,
+        dailyAvailableCent:
+          period.remainingDays === 0
+            ? null
+            : toSafeCent(remainingCent / BigInt(period.remainingDays)),
+      };
     });
   }
 

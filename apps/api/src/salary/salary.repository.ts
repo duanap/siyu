@@ -42,7 +42,7 @@ export class SalaryRepository {
   findActor(tx: Tx, userId: string) {
     return tx.user.findFirst({
       where: { id: userId, deletedAt: null },
-      select: { id: true, status: true },
+      select: { id: true, status: true, timezone: true },
     });
   }
 
@@ -176,6 +176,34 @@ export class SalaryRepository {
     });
   }
 
+  listAnnualRecords(tx: Tx, userId: string, year: number) {
+    return tx.salaryRecord.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        salaryMonth: {
+          gte: new Date(Date.UTC(year, 0, 1)),
+          lt: new Date(Date.UTC(year + 1, 0, 1)),
+        },
+      },
+      include: recordInclude,
+      orderBy: [{ salaryMonth: 'asc' }, { id: 'asc' }],
+    });
+  }
+
+  findCurrentPaidRecord(tx: Tx, userId: string, today: Date) {
+    return tx.salaryRecord.findFirst({
+      where: {
+        userId,
+        deletedAt: null,
+        paymentStatus: 'PAID',
+        paidDate: { lte: today },
+      },
+      include: recordInclude,
+      orderBy: [{ paidDate: 'desc' }, { salaryMonth: 'desc' }, { id: 'desc' }],
+    });
+  }
+
   findPersonalLedger(tx: Tx, userId: string) {
     return tx.ledger.findFirst({
       where: {
@@ -193,6 +221,19 @@ export class SalaryRepository {
     return tx.category.findFirst({
       where: { ledgerId, type: 'INCOME', templateKey: 'income.salary', isEnabled: true },
       select: { id: true },
+    });
+  }
+
+  salaryCycleExpenses(tx: Tx, ledgerId: string, startDate: Date, endDate: Date) {
+    return tx.entry.groupBy({
+      by: ['sourceType'],
+      where: {
+        ledgerId,
+        type: 'EXPENSE',
+        deletedAt: null,
+        businessDate: { gte: startDate, lt: endDate },
+      },
+      _sum: { amountCent: true },
     });
   }
 

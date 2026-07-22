@@ -1660,6 +1660,34 @@ async function main() {
       },
       {
         itemType: 'DEDUCTION',
+        itemCode: 'pension_insurance',
+        itemName: '养老保险',
+        amountCent: 20_000,
+        sortOrder: 180,
+      },
+      {
+        itemType: 'DEDUCTION',
+        itemCode: 'medical_insurance',
+        itemName: '医疗保险',
+        amountCent: 10_000,
+        sortOrder: 185,
+      },
+      {
+        itemType: 'DEDUCTION',
+        itemCode: 'unemployment_insurance',
+        itemName: '失业保险',
+        amountCent: 5_000,
+        sortOrder: 190,
+      },
+      {
+        itemType: 'DEDUCTION',
+        itemCode: 'housing_provident_fund',
+        itemName: '公积金',
+        amountCent: 30_000,
+        sortOrder: 195,
+      },
+      {
+        itemType: 'DEDUCTION',
         itemCode: 'income_tax',
         itemName: '个人所得税',
         amountCent: 100_000,
@@ -1675,8 +1703,8 @@ async function main() {
     .expect(201);
   const julySalaryId = julySalary.body.data.id;
   assert.equal(julySalary.body.data.grossCent, 1_250_000);
-  assert.equal(julySalary.body.data.deductionCent, 100_000);
-  assert.equal(julySalary.body.data.netCent, 1_150_000);
+  assert.equal(julySalary.body.data.deductionCent, 165_000);
+  assert.equal(julySalary.body.data.netCent, 1_085_000);
   assert.equal(julySalary.body.data.canEdit, true);
   const julySalaryReplay = await request(server)
     .post('/api/v1/salary/records')
@@ -1924,6 +1952,108 @@ async function main() {
   assert.equal(septemberAfterRollback.paymentIdempotencyKey, null);
   assert.equal(septemberAfterRollback.entryId, null);
   await prisma.category.update({ where: { id: salaryCategory.id }, data: { isEnabled: true } });
+
+  await request(server)
+    .get('/api/v1/salary/summary/not-a-year')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(400);
+  const annualSalary = await request(server)
+    .get('/api/v1/salary/summary/2026')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(annualSalary.body.data.recordCount, 3);
+  assert.equal(annualSalary.body.data.recordedMonthCount, 3);
+  assert.equal(annualSalary.body.data.grossCent, 3_850_000);
+  assert.equal(annualSalary.body.data.deductionCent, 385_000);
+  assert.equal(annualSalary.body.data.netCent, 3_465_000);
+  assert.equal(annualSalary.body.data.averageMonthlyNetCent, 1_155_000);
+  assert.equal(annualSalary.body.data.bonusCent, 50_000);
+  assert.equal(annualSalary.body.data.pensionInsuranceCent, 20_000);
+  assert.equal(annualSalary.body.data.medicalInsuranceCent, 10_000);
+  assert.equal(annualSalary.body.data.unemploymentInsuranceCent, 5_000);
+  assert.equal(annualSalary.body.data.housingProvidentFundCent, 30_000);
+  assert.equal(annualSalary.body.data.incomeTaxCent, 320_000);
+  assert.equal(annualSalary.body.data.items.length, 12);
+  assert.equal(annualSalary.body.data.items[0].month, '2026-01');
+  assert.equal(annualSalary.body.data.items[0].netCent, 0);
+  assert.equal(annualSalary.body.data.items[6].netCent, 1_085_000);
+  assert.equal(annualSalary.body.data.items[7].netCent, 1_190_000);
+  assert.equal(annualSalary.body.data.items[8].netCent, 1_190_000);
+  assert.equal(annualSalary.body.data.officialBalanceDisclaimer, true);
+  const outsiderAnnualSalary = await request(server)
+    .get('/api/v1/salary/summary/2026')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(200);
+  assert.equal(outsiderAnnualSalary.body.data.recordCount, 0);
+  assert.equal(outsiderAnnualSalary.body.data.netCent, 0);
+  assert.equal(outsiderAnnualSalary.body.data.items.length, 12);
+
+  const salaryBalance = await request(server)
+    .get('/api/v1/salary/balance')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+  assert.equal(salaryBalance.body.data.available, true);
+  assert.equal(
+    salaryBalance.body.data.salaryRecordId,
+    salaryBalance.body.data.asOfDate >= augustPaymentBody.paidDate ? augustSalaryId : julySalaryId,
+  );
+  const balanceStart = new Date(`${salaryBalance.body.data.periodStartDate}T00:00:00.000Z`);
+  const balanceEndExclusive = new Date(
+    `${salaryBalance.body.data.nextExpectedPayDate}T00:00:00.000Z`,
+  );
+  const balanceExpenseRows = await prisma.entry.groupBy({
+    by: ['sourceType'],
+    where: {
+      ledgerId: personalLedger.id,
+      type: 'EXPENSE',
+      deletedAt: null,
+      businessDate: { gte: balanceStart, lt: balanceEndExclusive },
+    },
+    _sum: { amountCent: true },
+  });
+  const expectedFixedCent = Number(
+    balanceExpenseRows.find((row) => row.sourceType === 'RECURRING_RUN')?._sum.amountCent ?? 0n,
+  );
+  const expectedTotalExpenseCent = balanceExpenseRows.reduce(
+    (total, row) => total + Number(row._sum.amountCent ?? 0n),
+    0,
+  );
+  assert.equal(salaryBalance.body.data.fixedExpenseCent, expectedFixedCent);
+  assert.equal(
+    salaryBalance.body.data.dailyExpenseCent,
+    expectedTotalExpenseCent - expectedFixedCent,
+  );
+  assert.equal(salaryBalance.body.data.totalExpenseCent, expectedTotalExpenseCent);
+  assert.equal(
+    salaryBalance.body.data.remainingCent,
+    salaryBalance.body.data.netSalaryCent - expectedTotalExpenseCent,
+  );
+  assert.equal(
+    salaryBalance.body.data.dailyAvailableCent,
+    salaryBalance.body.data.remainingDays === 0
+      ? null
+      : Math.trunc(salaryBalance.body.data.remainingCent / salaryBalance.body.data.remainingDays),
+  );
+  const coupleExpenseInSalaryPeriod = await prisma.entry.aggregate({
+    where: {
+      ledgerId: coupleLedgerId,
+      type: 'EXPENSE',
+      deletedAt: null,
+      businessDate: { gte: balanceStart, lt: balanceEndExclusive },
+    },
+    _sum: { amountCent: true },
+  });
+  assert.equal(
+    salaryBalance.body.data.totalExpenseCent,
+    expectedTotalExpenseCent,
+    `couple expense ${String(coupleExpenseInSalaryPeriod._sum.amountCent ?? 0n)} must stay private`,
+  );
+  const outsiderSalaryBalance = await request(server)
+    .get('/api/v1/salary/balance')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(200);
+  assert.equal(outsiderSalaryBalance.body.data.available, false);
+  assert.equal(outsiderSalaryBalance.body.data.salaryRecordId, null);
 
   const ownerLeave = await request(server)
     .post(`/api/v1/couple-ledgers/${coupleLedgerId}/leave`)

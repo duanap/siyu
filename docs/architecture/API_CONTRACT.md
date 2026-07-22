@@ -220,10 +220,18 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 等于 `paidDate` 的唯一 `SALARY` 来源收入。个人账本或工资分类不可用时分别返回
 `SALARY_SYNC_LEDGER_UNAVAILABLE`、`SALARY_SYNC_CATEGORY_UNAVAILABLE`，所有越权记录 ID 仍统一返回 404。
 
-以下工资能力仍由后续任务实现：
+本任务实现：
 
 - `GET /salary/summary/:year`
 - `GET /salary/balance`
+
+年度汇总按工资月份聚合本人未删除记录，返回完整 12 个月趋势、应发/扣除/实发、
+月均实发，以及奖金、养老、医疗、失业、公积金和个税专项累计。专项按稳定项目代码匹配；响应中的
+`officialBalanceDisclaimer=true` 要求客户端提示数据来自用户录入，不代表官方账户余额。
+
+工资余额以用户时区今天之前最近到账记录为当前周期，从到账日（含）至下个自然月的
+预计发薪日（不含）聚合本人有效 PERSONAL 账本支出。`RECURRING_RUN` 为固定支出，其他来源为日常支出；
+无到账记录返回 `available=false` 空态，周期过期时 `remainingDays=0`、`dailyAvailableCent=null`。
 
 工资接口使用 `SALARY_NOT_FOUND`、`SALARY_PERMISSION_DENIED`、`SALARY_PROFILE_EXISTS`、
 `SALARY_MONTH_DUPLICATE`、`SALARY_PREVIOUS_MONTH_NOT_FOUND`、`SALARY_ITEM_SOURCE_INVALID`、
