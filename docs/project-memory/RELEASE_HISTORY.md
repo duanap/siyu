@@ -85,3 +85,12 @@ PR #4 已以 Squash merge 合入 main，提交 `25dcad0a29951ba4269e318423d5ebbf
 状态：Node 24 全仓 103 项测试、七迁移/数据库约束、完整 API E2E、OpenAPI 74/74、构建和审计通过；
 功能提交 `558fdb84c0b61352f8725048faf4556fc3b02be6` 经 PR #12 合入 `main`，PR CI Run
 `29894967989` 与 main push CI Run `29895072247` 全部通过，TASK-012 正式关闭。
+
+## v0.11.0-recurring-worker
+
+日期：2026-07-22
+内容：实现按创建人时区扫描的 BullMQ 周期 Worker、稳定任务 ID、多 Worker 幂等、指数退避、业务最终失败、
+待确认通知、安全结构化日志、第八迁移，以及 CI 中完整 PostgreSQL/Redis Worker E2E。
+状态：Node 24 全仓 113 项测试、八迁移/数据库约束、完整 API/Worker E2E、OpenAPI 74/74、构建和审计通过；
+交付头 `830a9592da5ed9043208d88e1c5877c7c69d2b06` 经 PR #14 合入 `main`，PR CI Run `29898941240`
+与 main push CI Run `29899089545` 全部通过，TASK-013 正式关闭。

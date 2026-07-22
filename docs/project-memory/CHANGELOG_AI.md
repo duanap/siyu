@@ -532,3 +532,18 @@ TASK-012 正式关闭；下一项为 TASK-013 BullMQ Worker 与幂等。
 ### 当前状态
 
 TASK-013 已完成本地交付候选，待提交、PR、远程 CI、合并和 main CI；尚未正式关闭，TASK-014 未开始。
+
+## 2026-07-22 / TASK-013 正式关闭
+
+### 关闭证据
+
+- 实现提交 `ba136bad896e0dd6d065df83626a0801cf93c27f`、CI 提交
+  `b6f6718eba13e5181ab1e3b2430a2bc7e21407a7` 与交付头 `830a9592da5ed9043208d88e1c5877c7c69d2b06`
+  已推送并经 PR #14 合入 `main`；合并提交为 `72633ac7a478c01012a9ded7e41e8390b50a876a`。
+- PR CI Run `29898941240` 与 main push CI Run `29899089545` 的 `quality`、`database`、
+  `secret-scan` 全部通过；包含八迁移、数据库约束、完整 PostgreSQL/Redis Worker E2E 和秘密扫描。
+- 项目状态、任务清单、发布历史、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-013 正式关闭；下一项为 TASK-014 周期记账页面。
