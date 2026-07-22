@@ -181,6 +181,17 @@ DELETE 使用 `?expectedVersion=`。非 MANUAL 普通修改/删除返回 `ENTRY_
 - `POST /recurring-runs/:id/confirm`
 - `POST /recurring-runs/:id/skip`
 
+规则创建必须携带 `idempotencyKey`；相同创建者、幂等键和规范载荷重放原规则，不同载荷或已删除原规则返回
+`IDEMPOTENCY_CONFLICT`。列表可按可见账本筛选，规则响应返回分类摘要、计划/完成期数、下一执行日和服务端
+`canEdit/canPause/canResume/canDelete`。
+
+个人或情侣有效成员可创建所属账本规则；情侣双方可见，创建人和账本 OWNER 可写。更新不改写既有实例，
+结束日期与总期数互斥，总期数不得小于已物化期数。暂停清空下一执行日，恢复按当天或之后的锚定计划日继续。
+
+实例列表只返回当前用户仍有权访问的有效账本数据。只有确认模式的 `PENDING` 实例可确认或跳过；确认必须
+携带正整数分 `amountCent` 和 `idempotencyKey`，金额只作用于当前实例。相同确认重放原结果，跳过重放原终态；
+确认与跳过均消费服务端 `canConfirm/canSkip` 权限，且不能重复生成来源账目。
+
 ### 工资
 
 - `GET /salary/profiles`

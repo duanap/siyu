@@ -129,25 +129,26 @@ model User {
   updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt DateTime?  @map("deleted_at") @db.Timestamptz
 
-  ownedLedgers        Ledger[]             @relation("LedgerOwner")
-  memberships         LedgerMember[]
-  sentInvitations     LedgerInvitation[]   @relation("InvitationInviter")
-  acceptedInvitations LedgerInvitation[]   @relation("InvitationAcceptor")
-  createdCategories   Category[]
-  createdEntries      Entry[]
-  debts               Debt[]
-  debtTransactions    DebtTransaction[]
-  recurringRules      RecurringRule[]
-  salaryProfiles      SalaryProfile[]
-  salaryRecords       SalaryRecord[]
-  createdSavingGoals  SavingGoal[]
-  contributions       SavingContribution[]
-  notifications       Notification[]
-  auditLogs           AuditLog[]           @relation("AuditActor")
-  credential          UserCredential?
-  authSessions        AuthSession[]
-  passwordResetTokens PasswordResetToken[]
-  userRoles           UserRole[]
+  ownedLedgers           Ledger[]             @relation("LedgerOwner")
+  memberships            LedgerMember[]
+  sentInvitations        LedgerInvitation[]   @relation("InvitationInviter")
+  acceptedInvitations    LedgerInvitation[]   @relation("InvitationAcceptor")
+  createdCategories      Category[]
+  createdEntries         Entry[]
+  debts                  Debt[]
+  debtTransactions       DebtTransaction[]
+  recurringRules         RecurringRule[]
+  confirmedRecurringRuns RecurringRun[]       @relation("RecurringRunConfirmer")
+  salaryProfiles         SalaryProfile[]
+  salaryRecords          SalaryRecord[]
+  createdSavingGoals     SavingGoal[]
+  contributions          SavingContribution[]
+  notifications          Notification[]
+  auditLogs              AuditLog[]           @relation("AuditActor")
+  credential             UserCredential?
+  authSessions           AuthSession[]
+  passwordResetTokens    PasswordResetToken[]
+  userRoles              UserRole[]
 
   @@map("users")
 }
@@ -446,6 +447,8 @@ model RecurringRule {
   generationMode       GenerationMode      @map("generation_mode")
   status               RecurringRuleStatus @default(ACTIVE)
   reminderDaysBefore   Int                 @default(1) @map("reminder_days_before")
+  idempotencyKey       String              @map("idempotency_key")
+  createRequestHash    String              @map("create_request_hash")
   createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz
   updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt            DateTime?           @map("deleted_at") @db.Timestamptz
@@ -455,28 +458,35 @@ model RecurringRule {
   category Category       @relation("RecurringCategoryScope", fields: [categoryId, ledgerId, entryType], references: [id, ledgerId, type], onDelete: Restrict)
   runs     RecurringRun[]
 
+  @@unique([ownerUserId, idempotencyKey], map: "recurring_rules_owner_idempotency_key")
   @@index([status, nextRunDate])
   @@index([ownerUserId, ledgerId])
   @@map("recurring_rules")
 }
 
 model RecurringRun {
-  id            String             @id @default(uuid()) @db.Uuid
-  ruleId        String             @map("rule_id") @db.Uuid
-  scheduledDate DateTime           @map("scheduled_date") @db.Date
-  amountCent    BigInt             @map("amount_cent")
-  status        RecurringRunStatus @default(PENDING)
-  entryId       String?            @unique @map("entry_id") @db.Uuid
-  attempts      Int                @default(0)
-  lastError     String?            @map("last_error")
-  confirmedAt   DateTime?          @map("confirmed_at") @db.Timestamptz
-  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  id                         String             @id @default(uuid()) @db.Uuid
+  ruleId                     String             @map("rule_id") @db.Uuid
+  scheduledDate              DateTime           @map("scheduled_date") @db.Date
+  amountCent                 BigInt             @map("amount_cent")
+  status                     RecurringRunStatus @default(PENDING)
+  entryId                    String?            @unique @map("entry_id") @db.Uuid
+  attempts                   Int                @default(0)
+  lastError                  String?            @map("last_error")
+  lastAttemptAt              DateTime?          @map("last_attempt_at") @db.Timestamptz
+  confirmedAt                DateTime?          @map("confirmed_at") @db.Timestamptz
+  confirmationUserId         String?            @map("confirmation_user_id") @db.Uuid
+  confirmationIdempotencyKey String?            @map("confirmation_idempotency_key")
+  confirmationRequestHash    String?            @map("confirmation_request_hash")
+  createdAt                  DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                  DateTime           @updatedAt @map("updated_at") @db.Timestamptz
 
-  rule  RecurringRule @relation(fields: [ruleId], references: [id])
-  entry Entry?        @relation(fields: [entryId], references: [id], onDelete: Restrict)
+  rule             RecurringRule @relation(fields: [ruleId], references: [id])
+  entry            Entry?        @relation(fields: [entryId], references: [id], onDelete: Restrict)
+  confirmationUser User?         @relation("RecurringRunConfirmer", fields: [confirmationUserId], references: [id], onDelete: Restrict)
 
   @@unique([ruleId, scheduledDate])
+  @@unique([confirmationUserId, confirmationIdempotencyKey], map: "recurring_runs_confirmation_idempotency_key")
   @@index([status, scheduledDate])
   @@map("recurring_runs")
 }
