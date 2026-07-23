@@ -27,7 +27,8 @@ ORM：Prisma
 ### roles / permissions / user_roles / role_permissions
 
 最小关联表 RBAC。复合主键阻止重复授权；所有关联外键使用 RESTRICT。内置 USER、ADMIN 及
-`profile:read`、`profile:write`、`admin:access`。
+`profile:read`、`profile:write`、`admin:access`。TASK-022 追加概览、用户读写、账本关系、周期任务读写和
+审计读取七个管理权限，仅赋予既有 ADMIN 角色，不修改任何财务模型。
 
 ### users
 

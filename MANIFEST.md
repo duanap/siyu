@@ -2,7 +2,7 @@
 
 生成日期：2026-07-23
 
-文件数量（不含本清单、依赖和构建产物）：432
+文件数量（不含本清单、依赖和构建产物）：439
 
 | 文件 | SHA-256 |
 |---|---|
@@ -16,17 +16,18 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `f00af94437222e46e830aa101fc4cbef1810cf5b5a6697f5309038ee2e29f1a8` |
+| `VALIDATION_REPORT.md` | `45783e61196e62f3e3f3343b88da6b96e9f2aa46d9d5e27afe648dd3bd238f8a` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
 | `apps/admin-web/src/App.vue` | `737cb6c12d0153b9a98ad15d08c57996483512aeeaa6d3690b229ac28e0abe29` |
+| `apps/admin-web/src/admin-api.ts` | `18c13d3d0aa04a6dc3c923e27b3f803f9f582f8440c479d8948e508b6e10577b` |
 | `apps/admin-web/src/auth.test.ts` | `f9aa90003f7023a4acec7f557564c3c885a8aa1e61e33766099447ee3d1f51aa` |
 | `apps/admin-web/src/auth.ts` | `263455e1fcbf327b86d067101d9d4446c6748f435d6af9b8da4494b791ec6932` |
 | `apps/admin-web/src/main.ts` | `400a865e931fe74c0e79a706d440a150987b2d0e4994fb478c559b713a42493b` |
 | `apps/admin-web/src/router.ts` | `ea36aa1d0f655f3e6fdc8ec616aa472ed6b5fbb07edb78ce6fd5995e70277ff3` |
-| `apps/admin-web/src/views/BootstrapView.test.ts` | `7bf2dbb97879e2ea37712e2f474f41813a2087baeb989ee3ee5f28bc1f8e8d23` |
-| `apps/admin-web/src/views/BootstrapView.vue` | `173445111d9ee54e42bff207f34372fa56b71845e4cae170d0f0793e4d105e9e` |
+| `apps/admin-web/src/views/BootstrapView.test.ts` | `cf962e93d6602b9049315141b8bfa57300c32178096c7a0f0859920310664ac3` |
+| `apps/admin-web/src/views/BootstrapView.vue` | `37db4b56ea1189dffce039b34d1d82e5bf09a941e5443fc57e022a0ff4c4a84f` |
 | `apps/admin-web/src/views/LoginView.vue` | `e16d58b56778694a8947a4b955635437690925718183953b045a28a268edd49c` |
 | `apps/admin-web/src/vite-env.d.ts` | `65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5` |
 | `apps/admin-web/tsconfig.json` | `36e137eb73075b1111a01c854a7f4ca2de5a9c74f6f2f71d523199cde7a7ecfe` |
@@ -47,9 +48,14 @@
 | `apps/api/prisma/migrations/20260722100000_salary_records/migration.sql` | `929f9974b98a511d484016adbfc2008a887df30d3c3d0df6522cad211fc2a806` |
 | `apps/api/prisma/migrations/20260722120000_salary_mark_paid/migration.sql` | `f94852c31b0c0127465f994b498ecef22a079a690ce3b864e12600ebca518359` |
 | `apps/api/prisma/migrations/20260722140000_saving_goals/migration.sql` | `ff32284fe49c494fac8e367b9b9764fe443bef61724263aea7380d21afc9230a` |
+| `apps/api/prisma/migrations/20260722160000_admin_console_permissions/migration.sql` | `eb8427120b946b3d11a7fabd3f94c93c038773137b1d3bd54b56756d29576acc` |
 | `apps/api/prisma/migrations/migration_lock.toml` | `39867c82b80b5912c94f5027c9ef43614c165635ab6c683213c0082cc52d58de` |
 | `apps/api/prisma/schema.prisma` | `1a4d5ed77e83cb894b3d7d449519e7e3bc41f7699c43a8b59b4d335882ec496f` |
-| `apps/api/src/app.module.ts` | `16f6d322af0e782c73ecff2101c836d83bc79fedb0b45ec4f3dfb17cb9e094b9` |
+| `apps/api/src/admin/admin.controller.ts` | `598a109c92b4a02263278ddbc2727dc0e0d1cee57adf8c97e5d13dc65a9117c7` |
+| `apps/api/src/admin/admin.dto.ts` | `0ad9e0be0004a952f87b93646377b0300b8ae9f5bf6386db5637e02e96dd1eb6` |
+| `apps/api/src/admin/admin.module.ts` | `4a39fb27b9997fde5b9edd471413d40fcfb24140878f6722f0e97888120f9435` |
+| `apps/api/src/admin/admin.service.ts` | `bcfe06c4ef43a42e13c1701287b02d86540b34310cafbeab51b2191626156e34` |
+| `apps/api/src/app.module.ts` | `580dfb69952ec38a7a109b0abe1d4b2548063a4977e74a775e1d530184f099b5` |
 | `apps/api/src/app.ts` | `0c3ec241f256a57381337016a5a8ef3f2854793511c2a7b131981bf6efd4d678` |
 | `apps/api/src/auth/auth.constants.ts` | `4445de5a832e29b60a1c9cf489838047ed6dad63888a2fd9b7804ee2c75bf5fa` |
 | `apps/api/src/auth/auth.controller.ts` | `b4bb003fabf3e4300ce5d44ebced35ed715297d8be9908de8e83fd7c5b11e80d` |
@@ -133,7 +139,7 @@
 | `apps/api/src/users/users.dto.ts` | `ebf0bbc24907c047559d21381fce78afc3500843263cd6e4f523fd3cdd3288b0` |
 | `apps/api/src/users/users.module.ts` | `a60ca0d45604685d23ab7c9a59b1db8ab778827f4c492e27b9dd2bcb79998ce0` |
 | `apps/api/src/worker.ts` | `6a1ec7bb677b21e8e1b135e9347e9605d06304f8fbd13bcb726590b2d7ba2872` |
-| `apps/api/test/run-e2e.cjs` | `6d5f2190fe6456269a81f796feb615358b61130c03072c22e85831eed672665d` |
+| `apps/api/test/run-e2e.cjs` | `3d56e38312e1b3ec537f111e851acb6ad39510b51095956544fb7e2c806fb5b5` |
 | `apps/api/tsconfig.build.json` | `2cb0671aac773e691b6ab793e3dc46d71f88a9f3830d3a351e63f9630035db46` |
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
 | `apps/api/vitest.config.ts` | `ab62155f398c51eab4e82c644ad2c943e15fe60e4ee983ecaa916f4567d93e9f` |
@@ -255,15 +261,15 @@
 | `apps/mobile-web/vite.config.ts` | `129724ce0b7ec1c2864d4b66c4ac69b6870aac940529abd144fd9f42b7f015d8` |
 | `apps/mobile-web/vitest.config.ts` | `3c85807bd84ccf059da9b4a4fc8e6f1de99bd81523e377752f90cf1a571062b6` |
 | `docker-compose.yml` | `55efa41105ec21761366f022674ddaccaddb8a40ce49192fe96cd5723905b719` |
-| `docs/architecture/API_CONTRACT.md` | `417231f087be148479f2b6681ae338b56aed6114077134755c734f6a3631bdd8` |
-| `docs/architecture/BACKGROUND_JOBS.md` | `829a32b84eb21c4637d98c81de7d8cafa2b9a557a9cab307a3196f41df3c20d7` |
-| `docs/architecture/DATABASE_SCHEMA.md` | `e23f3774958ead354ffad4d54bcac2a1981469fa805223bb37a82ff40dc6940c` |
+| `docs/architecture/API_CONTRACT.md` | `b7cfb240395ca3188413bb3b941d8bd2ba078633cddbfcd36c77e099cda5fa3d` |
+| `docs/architecture/BACKGROUND_JOBS.md` | `382fa513dd83eb854df10aeb4127bd9bd656267156a1b4daa8afa2ee1bc9090c` |
+| `docs/architecture/DATABASE_SCHEMA.md` | `a719c4270c2072b7aab0ec332e0d5dd85a272decb495b96da8802016cedee1de` |
 | `docs/architecture/DEPLOYMENT.md` | `2d67d34ee544f4cca67ba06bcacf0736023b9202d7949596719d2dfd608c0bf0` |
 | `docs/architecture/NATIVE_RUNTIME.md` | `ec4cfc042cc944501aba40b9943ff32f084034b38cdc4a52f05159cf79712482` |
-| `docs/architecture/PERMISSION_MODEL.md` | `5f19e4d3f8eb2d6058f808017cedf2e1848059aa8025953a9498df81cbd77786` |
-| `docs/architecture/SECURITY.md` | `7edde167dfa8f227024ba364a4ad93e5768dd17a506f5555542916fc32829ef6` |
+| `docs/architecture/PERMISSION_MODEL.md` | `de4b8b0eb5d9e57314cf174100f8a3fb731b14bfcba1a96c7104571f7a1b80ae` |
+| `docs/architecture/SECURITY.md` | `06f5cc64d2f07d63491d51e2c4533c56a21e47bc5156c9e86abc21068136c29e` |
 | `docs/architecture/TECH_ARCHITECTURE.md` | `177ad6d69efa94178be3a151039aa5997afff900de9e633df9a49cdedd4280c6` |
-| `docs/architecture/openapi.yaml` | `170e31b4f2754e0c4364a73b00f88f439a589b4843de778aa96cabb2f6f857b1` |
+| `docs/architecture/openapi.yaml` | `19afb8af058b3b3ebfecc7a8c8e6409477feff6b024e8793abf7e7d5d637add1` |
 | `docs/architecture/schema.prisma` | `1a4d5ed77e83cb894b3d7d449519e7e3bc41f7699c43a8b59b4d335882ec496f` |
 | `docs/codex/BUGFIX_PROMPT_TEMPLATE.md` | `6ad11bd918ea2fdf5052cc769d1ea20dc77d022cd9ff2dcf7fd17df5657a93ff` |
 | `docs/codex/CODEX_FIRST_PROMPT.md` | `e8094b28817a072d74a66e4398514f22525910dae91d6fbd3b54332f3117294c` |
@@ -276,7 +282,7 @@
 | `docs/design/DESIGN_TOKENS.md` | `e67e4f5e05d93d4359ac79e5d2de4213826d471ef52d776288c3cbeab729ea22` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `d601da5ee02c75837db929e097d92e345bf7ffbae4fca22c6ca51a31d190600b` |
 | `docs/design/SCREEN_FLOW.md` | `0276ec2fdb56eff858e05824430b2248cfc45428706a6a2d7e1cba383d40dc3c` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `b516f6973c372299e329513d72e38571fda4a4773bcb5350251bdc14a6c6721a` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `d53fe2d55ab1975b6be9f720981a5cdf9ebd067d2c1b807694b3a3420914ced4` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -300,7 +306,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `9ab1cbdbf74caa9461a64885211787ba8e975777e9d158673a711f423bd95fb2` |
+| `docs/plans/TASK_BACKLOG.md` | `0b97db6766e30a571f2fa677f383a0a35d28c234b1bb0ee24b108cbdd381cc19` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -322,23 +328,24 @@
 | `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
 | `docs/plans/active/TASK-020-saving-goals-ui.md` | `b74a0fe8a398d79bb7d990908b502fcd2cc7eeb37c8aa7858a56e58e50cc5758` |
 | `docs/plans/active/TASK-021-notifications.md` | `f6a7342c9126506eb342d39c0ef2971563b709833cdc01ead8b4fc4242cf228c` |
+| `docs/plans/active/TASK-022-admin-console.md` | `f17afb1f523755602701499d9bfab889af80e4927205749498b138d6ed9a2bd6` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `3a1600adff6fc7d3b5010e5a0affe8770902909fc5999595e9a297ec10fe27fa` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `47139c792ab7011dc3e52371fad6a58709aaee042845d60c7ae61c17b1a3fc3c` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
-| `docs/product/BUSINESS_RULES.md` | `7460720b91e47040327aabd80272b7ec811521ff0f1064054b0f47cb844b916b` |
+| `docs/product/BUSINESS_RULES.md` | `fcd090d60c88ba0862e46b8bf0f09b9672f354e0a7aeeb021f1710063f146ff2` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
-| `docs/product/PRODUCT_REQUIREMENTS.md` | `4c9029e3c006ca81705d0b407bbe5de22295fcef7fdb272e3b1440baf6d88c7e` |
-| `docs/project-memory/CHANGELOG_AI.md` | `77e15bd803620636a6347cfc922935919abf75bda06d02f005f469b1b95517d2` |
-| `docs/project-memory/CURRENT_STATE.md` | `885d4dbb7a646d927df81a7f3b724d5a78adca508fc5b1c58f2e12d9957a9761` |
-| `docs/project-memory/DECISIONS.md` | `3574467159dc47e374dc4ce3984c8019b8271ab0a41da8c228cec23b31aba3ca` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `d23a7b971e4bf8a4fb9d44d1146a8e9a515858c720001c200b4bce7732da1143` |
+| `docs/product/PRODUCT_REQUIREMENTS.md` | `14b201d1b3fb15e590f3fe66b566432594d64cb8d2f91698bbc1be1d3ccd4306` |
+| `docs/project-memory/CHANGELOG_AI.md` | `1ce80939d4857ac3e91d89f1e3740de89fd1de7a31e4a33f0756b7d1eceed0a1` |
+| `docs/project-memory/CURRENT_STATE.md` | `8575bffe6f5551962469d9f5107806c5c6f4a6c9f6a85f1d0335db8194ef0151` |
+| `docs/project-memory/DECISIONS.md` | `6f63f0be243a618381acbb566526ca4029f92bc668df38073a24d2be809731f5` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `5fdd3ee7715b5e4e0c5cb1bd9a03ecae26ee617321ee14969db272d35ece5952` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `28c19d5416c357d9b1c3f070776b3336b5feb262ae9b4fdd5e10f532ab6120e4` |
+| `docs/quality/TEST_STRATEGY.md` | `a71f4ff2b525de0900c6c30ffd4240a58aa65f1b2813e3f360349eb3eb897628` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
@@ -408,7 +415,7 @@
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
 | `packages/shared-types/src/index.ts` | `9a9ed0dde440442824d05c80ff155566c7caa75f02dff7d8162dfe2e16c7ce09` |
-| `packages/shared-types/src/openapi.generated.ts` | `c37f16e83af78644f88c5a013d4d46604d3b567634366cd083c76358d2f2b638` |
+| `packages/shared-types/src/openapi.generated.ts` | `26d29c57089a535d6e866612a1ee6e3537483f1eab65b138536f746ab7c52117` |
 | `packages/shared-types/tsconfig.build.json` | `f795af963d7ddec6a6d07115e2b60592309fb5b1473ddfe2525c3b0f2d0a0790` |
 | `packages/shared-types/tsconfig.json` | `57977fbaa04c2c31948710502fc8168cd596259bdfab765db00c8ff9851ba7ad` |
 | `packages/ui-tokens/package.json` | `ccddee7125df376f2a8ae9205929c9c33436c31cbcd4673df883c8e111d7e1ad` |
@@ -428,7 +435,7 @@
 | `scripts/check-compose.mjs` | `1a9c01c1063ea67035b289ae18e12d9de5eab2112db5a09a5a3ba15177db9b3b` |
 | `scripts/check-docs.sh` | `1fdda331b4bb0669495c10dc16dae32af0b696dac78096550ab2021c60852af3` |
 | `scripts/check-native-services.mjs` | `d6846289ae6b886a0440f25f1c067d65dec8c22bddd56f81b27b30cedc9a6753` |
-| `scripts/check-openapi-coverage.mjs` | `bfa997aaa7966ffbff2e1e2caa4d0f544f3d7bf44e3eb1bac83c6818b43ab7fa` |
+| `scripts/check-openapi-coverage.mjs` | `7c74bc14e579e1f2bceeaf308a3b0998caba170efcf5ff00a22190d203643297` |
 | `scripts/generate-manifest.sh` | `6428d16548a0483f808a22359afff526dfa3c87ab579adc956fabb88f99d0c3c` |
 | `scripts/native-gateway.mjs` | `780c26c019b9ea80390a49ec816f4b55c8d7ae5281b75b49146bef509acb6843` |
 | `scripts/native-runtime.mjs` | `3c265e0ddc3a350060aa2ced43691aaca02b15f693197d1eba8b58c280c9c78a` |
