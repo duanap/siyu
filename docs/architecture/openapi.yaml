@@ -1157,9 +1157,20 @@ paths:
       summary: 导出可访问账目 CSV
       parameters:
         - $ref: '#/components/parameters/LedgerId'
+        - in: query
+          name: startDate
+          description: 与 endDate 同时提供；缺省时使用用户时区当前自然年
+          schema: { type: string, format: date }
+        - in: query
+          name: endDate
+          description: 与 startDate 同时提供；闭区间最多 366 天
+          schema: { type: string, format: date }
       responses:
         '200': { $ref: '#/components/responses/CsvExport' }
-        '403': { $ref: '#/components/responses/Forbidden' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/ExportTooLarge' }
         '429': { $ref: '#/components/responses/RateLimited' }
   /exports/salary.csv:
     get:
@@ -1172,6 +1183,9 @@ paths:
           schema: { type: integer, minimum: 2000, maximum: 9999 }
       responses:
         '200': { $ref: '#/components/responses/CsvExport' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413': { $ref: '#/components/responses/ExportTooLarge' }
         '429': { $ref: '#/components/responses/RateLimited' }
 components:
   securitySchemes:
@@ -1402,14 +1416,23 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/SavingDeleteResponse' }
     CsvExport:
-      description: CSV 文件
+      description: UTF-8 BOM、CRLF 且通过公式注入防护的 CSV 文件
       headers:
         X-Request-ID: { $ref: '#/components/headers/RequestId' }
         Content-Disposition:
           schema: { type: string }
+        Cache-Control:
+          schema: { type: string, example: no-store }
+        X-Content-Type-Options:
+          schema: { type: string, example: nosniff }
       content:
         text/csv:
           schema: { type: string }
+    ExportTooLarge:
+      description: 同步导出超过 10000 个数据行
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
     ValidationFailed:
       description: 请求参数不合法
       content:

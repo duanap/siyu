@@ -274,6 +274,14 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 - `GET /exports/entries.csv`
 - `GET /exports/salary.csv`
 
+账目 CSV 必须携带 `ledgerId`；`startDate/endDate` 要么同时省略并按用户时区当前自然年处理，要么同时提供有效
+业务日期，闭区间不得超过 366 天。只查询当前用户仍是有效成员的有效账本和未删除账目，稳定正序输出业务日期、
+账本、收支类型、精确两位元金额、分类、支付方式、来源、创建人和备注。
+
+工资 CSV 的 `year` 可选，缺省为用户时区当前年；只查询当前用户本人未删除记录，每个工资项目一行，输出工资
+月份、档案、单位、汇总金额、到账状态/日期、收入联动状态和项目字段。两种导出最多 10000 行，超限返回 413；
+使用 UTF-8 BOM、CSV 注入防护、`Cache-Control: no-store`、独立限流和脱敏成功审计。
+
 四个基础统计端点必须携带 `ledgerId`，可选 `month=YYYY-MM`；缺省月份按用户时区确定。概览返回
 `incomeCent/expenseCent/balanceCent/averageDailyExpenseCent/largestExpenseCent/entryCount`；趋势返回完整自然月
 逐日零值补齐序列；分类返回支出金额、笔数和整数万分比；成员返回按 Entry 创建人归属的支出。所有端点只聚合

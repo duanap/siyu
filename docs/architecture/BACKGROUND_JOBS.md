@@ -17,6 +17,9 @@
 - `notification-delivery`
 - `export-generation`
 
+`export-generation` 保留为未来异步大文件导出的候选队列名；TASK-023 的 MVP 只实现有 366 天/单年范围和
+10000 行硬上限的同步 CSV，不创建任务或持久化文件。启用该队列前必须另行批准任务状态、文件保留与清理契约。
+
 ## 周期记账任务
 
 1. 按用户时区扫描 `next_run_date <= today` 的有效规则。

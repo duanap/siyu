@@ -62,5 +62,6 @@ flowchart TB
 - `/couple/invite`
 - `/couple/join`
 - `/notifications`
+- `/exports`
 - `/profile`
 - `/settings`
