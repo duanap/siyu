@@ -16,7 +16,7 @@
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
 | `README.md` | `8ba79df8cf76a13b509ffe3b6170f752ca3e748aa0b3459a04aa66e6716ee5b6` |
-| `VALIDATION_REPORT.md` | `45783e61196e62f3e3f3343b88da6b96e9f2aa46d9d5e27afe648dd3bd238f8a` |
+| `VALIDATION_REPORT.md` | `3692e586c6909839d4fefecd64fcc842726a1105851636138f488e3f9792e09b` |
 | `apps/admin-web/AGENTS.md` | `79f4ffb304f1934de797fee449484871e882b06a345d1af7d10be09ad0bf5783` |
 | `apps/admin-web/index.html` | `2ec3b1d31bd22d61a271cfd6299ea75c3678259281cee42f70401c5ac9bdb2b4` |
 | `apps/admin-web/package.json` | `33704029a8ec43a38838c37900c37d31cdb87ba38e76095e9ae8ecd74eceb6d0` |
@@ -306,7 +306,7 @@
 | `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `0b97db6766e30a571f2fa677f383a0a35d28c234b1bb0ee24b108cbdd381cc19` |
+| `docs/plans/TASK_BACKLOG.md` | `3224537b28c7e758053ad0f8a75e83992e85e6c78b9258cd45bd2f3782a15bc8` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -328,7 +328,7 @@
 | `docs/plans/active/TASK-019-saving-goals-api.md` | `ef6ddb778915acbea041b9cd33af0da0a53705acb53fba7f0c763de7457094f6` |
 | `docs/plans/active/TASK-020-saving-goals-ui.md` | `b74a0fe8a398d79bb7d990908b502fcd2cc7eeb37c8aa7858a56e58e50cc5758` |
 | `docs/plans/active/TASK-021-notifications.md` | `f6a7342c9126506eb342d39c0ef2971563b709833cdc01ead8b4fc4242cf228c` |
-| `docs/plans/active/TASK-022-admin-console.md` | `f17afb1f523755602701499d9bfab889af80e4927205749498b138d6ed9a2bd6` |
+| `docs/plans/active/TASK-022-admin-console.md` | `b1efbe2086dc4b092ccc03fa67a12cedb9baf7ddd7e0e4cfeced7bbb1651a2f3` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `47139c792ab7011dc3e52371fad6a58709aaee042845d60c7ae61c17b1a3fc3c` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -336,10 +336,10 @@
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `14b201d1b3fb15e590f3fe66b566432594d64cb8d2f91698bbc1be1d3ccd4306` |
-| `docs/project-memory/CHANGELOG_AI.md` | `1ce80939d4857ac3e91d89f1e3740de89fd1de7a31e4a33f0756b7d1eceed0a1` |
-| `docs/project-memory/CURRENT_STATE.md` | `8575bffe6f5551962469d9f5107806c5c6f4a6c9f6a85f1d0335db8194ef0151` |
+| `docs/project-memory/CHANGELOG_AI.md` | `0a83920d1f63539b5a6a1f771c716ffe0c46dc00b57afec540e88505f31096dc` |
+| `docs/project-memory/CURRENT_STATE.md` | `9b2d18d51a88f0a12b094acf02764f856e228d285d5b91d53590260530b45da1` |
 | `docs/project-memory/DECISIONS.md` | `6f63f0be243a618381acbb566526ca4029f92bc668df38073a24d2be809731f5` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `5fdd3ee7715b5e4e0c5cb1bd9a03ecae26ee617321ee14969db272d35ece5952` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `d5fc3175709ce2c7bcae06950ebd53e22d7c6d0995105907b9898172eb5d83ef` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
