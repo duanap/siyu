@@ -8,6 +8,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { DatabaseModule } from './database/database.module';
 import { DebtsModule } from './debts/debts.module';
 import { EntriesModule } from './entries/entries.module';
+import { ExportsModule } from './exports/exports.module';
 import { LedgersModule } from './ledgers/ledgers.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RecurringModule } from './recurring/recurring.module';
@@ -27,6 +28,7 @@ import { UsersModule } from './users/users.module';
     CategoriesModule,
     DebtsModule,
     EntriesModule,
+    ExportsModule,
     RecurringModule,
     SalaryModule,
     SavingGoalsModule,

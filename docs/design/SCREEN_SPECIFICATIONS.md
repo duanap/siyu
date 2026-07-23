@@ -26,6 +26,7 @@
 | 17 | 朝暮同笺管理 | `/couple/invite` | 创建账本、邀请/加入、成员、改名、转移、退出和解散 | 加载、空、错误、无权限、提交中、长昵称、夜间 |
 | 18 | 消息中心 | `/notifications` | 本人通知完整分页、跨页未读数、单条/全部已读和安全关联入口 | 加载、空、错误、无权限、提交中、长文本、夜间 |
 | 19 | 分类管理 | `/categories?ledgerId=&type=` | 账本/收支切换、分类新增编辑、图标颜色、排序和启停 | 加载、空、错误、无权限、提交中、长文本、夜间 |
+| 20 | 数据导出 | `/exports` | 可见账本账目日期范围与本人工资年份 CSV 下载 | 加载、空、错误、无权限、下载中、成功、夜间 |
 
 ## 管理端页面
 
@@ -94,6 +95,12 @@
 `notifications-forbidden-375-dark.png`、`notifications-loading-375-dark.png`、
 `notifications-long-320-light.png`、`notifications-refresh-375-light.png` 和
 `notifications-busy-375-dark.png`。
+
+数据导出页在 TASK-023 实现。账目导出要求选择当前可见账本并同时提供起止日期，工资导出只允许选择本人年份；
+下载中禁止重复提交，成功、空数据、网络错误和会话失效均明确反馈。真实 Chrome Headless/CDP 已使用实际 API
+和 Blob 下载覆盖 320px、375px、480px、日间/暗色及网络失败，无横向溢出或小于 44px 的可见交互区。截图位于
+`output/playwright/exports-320-light.png`、`output/playwright/exports-375-dark.png`、
+`output/playwright/exports-480-light.png` 和 `output/playwright/exports-error-375-light.png`。
 
 ## 页面交付要求
 

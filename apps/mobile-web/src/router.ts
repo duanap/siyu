@@ -129,6 +129,11 @@ export const router = createRouter({
       name: 'notifications',
       component: () => import('./views/NotificationsView.vue'),
     },
+    {
+      path: '/exports',
+      name: 'exports',
+      component: () => import('./views/ExportsView.vue'),
+    },
   ],
 });
 

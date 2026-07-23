@@ -21,6 +21,7 @@ const routeKeys: Record<string, NavKey> = {
   'entry-detail': 'entries',
   statistics: 'statistics',
   account: 'profile',
+  exports: 'profile',
 };
 const currentActive = computed(() => props.active ?? routeKeys[String(route.name)]);
 </script>

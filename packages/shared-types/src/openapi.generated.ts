@@ -2425,15 +2425,26 @@ export interface components {
         'application/json': components['schemas']['SavingDeleteResponse'];
       };
     };
-    /** @description CSV 文件 */
+    /** @description UTF-8 BOM、CRLF 且通过公式注入防护的 CSV 文件 */
     CsvExport: {
       headers: {
         'X-Request-ID': components['headers']['RequestId'];
         'Content-Disposition'?: string;
+        'Cache-Control'?: string;
+        'X-Content-Type-Options'?: string;
         [name: string]: unknown;
       };
       content: {
         'text/csv': string;
+      };
+    };
+    /** @description 同步导出超过 10000 个数据行 */
+    ExportTooLarge: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorResponse'];
       };
     };
     /** @description 请求参数不合法 */
@@ -3985,6 +3996,10 @@ export interface operations {
     parameters: {
       query: {
         ledgerId: components['parameters']['LedgerId'];
+        /** @description 与 endDate 同时提供；缺省时使用用户时区当前自然年 */
+        startDate?: string;
+        /** @description 与 startDate 同时提供；闭区间最多 366 天 */
+        endDate?: string;
       };
       header?: never;
       path?: never;
@@ -3993,7 +4008,10 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components['responses']['CsvExport'];
-      403: components['responses']['Forbidden'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      404: components['responses']['NotFound'];
+      413: components['responses']['ExportTooLarge'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -4009,6 +4027,9 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components['responses']['CsvExport'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      413: components['responses']['ExportTooLarge'];
       429: components['responses']['RateLimited'];
     };
   };

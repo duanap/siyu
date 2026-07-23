@@ -2139,6 +2139,118 @@ async function main() {
   assert.equal(outsiderSalaryBalance.body.data.available, false);
   assert.equal(outsiderSalaryBalance.body.data.salaryRecordId, null);
 
+  // TASK-023 / BR-EXPORT-001..006: visible-ledger and owner-only salary scope,
+  // stable date ranges, soft-delete exclusion, UTF-8 CSV safety, and audit.
+  await request(server).get('/api/v1/exports/entries.csv').expect(401);
+  const formulaEntry = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: personalLedger.id,
+      type: 'EXPENSE',
+      amountCent: 1,
+      categoryId: personalExpenseCategory.id,
+      businessDate: '2026-10-01',
+      note: '=1+1',
+      paymentMethod: 'CASH',
+      idempotencyKey: `entry-export-formula-${suffix}`,
+    })
+    .expect(201);
+  const deletedExportEntry = await request(server)
+    .post('/api/v1/entries')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .send({
+      ledgerId: personalLedger.id,
+      type: 'EXPENSE',
+      amountCent: 2,
+      categoryId: personalExpenseCategory.id,
+      businessDate: '2026-10-02',
+      note: 'DELETED_EXPORT_SENTINEL',
+      paymentMethod: 'CASH',
+      idempotencyKey: `entry-export-deleted-${suffix}`,
+    })
+    .expect(201);
+  await request(server)
+    .delete(`/api/v1/entries/${deletedExportEntry.body.data.id}`)
+    .query({ expectedVersion: 1 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
+
+  const entryExport = await request(server)
+    .get('/api/v1/exports/entries.csv')
+    .query({
+      ledgerId: personalLedger.id,
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+    })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200)
+    .expect('content-type', /text\/csv/)
+    .expect('cache-control', 'no-store')
+    .expect('x-content-type-options', 'nosniff');
+  assert.match(entryExport.headers['content-disposition'], /siyu-entries-2026-01-01-2026-12-31/);
+  assert.equal(entryExport.text.startsWith('\uFEFF'), true);
+  assert.equal(entryExport.text.includes('"0.01"'), true);
+  assert.equal(entryExport.text.includes('"\'=1+1"'), true);
+  assert.equal(entryExport.text.includes('DELETED_EXPORT_SENTINEL'), false);
+  assert.equal(entryExport.text.includes(formulaEntry.body.data.id), false);
+
+  await request(server)
+    .get('/api/v1/exports/entries.csv')
+    .query({ ledgerId: personalLedger.id, startDate: '2026-01-01' })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(400);
+  await request(server)
+    .get('/api/v1/exports/entries.csv')
+    .query({ ledgerId: personalLedger.id })
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(404);
+
+  const coupleExport = await request(server)
+    .get('/api/v1/exports/entries.csv')
+    .query({ ledgerId: coupleLedgerId, startDate: '2026-07-01', endDate: '2026-07-31' })
+    .set('authorization', `Bearer ${partner.accessToken}`)
+    .expect(200);
+  assert.equal(coupleExport.text.includes('OWNER 共同账目'), true);
+  assert.equal(coupleExport.text.includes('MEMBER 共同账目'), false);
+  assert.equal(coupleExport.text.includes('=1+1'), false);
+
+  const salaryExport = await request(server)
+    .get('/api/v1/exports/salary.csv')
+    .query({ year: 2026 })
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200)
+    .expect('content-type', /text\/csv/);
+  assert.equal(salaryExport.text.startsWith('\uFEFF'), true);
+  assert.equal(salaryExport.text.includes('工资月份'), true);
+  assert.equal(salaryExport.text.includes('2026-07'), true);
+  assert.equal(salaryExport.text.includes('基本工资'), true);
+  const outsiderSalaryExport = await request(server)
+    .get('/api/v1/exports/salary.csv')
+    .query({ year: 2026 })
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(200);
+  assert.equal(outsiderSalaryExport.text.includes('基本工资'), false);
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { actorUserId: user.id, action: 'ENTRY_CSV_EXPORTED', targetId: personalLedger.id },
+    }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { actorUserId: user.id, action: 'SALARY_CSV_EXPORTED', targetId: user.id },
+    }),
+    1,
+  );
+  const exportAudit = JSON.stringify(
+    await prisma.auditLog.findMany({
+      where: { action: { in: ['ENTRY_CSV_EXPORTED', 'SALARY_CSV_EXPORTED'] } },
+    }),
+  );
+  assert.equal(exportAudit.includes('基本工资'), false);
+  assert.equal(exportAudit.includes('=1+1'), false);
+
   await request(server).get('/api/v1/saving-goals').expect(401);
 
   const personalSavingBody = {
@@ -2581,7 +2693,7 @@ async function main() {
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
   console.log(
-    'API health, authentication, couple ledger, category, Entry, debt, recurring, salary, saving goal, notification, and admin E2E passed.',
+    'API health, authentication, couple ledger, category, Entry, debt, recurring, salary, export, saving goal, notification, and admin E2E passed.',
   );
 }
 
