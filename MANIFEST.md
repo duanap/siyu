@@ -415,7 +415,7 @@
 | `packages/shared-types/package.json` | `d68b6d38e1c51d3088e2bb09603ffe94bf1d3bdf343e4b91fdefaffcaedde904` |
 | `packages/shared-types/src/index.test.ts` | `2bc487aedb738b0a8feb2befa114dfc9980c6534b7528ff506c21880a4c5b6af` |
 | `packages/shared-types/src/index.ts` | `9a9ed0dde440442824d05c80ff155566c7caa75f02dff7d8162dfe2e16c7ce09` |
-| `packages/shared-types/src/openapi.generated.ts` | `8a0e7a0499e61221665e3cc2293084755b00f15d59cb9b7ed7fa09c96893982b` |
+| `packages/shared-types/src/openapi.generated.ts` | `26d29c57089a535d6e866612a1ee6e3537483f1eab65b138536f746ab7c52117` |
 | `packages/shared-types/tsconfig.build.json` | `f795af963d7ddec6a6d07115e2b60592309fb5b1473ddfe2525c3b0f2d0a0790` |
 | `packages/shared-types/tsconfig.json` | `57977fbaa04c2c31948710502fc8168cd596259bdfab765db00c8ff9851ba7ad` |
 | `packages/ui-tokens/package.json` | `ccddee7125df376f2a8ae9205929c9c33436c31cbcd4673df883c8e111d7e1ad` |

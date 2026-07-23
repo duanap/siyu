@@ -2744,6 +2744,7 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   listAdminLedgers: {
@@ -2806,6 +2807,7 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
     };
   };
   listAdminAuditLogs: {
