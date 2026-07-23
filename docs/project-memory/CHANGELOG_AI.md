@@ -963,3 +963,17 @@ TASK-022 正式关闭；下一项为 TASK-023 CSV 导出。
 ### 当前状态
 
 TASK-023 已完成本地交付候选；待提交、PR、远程 CI、合并和 main CI 后正式关闭。
+
+## 2026-07-23 / TASK-023 正式关闭
+
+### 关闭证据
+
+- 功能提交 `5ac941e546aee86c19c2d207265b68af8ce6ad25` 已推送并经 PR #34 Squash merge 合入
+  `main`；合并提交为 `306a6ad513099e11e3215fcbcfca89483085cee9`。
+- PR CI Run `29970521966` 与 main push CI Run `29970632424` 的 `quality`、`database`、
+  `secret-scan` 全部通过；两轮均覆盖迁移部署、完整 PostgreSQL/Redis E2E、构建、依赖审计和秘密扫描。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-023 正式关闭；下一项为 TASK-024 权限与安全审计。
