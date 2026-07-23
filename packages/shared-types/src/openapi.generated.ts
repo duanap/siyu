@@ -174,6 +174,129 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/admin/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 获取脱敏运行概览 */
+    get: operations['getAdminOverview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/users': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 分页查询脱敏用户状态 */
+    get: operations['listAdminUsers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/users/{id}/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** 设置用户状态并撤销停用用户会话 */
+    patch: operations['setAdminUserStatus'];
+    trace?: never;
+  };
+  '/admin/ledgers': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 分页查询账本成员关系 */
+    get: operations['listAdminLedgers'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/recurring-runs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 分页查询周期任务状态 */
+    get: operations['listAdminRecurringRuns'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/recurring-runs/{id}/retry': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** 人工重试失败周期任务 */
+    post: operations['retryAdminRecurringRun'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/admin/audit-logs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 分页查询脱敏审计记录并审计本次读取 */
+    get: operations['listAdminAuditLogs'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/users/me': {
     parameters: {
       query?: never;
@@ -1038,6 +1161,14 @@ export interface components {
      */
     Timestamp: string;
     IdempotencyKey: string;
+    AdminReasonRequest: {
+      reason: string;
+    };
+    AdminUserStatusRequest: {
+      /** @enum {string} */
+      status: 'ACTIVE' | 'DISABLED';
+      reason: string;
+    };
     /** @enum {string} */
     EntryType: 'INCOME' | 'EXPENSE';
     /** @enum {string} */
@@ -2554,6 +2685,144 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: components['responses']['ActionOk'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getAdminOverview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceOk'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listAdminUsers: {
+    parameters: {
+      query?: {
+        page?: components['parameters']['Page'];
+        pageSize?: components['parameters']['PageSize'];
+        status?: 'ACTIVE' | 'DISABLED';
+        search?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceListOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  setAdminUserStatus: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminUserStatusRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+    };
+  };
+  listAdminLedgers: {
+    parameters: {
+      query?: {
+        page?: components['parameters']['Page'];
+        pageSize?: components['parameters']['PageSize'];
+        type?: 'PERSONAL' | 'COUPLE';
+        status?: 'ACTIVE' | 'DISSOLVED';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceListOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listAdminRecurringRuns: {
+    parameters: {
+      query?: {
+        page?: components['parameters']['Page'];
+        pageSize?: components['parameters']['PageSize'];
+        status?: components['schemas']['RecurringRunStatus'];
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceListOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  retryAdminRecurringRun: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: components['parameters']['Id'];
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AdminReasonRequest'];
+      };
+    };
+    responses: {
+      200: components['responses']['ResourceOk'];
+      400: components['responses']['ValidationFailed'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+    };
+  };
+  listAdminAuditLogs: {
+    parameters: {
+      query?: {
+        page?: components['parameters']['Page'];
+        pageSize?: components['parameters']['PageSize'];
+        action?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['ResourceListOk'];
+      400: components['responses']['ValidationFailed'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
     };

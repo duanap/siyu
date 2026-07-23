@@ -4,7 +4,7 @@ import YAML from 'yaml';
 
 const contractPath = 'docs/architecture/API_CONTRACT.md';
 const openapiPath = 'docs/architecture/openapi.yaml';
-const approvedOperationCount = 74;
+const approvedOperationCount = 81;
 const methods = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']);
 
 const contract = await readFile(contractPath, 'utf8');

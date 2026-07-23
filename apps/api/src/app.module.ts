@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 
 import { HealthController } from './health.controller';
 import { RequestIdMiddleware } from './request-id';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DatabaseModule } from './database/database.module';
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     DatabaseModule,
+    AdminModule,
     AuthModule,
     UsersModule,
     LedgersModule,

@@ -33,6 +33,8 @@ tags:
     description: 账本统计查询。
   - name: Notifications
     description: 本人站内通知。
+  - name: Admin
+    description: 最小运营后台的脱敏状态、关系、任务与审计。
   - name: Exports
     description: 有权限范围内的 CSV 导出。
 security:
@@ -178,6 +180,125 @@ paths:
       summary: 校验管理端访问权限
       responses:
         '200': { $ref: '#/components/responses/ActionOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/overview:
+    get:
+      tags: [Admin]
+      operationId: getAdminOverview
+      summary: 获取脱敏运行概览
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/users:
+    get:
+      tags: [Admin]
+      operationId: listAdminUsers
+      summary: 分页查询脱敏用户状态
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, DISABLED] }
+        - in: query
+          name: search
+          schema: { type: string, minLength: 1, maxLength: 80 }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/users/{id}/status:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Admin]
+      operationId: setAdminUserStatus
+      summary: 设置用户状态并撤销停用用户会话
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminUserStatusRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /admin/ledgers:
+    get:
+      tags: [Admin]
+      operationId: listAdminLedgers
+      summary: 分页查询账本成员关系
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: type
+          schema: { type: string, enum: [PERSONAL, COUPLE] }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ACTIVE, DISSOLVED] }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/recurring-runs:
+    get:
+      tags: [Admin]
+      operationId: listAdminRecurringRuns
+      summary: 分页查询周期任务状态
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/RecurringRunStatus' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /admin/recurring-runs/{id}/retry:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Admin]
+      operationId: retryAdminRecurringRun
+      summary: 人工重试失败周期任务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminReasonRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      operationId: listAdminAuditLogs
+      summary: 分页查询脱敏审计记录并审计本次读取
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: action
+          schema: { type: string, minLength: 1, maxLength: 80 }
+      responses:
+        '200': { $ref: '#/components/responses/ResourceListOk' }
+        '400': { $ref: '#/components/responses/ValidationFailed' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /users/me:
@@ -1356,6 +1477,19 @@ components:
       minLength: 8
       maxLength: 128
       pattern: '^[A-Za-z0-9._:-]+$'
+    AdminReasonRequest:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason: { type: string, minLength: 2, maxLength: 200 }
+    AdminUserStatusRequest:
+      type: object
+      required: [status, reason]
+      additionalProperties: false
+      properties:
+        status: { type: string, enum: [ACTIVE, DISABLED] }
+        reason: { type: string, minLength: 2, maxLength: 200 }
     EntryType:
       type: string
       enum: [INCOME, EXPENSE]

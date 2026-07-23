@@ -285,6 +285,21 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 未知、他人和已读 ID 不区分错误，响应返回 `markedCount/unreadCount`。`readAt` 由服务端以 UTC 首次写入，重放
 不得覆盖。
 
+### 最小管理后台
+
+- `GET /admin/overview`
+- `GET /admin/users`
+- `PATCH /admin/users/{id}/status`
+- `GET /admin/ledgers`
+- `GET /admin/recurring-runs`
+- `POST /admin/recurring-runs/{id}/retry`
+- `GET /admin/audit-logs`
+
+所有接口除 `admin:access` 外校验对应细粒度权限。用户、账本关系、周期任务与审计列表均稳定分页，仅返回
+BR-ADMIN-002 至 006 批准的脱敏字段；不返回任何财务金额。用户状态变化和任务人工重试要求 2 至 200 字理由、
+危险操作确认与审计。停用用户原子撤销其全部活跃会话，禁止自停用；只有 FAILED 周期实例可重试。审计列表
+成功读取时写入 `ADMIN_AUDIT_LIST_VIEWED`，响应不包含 IP 哈希及 before/after 业务内容。
+
 ## 实现要求
 
 - 详情查询必须包含权限条件，不得先按 ID 裸查。
@@ -292,6 +307,6 @@ MVP 每名用户只允许一个未删除的 `ACTIVE` 工资档案。档案创建
 - DTO 对金额、日期、枚举和文本长度严格校验。
 - 业务冲突返回 409；无权限返回 403；资源不可见可按安全策略返回 404。
 - 新增或修改接口同步更新 OpenAPI。
-- `openapi.yaml` 必须覆盖本文件列出的 74 个已批准操作；`scripts/check-openapi-coverage.mjs`
+- `openapi.yaml` 必须覆盖本文件列出的 81 个已批准操作；`scripts/check-openapi-coverage.mjs`
   负责阻止遗漏或未批准的新增路径。
 - TASK-000 只固化契约与生成共享类型，不实现上述业务接口。

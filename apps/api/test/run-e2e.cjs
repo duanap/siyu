@@ -2483,6 +2483,97 @@ async function main() {
     9,
   );
 
+  const adminAccess = adminLogin.body.data.accessToken;
+  await request(server)
+    .get('/api/v1/admin/overview')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(403);
+  const adminOverview = await request(server)
+    .get('/api/v1/admin/overview')
+    .set('authorization', `Bearer ${adminAccess}`)
+    .expect(200);
+  assert.equal(adminOverview.body.data.activeUsers > 0, true);
+  assert.equal(adminOverview.body.data.failedRuns > 0, true);
+
+  const adminUsers = await request(server)
+    .get('/api/v1/admin/users')
+    .query({ page: 1, pageSize: 100, search: 'example.com' })
+    .set('authorization', `Bearer ${adminAccess}`)
+    .expect(200);
+  assert.equal(adminUsers.body.data.items.length > 0, true);
+  assert.equal(JSON.stringify(adminUsers.body).includes('passwordHash'), false);
+  assert.equal(JSON.stringify(adminUsers.body).includes(email), false);
+
+  const selfDisable = await request(server)
+    .patch(`/api/v1/admin/users/${user.id}/status`)
+    .set('authorization', `Bearer ${adminAccess}`)
+    .send({ status: 'DISABLED', reason: '验证管理员不能停用自己' })
+    .expect(409);
+  assert.equal(selfDisable.body.code, 'ADMIN_SELF_DISABLE_FORBIDDEN');
+
+  assert.equal(
+    await prisma.authSession.count({ where: { userId: outsider.user.id, status: 'ACTIVE' } }),
+    1,
+  );
+  await request(server)
+    .patch(`/api/v1/admin/users/${outsider.user.id}/status`)
+    .set('authorization', `Bearer ${adminAccess}`)
+    .send({ status: 'DISABLED', reason: '无人值守验收停用测试账号' })
+    .expect(200);
+  assert.equal(
+    await prisma.authSession.count({ where: { userId: outsider.user.id, status: 'ACTIVE' } }),
+    0,
+  );
+  await request(server)
+    .get('/api/v1/users/me')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(401);
+
+  const adminLedgers = await request(server)
+    .get('/api/v1/admin/ledgers')
+    .query({ page: 1, pageSize: 100 })
+    .set('authorization', `Bearer ${adminAccess}`)
+    .expect(200);
+  assert.equal(adminLedgers.body.data.items.length > 0, true);
+  assert.equal(JSON.stringify(adminLedgers.body).includes('amountCent'), false);
+
+  const adminRuns = await request(server)
+    .get('/api/v1/admin/recurring-runs')
+    .query({ status: 'FAILED', page: 1, pageSize: 100 })
+    .set('authorization', `Bearer ${adminAccess}`)
+    .expect(200);
+  assert.equal(
+    adminRuns.body.data.items.some((item) => item.id === failedWorkerRun.id),
+    true,
+  );
+  await request(server)
+    .post(`/api/v1/admin/recurring-runs/${failedWorkerRun.id}/retry`)
+    .set('authorization', `Bearer ${adminAccess}`)
+    .send({ reason: '分类恢复后人工重试验收' })
+    .expect(200);
+  assert.notEqual(
+    (await prisma.recurringRun.findUniqueOrThrow({ where: { id: failedWorkerRun.id } })).status,
+    'FAILED',
+  );
+
+  const auditReadsBefore = await prisma.auditLog.count({
+    where: { action: 'ADMIN_AUDIT_LIST_VIEWED', actorUserId: user.id },
+  });
+  const adminAudit = await request(server)
+    .get('/api/v1/admin/audit-logs')
+    .query({ page: 1, pageSize: 100 })
+    .set('authorization', `Bearer ${adminAccess}`)
+    .expect(200);
+  assert.equal(JSON.stringify(adminAudit.body).includes('ipHash'), false);
+  assert.equal(JSON.stringify(adminAudit.body).includes('beforeJson'), false);
+  assert.equal(JSON.stringify(adminAudit.body).includes('afterJson'), false);
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { action: 'ADMIN_AUDIT_LIST_VIEWED', actorUserId: user.id },
+    }),
+    auditReadsBefore + 1,
+  );
+
   await request(server)
     .post('/api/v1/auth/logout')
     .set('cookie', String(adminLogin.headers['set-cookie'][0]).split(';')[0])
@@ -2490,7 +2581,7 @@ async function main() {
   await request(server).post('/api/v1/auth/logout').expect(200);
   await closeResources();
   console.log(
-    'API health, authentication, couple ledger, category, Entry, debt, recurring, salary, and saving goal E2E passed.',
+    'API health, authentication, couple ledger, category, Entry, debt, recurring, salary, saving goal, notification, and admin E2E passed.',
   );
 }
 
