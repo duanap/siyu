@@ -926,3 +926,19 @@ TASK-021 正式关闭；下一项为 TASK-022 最小管理后台。
 - Node.js 24.18.0 `pnpm verify` 与 164 项全仓测试通过；API 47 项、管理端 2 项、管理端生产构建、第十二迁移回放与完整 PostgreSQL/Redis E2E 通过，依赖审计无已知漏洞。
 - WSL 当前禁用 Windows 可执行互操作，Chrome CLI 与插件运行接口均不可用；未伪造真浏览器截图，三尺寸、
   双主题视觉矩阵留待可用浏览器环境补跑。
+
+## 2026-07-23 / TASK-022 正式关闭
+
+### 关闭证据
+
+- 功能提交 `042682665adbc2194a92dc4bb58a40ec206987f7` 与生成类型修正
+  `7e0dbd3e72225244bbbd6d5c21674db84187e1f1` 已推送并经 PR #32 Squash merge 合入 `main`；合并提交为
+  `0a91f7adf82ea8a790340885d76079dcaa88cee9`。
+- 首轮 PR CI 精确发现 OpenAPI 429 响应新增后共享生成类型未同步；补齐生成产物后，PR CI Run
+  `29968254365` 与 main push CI Run `29968379326` 的 `quality`、`database`、`secret-scan` 全部通过。
+- 两轮通过的质量任务均覆盖 12 个迁移、数据库约束、完整 PostgreSQL/Redis E2E、构建、依赖审计和秘密扫描。
+- 项目状态、任务清单、验证报告、已知问题和 ExecPlan 已同步为正式关闭状态。
+
+### 当前状态
+
+TASK-022 正式关闭；下一项为 TASK-023 CSV 导出。
