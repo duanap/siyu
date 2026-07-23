@@ -25,7 +25,7 @@
 | TASK-020 | 攒钱目标页面（已合并、CI 通过并正式关闭） | M7 | Terra | Medium | TASK-019 |
 | TASK-021 | 站内通知（已合并、CI 通过并正式关闭） | M8 | Terra | Medium | TASK-005,TASK-013 |
 | TASK-022 | 最小管理后台（已合并、CI 通过并正式关闭） | M8 | Terra | Medium | TASK-021 |
-| TASK-023 | CSV 导出（本地交付候选，待 PR/CI 正式关闭） | M8 | Terra | Medium | TASK-007,TASK-017 |
+| TASK-023 | CSV 导出（已合并、CI 通过并正式关闭） | M8 | Terra | Medium | TASK-007,TASK-017 |
 | TASK-024 | 权限与安全审计 | M8 | Sol | Extra High | TASK-005,TASK-016,TASK-019 |
 | TASK-025 | 全链路 E2E 和发布验收 | M8 | Sol | Ultra | TASK-022,TASK-024 |
 
