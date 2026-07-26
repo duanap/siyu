@@ -138,5 +138,7 @@ PR #4 已以 Squash merge 合入 main，提交 `25dcad0a29951ba4269e318423d5ebbf
 日期：2026-07-26
 内容：新增生产配置失败关闭预检、PostgreSQL 备份/隔离恢复、构建产物 HTTP 冒烟、Chrome 三尺寸双主题
 验收和 CI 数据库恢复演练；Worker 对未实现生产邮件提供方在启动阶段失败关闭。
-状态：仓库内发布候选通过，尚不是生产发布。正式 QQ、生产邮件、域名/TLS、staging/production、
+状态：仓库内发布候选经 PR #38 合入 `main`，合并提交为
+`7fe0b8b91b40996f9325aa61a02c23f93ef54958`；最终 PR CI Run `30213362056` 与 main push CI Run
+`30213469686` 全绿。尚不是生产发布；正式 QQ、生产邮件、域名/TLS、staging/production、
 监控/回滚制品和品牌权属未验收，当前发布决定为不允许上线。
