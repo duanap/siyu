@@ -46,10 +46,7 @@ function startupScanId(now: Date): string {
   return `recurring-scan-startup-${now.toISOString().slice(0, 16).replaceAll(/[-:T]/g, '')}`;
 }
 
-export function validatePasswordResetMailProvider(
-  isProduction: boolean,
-  provider = process.env.SIYU_MAIL_PROVIDER,
-): void {
+export function validatePasswordResetMailProvider(isProduction: boolean, provider?: string): void {
   if (!isProduction) return;
   if (!provider) throw new Error('MAIL_PROVIDER_UNCONFIGURED');
   if (provider === 'test') throw new Error('生产环境禁止使用 test 邮件提供方');
@@ -58,7 +55,7 @@ export function validatePasswordResetMailProvider(
 
 export async function startWorker(options: StartWorkerOptions = {}): Promise<WorkerRuntime> {
   const { redisUrl, isProduction } = readConfig();
-  validatePasswordResetMailProvider(isProduction);
+  validatePasswordResetMailProvider(isProduction, process.env.SIYU_MAIL_PROVIDER);
   const recurringConfig = readRecurringWorkerConfig();
   const now = options.now ?? (() => new Date());
   const log = options.log ?? defaultLog;

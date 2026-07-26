@@ -147,7 +147,7 @@
 | `apps/api/src/users/users.dto.ts` | `4daab351af6006de676cfe17fbb98978c0972f5e9c1b78dffd7466d21baa369f` |
 | `apps/api/src/users/users.module.ts` | `a60ca0d45604685d23ab7c9a59b1db8ab778827f4c492e27b9dd2bcb79998ce0` |
 | `apps/api/src/worker.test.ts` | `ce443187e276c345b530e3d6707ab88c07b2dc5d3229a059f68039713a739622` |
-| `apps/api/src/worker.ts` | `03b2680ced27eea52ea273e776a0f4231f284d0b80ee285effbe59047ad23457` |
+| `apps/api/src/worker.ts` | `cef1536751eb2b5fb8e825d3c0e2518bd76ba2d81777f5e538f37591e82c364c` |
 | `apps/api/test/run-e2e.cjs` | `00004e09d0319676da56367cc770b73c87a4820dbdcc6b11f0e0a77dadbaa841` |
 | `apps/api/tsconfig.build.json` | `2cb0671aac773e691b6ab793e3dc46d71f88a9f3830d3a351e63f9630035db46` |
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
