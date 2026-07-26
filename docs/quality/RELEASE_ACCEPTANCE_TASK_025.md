@@ -2,7 +2,7 @@
 
 验收日期：2026-07-26 至 2026-07-27
 
-代码基线：`main@687b4bf759e1bf37d8fc751476fbc412033e14cd`
+代码基线：`main@7fe0b8b91b40996f9325aa61a02c23f93ef54958`
 
 ## 结论
 
@@ -11,6 +11,10 @@
 真实发送/退信、域名/TLS/EdgeOne/WAF、staging/production 目标与监控、回滚制品，以及品牌/域名/包名权属确认。
 
 本报告不把本地、隔离数据库或 GitHub CI 结果冒充为正式环境上线。
+
+仓库闭环证据：PR #38 已 Squash merge；最终 PR CI Run `30213362056` 与 main push CI Run
+`30213469686` 的 `quality`、`database`、`secret-scan` 全绿。两轮均覆盖完整测试、迁移、E2E、构建、
+依赖审计和秘密扫描，数据库任务还执行真实 PostgreSQL 备份、隔离恢复与约束验证。
 
 ## 新增发布门禁
 
