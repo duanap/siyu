@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { inspectReleaseEnvironment } from './check-release-environment.mjs';
-import { safeUrlSummary } from './release-utils.mjs';
+import { parseCliArguments, safeUrlSummary } from './release-utils.mjs';
 
 function productionEnvironment() {
   return {
@@ -40,6 +40,13 @@ test('release preflight redacts URLs and blocks the unimplemented production mai
   assert.equal(
     safeUrlSummary('rediss://:secret@cache.internal/0'),
     'rediss://cache.internal:6379/0',
+  );
+  assert.deepEqual(
+    parseCliArguments(['--', '--env-file', '/secure/siyu.env', '--mode', 'native'], {
+      'env-file': 'value',
+      mode: 'value',
+    }),
+    { 'env-file': '/secure/siyu.env', mode: 'native' },
   );
 });
 

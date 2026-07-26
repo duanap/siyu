@@ -8,9 +8,10 @@ import { parseEnv } from 'node:util';
 export const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function parseCliArguments(argv, definitions) {
+  const argumentsToParse = argv[0] === '--' ? argv.slice(1) : argv;
   const result = {};
-  for (let index = 0; index < argv.length; index += 1) {
-    const argument = argv[index];
+  for (let index = 0; index < argumentsToParse.length; index += 1) {
+    const argument = argumentsToParse[index];
     if (!argument.startsWith('--')) throw new Error(`未知参数：${argument}`);
     const name = argument.slice(2);
     const definition = definitions[name];
@@ -19,7 +20,7 @@ export function parseCliArguments(argv, definitions) {
       result[name] = true;
       continue;
     }
-    const value = argv[index + 1];
+    const value = argumentsToParse[index + 1];
     if (!value || value.startsWith('--')) throw new Error(`${argument} 缺少值`);
     result[name] = value;
     index += 1;

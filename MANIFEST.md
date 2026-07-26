@@ -464,7 +464,7 @@
 | `scripts/check-native-services.mjs` | `d6846289ae6b886a0440f25f1c067d65dec8c22bddd56f81b27b30cedc9a6753` |
 | `scripts/check-openapi-coverage.mjs` | `7c74bc14e579e1f2bceeaf308a3b0998caba170efcf5ff00a22190d203643297` |
 | `scripts/check-release-environment.mjs` | `60b9ebb4948505f7d275de20bd59af8a33a7e24478719b378bfcc23c19f53078` |
-| `scripts/check-release-environment.test.mjs` | `b10c3b31ffba8d312475b488c0860709d24074cb3add8b115d728af0bcfa592d` |
+| `scripts/check-release-environment.test.mjs` | `f6b99c963954aa5605bfaab0e65df04e9d2b554fc44a7e34120b05801eda44c4` |
 | `scripts/database-release.test.mjs` | `d11f12dab5c151ae57d4a28f448cc311de46bfdc270c90bde1d32250d5d7fa75` |
 | `scripts/generate-manifest.sh` | `6428d16548a0483f808a22359afff526dfa3c87ab579adc956fabb88f99d0c3c` |
 | `scripts/native-gateway.mjs` | `c817022605131a3d18334a5ef3f0880ffc1bc1be6e5b796c00dfbd8625a31a0e` |
@@ -472,7 +472,7 @@
 | `scripts/native-runtime.test.mjs` | `d75d948cc53f143c98e9fc062e3e6041791813bdfdd0810d4988a5c79254e597` |
 | `scripts/release-smoke.mjs` | `92c56ce9eec7dd0a2f5f419921ee97a2997e3c2d10e5f20825174003964b3973` |
 | `scripts/release-smoke.test.mjs` | `46f2fe969b10aace99cfc21c4dc9415547baf44fb10318c329f17805b5aefdc5` |
-| `scripts/release-utils.mjs` | `fbf04a95d2c884482bbb17fc4fc1e4ed903d8bd4d9124d1e368f20438a78f614` |
+| `scripts/release-utils.mjs` | `b0af31d10d400b60fd733c48275ab6afb3f41f141aacd3aa5ee26ff62028b497` |
 | `scripts/run-native.mjs` | `f35616edc9ac7e0c6e6faa817c641634a572158271d3f715c3652d92c56e506c` |
 | `scripts/test-db-constraints.sql` | `90a80149371edcb939153b05f600ed3a4dcc1544ce206e76648edbc11dd4d227` |
 | `scripts/test-migrations.sh` | `2fb0bbca0ba679921e23e13bd4408af216482c921da8ce4db6c37a15b242ba81` |
