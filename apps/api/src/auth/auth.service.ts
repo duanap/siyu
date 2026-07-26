@@ -62,8 +62,8 @@ export class AuthService implements OnModuleDestroy {
   }
 
   private async accessFor(userId: string, sessionId: string): Promise<AuthTokenData> {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: { id: userId },
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, status: 'ACTIVE', deletedAt: null },
       include: {
         credential: true,
         userRoles: {
@@ -71,6 +71,7 @@ export class AuthService implements OnModuleDestroy {
         },
       },
     });
+    if (!user) throw new UnauthorizedException('登录状态已失效');
     const roles = user.userRoles.map(({ role }) => role.code);
     const permissions = [
       ...new Set(
@@ -100,6 +101,11 @@ export class AuthService implements OnModuleDestroy {
   }
 
   async createSession(userId: string): Promise<{ data: AuthTokenData; refreshToken: string }> {
+    const activeUser = await this.prisma.user.findFirst({
+      where: { id: userId, status: 'ACTIVE', deletedAt: null },
+      select: { id: true },
+    });
+    if (!activeUser) throw new UnauthorizedException('账号不可用');
     const refreshToken = opaqueToken();
     const expiresAt = new Date(Date.now() + SESSION_SECONDS * 1000);
     const session = await this.prisma.authSession.create({
@@ -166,7 +172,7 @@ export class AuthService implements OnModuleDestroy {
       include: { user: true },
     });
     const valid = credential ? await argonVerify(credential.passwordHash, password) : false;
-    if (!credential || !valid || credential.user.status !== 'ACTIVE') {
+    if (!credential || !valid || credential.user.status !== 'ACTIVE' || credential.user.deletedAt) {
       await this.prisma.auditLog.create({
         data: { actorType: 'ANONYMOUS', action: 'AUTH_LOGIN_FAILED', targetType: 'USER' },
       });
@@ -187,7 +193,7 @@ export class AuthService implements OnModuleDestroy {
   async refresh(rawToken: string): Promise<{ data: AuthTokenData; refreshToken: string }> {
     const token = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: digest(rawToken) },
-      include: { session: true },
+      include: { session: { include: { user: true } } },
     });
     if (!token) throw new UnauthorizedException('刷新令牌无效');
     if (token.usedAt || token.revokedAt) {
@@ -197,7 +203,12 @@ export class AuthService implements OnModuleDestroy {
       });
       throw new UnauthorizedException('刷新令牌无效');
     }
-    if (token.expiresAt <= new Date() || token.session.status !== 'ACTIVE') {
+    if (
+      token.expiresAt <= new Date() ||
+      token.session.status !== 'ACTIVE' ||
+      token.session.user.status !== 'ACTIVE' ||
+      token.session.user.deletedAt
+    ) {
       throw new UnauthorizedException('刷新令牌已过期');
     }
     const replacement = opaqueToken();
@@ -308,8 +319,9 @@ export class AuthService implements OnModuleDestroy {
   async requestReset(emailInput: string): Promise<void> {
     const credential = await this.prisma.userCredential.findUnique({
       where: { emailNormalized: normalizeEmail(emailInput) },
+      include: { user: true },
     });
-    if (!credential) return;
+    if (!credential || credential.user.status !== 'ACTIVE' || credential.user.deletedAt) return;
     const token = opaqueToken();
     const record = await this.prisma.passwordResetToken.create({
       data: {
@@ -326,8 +338,11 @@ export class AuthService implements OnModuleDestroy {
   }
 
   async resetPassword(tokenValue: string, password: string): Promise<void> {
-    const token = await this.prisma.passwordResetToken.findUnique({
-      where: { tokenHash: digest(tokenValue) },
+    const token = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash: digest(tokenValue),
+        user: { status: 'ACTIVE', deletedAt: null },
+      },
     });
     if (!token || token.usedAt || token.expiresAt <= new Date())
       throw new UnauthorizedException('重置链接无效或已过期');

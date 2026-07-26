@@ -9,6 +9,18 @@
 - **AC-AUTH-003**：修改密码撤销其他会话并轮换当前会话；重置密码撤销全部会话。
 - **AC-AUTH-004**：密码重置请求对存在和不存在邮箱返回一致结果，令牌过期、无效或重复使用均被拒绝。
 - **AC-AUTH-005**：普通用户不能访问管理端校验接口，管理员可以访问。
+- **AC-AUTH-006**：直接禁用账号但保留既有 Session 时，旧 Access Token 也立即返回 401；删除 ADMIN 角色后，
+  旧 Access Token 立即无法调用管理接口，恢复角色后无需重新签发令牌即可按当前数据库权限访问。
+- **AC-AUTH-007**：QQ OAuth 回调只有在 query state 与发起浏览器的短时 HttpOnly Cookie 一致时才消费 state；
+  不匹配不会消费合法 state，重放、缺失 Cookie 和禁用 QQ 账号均被拒绝。
+- **AC-SECURITY-001**：生产配置使用开发 JWT、`SIYU_COOKIE_SECURE=false` 或
+  `SIYU_MAIL_PROVIDER=test` 时 API/Worker 或原生配置检查明确失败；开发 Compose 仍可使用显式本地默认值。
+- **AC-SECURITY-002**：原生 API 默认监听 `127.0.0.1`，容器通过 `SIYU_API_HOST=0.0.0.0` 显式开放容器网络；
+  原生网关收到 absolute-form 请求目标时仍只请求 `SIYU_API_ORIGIN`，外部目标未收到请求。
+- **AC-SECURITY-003**：CORS 仅接受无路径的 HTTP(S) Origin，用户头像仅接受 HTTP(S) URL；API、Nginx 和
+  原生静态网关返回防 MIME 猜测、点击劫持、过度 Referrer 和基础 CSP/Permissions Policy 响应头。
+- **AC-SECURITY-004**：情侣账本改名、邀请、接受、退出、转移、解散以及用户资料、通知已读和密码写操作使用
+  正确且彼此隔离的限流作用域；反向代理来源 IP 只信任一个受控跳数。
 - **AC-COUPLE-001**：用户可创建情侣账本并生成有时效的邀请码。
 - **AC-COUPLE-002**：邀请被第二位用户接受后，第三位用户无法加入。
 - **AC-COUPLE-003**：已加入其他情侣账本的用户无法接受新邀请。

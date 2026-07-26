@@ -1,0 +1,17 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index 8f38e73..877fbcd 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -7,1 +7,1 @@
+-const brace_expansion_1 = __importDefault(require("brace-expansion"));
++const brace_expansion_1 = require("brace-expansion");
+@@ -160,1 +160,1 @@
+-    return (0, brace_expansion_1.default)(pattern);
++    return (0, brace_expansion_1.expand)(pattern);
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 57e8302..796b36e 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -1,1 +1,1 @@
+-import expand from 'brace-expansion';
++import { expand } from 'brace-expansion';

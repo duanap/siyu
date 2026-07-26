@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Inject, Patch, Req, UseGuards } from '@nestjs/common';
 
 import { AccessGuard } from '../auth/auth.guard';
+import { AuthRateLimitService } from '../auth/rate-limit.service';
 import type { AuthenticatedRequest } from '../auth/auth.types';
 import { PrismaService } from '../database/prisma.service';
 import { UpdateUserDto } from './users.dto';
@@ -8,7 +9,10 @@ import { UpdateUserDto } from './users.dto';
 @Controller('api/v1/users')
 @UseGuards(AccessGuard)
 export class UsersController {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AuthRateLimitService) private readonly rateLimit: AuthRateLimitService,
+  ) {}
 
   private async view(userId: string): Promise<object> {
     const user = await this.prisma.user.findUniqueOrThrow({
@@ -49,6 +53,7 @@ export class UsersController {
 
   @Patch('me')
   async update(@Body() body: UpdateUserDto, @Req() request: AuthenticatedRequest): Promise<object> {
+    await this.rateLimit.consume('user-write', request.auth.userId, 30, 600);
     await this.prisma.user.update({ where: { id: request.auth.userId }, data: body });
     return {
       success: true,

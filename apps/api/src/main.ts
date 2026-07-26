@@ -7,7 +7,7 @@ async function bootstrap(): Promise<void> {
   loadEnvironmentFile();
   const config = readConfig();
   const app = await createApp();
-  await app.listen(config.port, '0.0.0.0');
+  await app.listen(config.port, config.apiHost);
 }
 
 void bootstrap();

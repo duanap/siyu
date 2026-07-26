@@ -1,12 +1,13 @@
 # 当前项目状态
 
-更新时间：2026-07-23
-文档版本：v1.31.0
-代码状态：TASK-023 CSV 导出已合并、CI 通过并正式关闭；下一项为 TASK-024 权限与安全审计
+更新时间：2026-07-26
+文档版本：v1.32.0
+代码状态：TASK-024 权限与安全审计已完成本地交付候选；待 PR/CI 正式关闭后进入 TASK-025
 
 ## 当前阶段
 
-M3、M4、M5、M6、M7 已完成并合入 `main`；M8 的 TASK-022、TASK-023 已正式关闭，下一项为 TASK-024。
+M3、M4、M5、M6、M7 已完成并合入 `main`；M8 的 TASK-022、TASK-023 已正式关闭，TASK-024 已完成本地
+安全审计和修复，待远程闭环后进入最后一项 TASK-025。
 
 ## 已完成
 
@@ -134,6 +135,12 @@ M3、M4、M5、M6、M7 已完成并合入 `main`；M8 的 TASK-022、TASK-023 �
 - TASK-023 功能提交 `5ac941e546aee86c19c2d207265b68af8ce6ad25` 经 PR #34 合入 `main`，合并提交为
   `306a6ad513099e11e3215fcbcfca89483085cee9`；PR CI Run `29970521966` 与 main push CI Run
   `29970632424` 的 `quality`、`database`、`secret-scan` 全部通过，TASK-023 正式关闭。
+- TASK-024 已完成认证、实时 RBAC、业务资源 IDOR、私有财务、Worker、反向代理、运行配置、日志和供应链
+  审计；10 项高/中/低发现均已修复，没有未解决的高危或中危代码发现。
+- Access Guard 每次读取当前活跃用户和数据库角色/权限；OAuth state 绑定发起浏览器，禁用/删除账号不能通过
+  邮箱、QQ、Refresh Token 或密码重置恢复会话。
+- 原生网关 absolute-form SSRF 已封堵；API 默认回环监听，容器显式开放容器网络；生产拒绝开发 JWT、
+  非 Secure Cookie和测试邮件提供方，并补齐可信代理、限流、CORS/URL 和安全响应头基线。
 
 ## 明确未实现
 
@@ -264,6 +271,11 @@ M3、M4、M5、M6、M7 已完成并合入 `main`；M8 的 TASK-022、TASK-023 �
 - TASK-023 Node.js 24.18.0 全仓 `pnpm verify` 与 172 项测试通过：移动端 104 项、API 50 项，其余原生网关、
   共享包、校验包和管理端 18 项；format、lint、typecheck、Prisma、OpenAPI 81/81、Compose、完整
   PostgreSQL/Redis E2E、生产构建、文档、清单和差异检查全部通过，依赖审计无已知漏洞。
+- TASK-024 Node.js 24.18.0 全仓 177 项测试通过：移动端 104 项、API 54 项、原生网关 4 项及其余 15 项；
+  完整 PostgreSQL/Redis E2E 覆盖保留 Session 的禁用用户、同一 Token 实时授予/撤销 ADMIN、全部既有业务
+  与 Worker 链路并通过。宿主 Redis 6.0.16 仅保留最低 6.2 的非阻断提示，CI 使用 Redis 7。
+- 新发布的 PostCSS、`brace-expansion` 和 Valibot 高/中危传递依赖公告已通过安全版本覆盖和三份
+  `minimatch` 兼容补丁消除；锁文件不再包含受影响版本，依赖审计无已知漏洞。
 - 第十一迁移空库/历史升级、重复部署、status、零 diff、26 模型 introspection、47 个关键索引、73 个自定义
   约束和 15 个删除策略通过；新增 E2E 覆盖目标幂等、权限、并发贡献、状态回退、删除留痕和成员退出隔离。
 - OpenAPI 74/74 覆盖与具体统计响应 Schema 生成通过；手机入口 294 KB，统计图表独立懒加载。
@@ -279,7 +291,7 @@ M3、M4、M5、M6、M7 已完成并合入 `main`；M8 的 TASK-022、TASK-023 �
 
 ## 下一项动作
 
-进入 TASK-024 权限与安全审计，系统复核认证、资源归属、情侣成员关系、管理员 RBAC、财务隐私、限流和审计边界。
+完成 TASK-024 PR、远程 CI、合并和 main CI 后，进入 TASK-025 全链路 E2E 与发布验收。
 
 ## 待负责人确认
 

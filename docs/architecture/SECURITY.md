@@ -3,32 +3,40 @@
 ## 认证
 
 - 邮箱密码长度为 12–128 字符，使用 Argon2id；邮箱统一小写并由数据库唯一约束保证。
-- QQ OAuth 使用 state、严格回调域校验，并在支持时使用 PKCE。
+- QQ OAuth 使用一次性 state、严格回调域校验，并将 state 绑定到发起浏览器的 10 分钟 HttpOnly、
+  SameSite=Lax Cookie；在支持时使用 PKCE。
 - Access Token 有效期 15 分钟，仅保存在前端内存。
 - Refresh Session 有效期 30 天；Refresh Token 仅存摘要、每次轮换并检测重放。
 - Refresh Token 使用 HttpOnly、生产 Secure、SameSite=Lax Cookie。
-- 登出和账号禁用后使 Refresh Token 失效。
+- 登出和账号禁用后使 Refresh Token 失效；每次 Access Guard 从数据库重取当前用户状态、角色与权限，
+  不把 JWT 内角色声明当作当前授权事实。
 - 不在 localStorage 长期保存 Refresh Token。
 - 密码重置令牌有效期 30 分钟、一次性使用；请求响应不得泄露邮箱是否存在。
-- USER/ADMIN 角色和权限由数据库决定，前端路由保护不替代服务端 Guard。
+- USER/ADMIN 角色和权限由数据库决定，前端路由保护不替代服务端 Guard；禁用或删除用户不能通过邮箱、
+  QQ、Refresh Token 或密码重置重新获得 Session。
 
 ## API
 
 - 全局 DTO 验证和白名单。
-- 登录、情侣账本创建/邀请/接受、导出和写接口分别限流。
+- 登录、密码、情侣账本创建/邀请/接受/写操作、用户资料、通知已读、导出和管理写接口分别限流。
 - 请求带 `requestId`。
 - 错误响应不泄露堆栈、SQL、密钥和内部路径。
 - 生产 Swagger 使用访问控制。
-- CORS 仅允许正式域名。
+- CORS 只接受配置中精确匹配、无路径的 HTTP(S) Origin；代理链只信任一个受控跳数。
+- API、Nginx 与原生静态网关提供 `nosniff`、点击劫持、Referrer、Permissions Policy 和 CSP 基线；
+  HSTS 由真实 HTTPS 边界统一配置。
 - CSV 导出按用户和类型独立限流，禁止缓存与 MIME 猜测；同步响应限定一个账本/自然年范围和 10000 行，
   超限明确失败而非截断。用户可控单元格必须防止 `= + - @` 公式注入。
 
 ## 数据
 
 - PostgreSQL 和 Redis 不暴露公网端口。
+- 原生 API 默认监听 `127.0.0.1`；容器运行必须通过 `SIYU_API_HOST=0.0.0.0` 显式开放到容器网络。
+- 原生网关从请求中只提取 path/query 并拼到固定 `SIYU_API_ORIGIN`，不得接受请求目标覆盖上游主机。
 - 使用最小权限数据库账号。
 - 数据备份加密。
 - 日志不记录完整敏感金额明细、Token 和 OAuth 密钥。
+- 生产模式拒绝仓库开发 JWT、非 Secure 认证 Cookie和 `test` 邮件提供方；配置缺失时失败关闭。
 - 对象存储私密文件使用签名 URL。
 - 文件上传校验 MIME、扩展名、大小和随机文件名。
 
@@ -67,3 +75,6 @@
 - CSRF、CORS、XSS、文件上传测试
 - 备份恢复演练
 - 生产环境变量和密钥轮换检查
+
+TASK-024 的分级发现、修复证据和残余外部验证边界见
+`docs/quality/SECURITY_AUDIT_TASK_024.md`。

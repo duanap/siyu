@@ -9,6 +9,7 @@ import { loadEnvironmentFile, readConfig } from './config';
 describe('readConfig', () => {
   it('uses safe local defaults without requiring secrets', () => {
     expect(readConfig({})).toEqual({
+      apiHost: '127.0.0.1',
       port: 3000,
       corsOrigins: ['http://localhost:5173', 'http://localhost:5174'],
       redisUrl: 'redis://localhost:6379',
@@ -26,11 +27,27 @@ describe('readConfig', () => {
 
   it('requires a strong JWT secret in production', () => {
     expect(() => readConfig({ NODE_ENV: 'production' })).toThrow(/JWT_SECRET/);
+    expect(() =>
+      readConfig({
+        NODE_ENV: 'production',
+        JWT_SECRET: 'siyu-local-compose-jwt-secret-change-me-now',
+      }),
+    ).toThrow(/JWT_SECRET/);
+    expect(() =>
+      readConfig({
+        NODE_ENV: 'production',
+        JWT_SECRET: 'production-secret-that-is-long-enough-to-use',
+        SIYU_COOKIE_SECURE: 'false',
+      }),
+    ).toThrow(/SIYU_COOKIE_SECURE/);
   });
 
   it('rejects invalid ports and origins', () => {
     expect(() => readConfig({ SIYU_API_PORT: '70000' })).toThrow();
     expect(() => readConfig({ SIYU_CORS_ORIGINS: 'not-a-url' })).toThrow();
+    expect(() => readConfig({ SIYU_CORS_ORIGINS: 'javascript:alert(1)' })).toThrow();
+    expect(() => readConfig({ SIYU_CORS_ORIGINS: 'https://example.com/path' })).toThrow();
+    expect(() => readConfig({ SIYU_API_HOST: 'http://0.0.0.0' })).toThrow();
   });
 
   it('loads an explicit native environment file without overriding existing values', () => {

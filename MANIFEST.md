@@ -1,14 +1,14 @@
 # 交付清单
 
-生成日期：2026-07-23
+生成日期：2026-07-27
 
-文件数量（不含本清单、依赖和构建产物）：454
+文件数量（不含本清单、依赖和构建产物）：460
 
 | 文件 | SHA-256 |
 |---|---|
 | `.codex/config.toml.example` | `b352088ed273cc644744bca944b5b724188a61cbb5f623150d0dff09a9b1a2f8` |
-| `.env.example` | `df2b93fe6d3caeb25b9657169d30e4e59847ddf729268fd0555d49e66d14c66a` |
-| `.env.native.example` | `7ab78f024778009c52f8d34d186af17b786fd4d87805983d68dd818a82d8f127` |
+| `.env.example` | `84467bce45846459ee7bab87921a92a4c1747e07e46678888e54176f1c723b07` |
+| `.env.native.example` | `8876b3121142e124c2e3288eb45c41778ba09e20b6be6b1db271f0a9a515262b` |
 | `.env.test.example` | `3b4a02d5031fbd11e3fc1bab1b6c279605e163fd67c61dd2b6fc0710c53abf0c` |
 | `.github/workflows/ci.yml` | `4b412181837243852e762bd15e75f9c28be3be8afad55326bebeb52a2b520b8b` |
 | `.gitignore` | `34177e6b1d67f1d10e749343c75fdfa085b734ee30a3e902749edbc46ad17109` |
@@ -56,16 +56,17 @@
 | `apps/api/src/admin/admin.module.ts` | `4a39fb27b9997fde5b9edd471413d40fcfb24140878f6722f0e97888120f9435` |
 | `apps/api/src/admin/admin.service.ts` | `bcfe06c4ef43a42e13c1701287b02d86540b34310cafbeab51b2191626156e34` |
 | `apps/api/src/app.module.ts` | `88a8b6ce2e2cf84c4019d0d5c14da61be578894d6bffdd72f21a2e33fbd24790` |
-| `apps/api/src/app.ts` | `0c3ec241f256a57381337016a5a8ef3f2854793511c2a7b131981bf6efd4d678` |
-| `apps/api/src/auth/auth.constants.ts` | `4445de5a832e29b60a1c9cf489838047ed6dad63888a2fd9b7804ee2c75bf5fa` |
-| `apps/api/src/auth/auth.controller.ts` | `b4bb003fabf3e4300ce5d44ebced35ed715297d8be9908de8e83fd7c5b11e80d` |
+| `apps/api/src/app.ts` | `5db41ef9f14bb49fda179b0865e6a6836df5359e2c10ea8bab1ad63f92f5a53e` |
+| `apps/api/src/auth/auth.constants.ts` | `3084769b5909e8d1b1745404711691aca54e2f7c3d90573e59c9935f694c8dc6` |
+| `apps/api/src/auth/auth.controller.ts` | `eeedbfe57c62c8e4c6fadae48897013b11d70fad0ac53393666025de4b655dc9` |
 | `apps/api/src/auth/auth.dto.ts` | `2496e27f432fb4fe1f85b50a37ffdaf47cfb8a95785e040715d3583a04752c0a` |
-| `apps/api/src/auth/auth.guard.ts` | `386016ac75da74cd35f58b1ef33e923f2b06c81d6f6a63b9fb94e64b42ba86ed` |
+| `apps/api/src/auth/auth.guard.test.ts` | `ebe039a1d71f8a36c5f99d7ebc85337d346afdbece7361bc585cc8c74bbc464b` |
+| `apps/api/src/auth/auth.guard.ts` | `780d30acbcd67e7aac2d11e37b1f1fb8751b6dc8d1ff8f070446d35b6a2a2404` |
 | `apps/api/src/auth/auth.module.ts` | `55c2a5ca758a7c87cdbc074c845d7e3833e7f83787aa3a5c74266f20fff8e7bb` |
-| `apps/api/src/auth/auth.service.ts` | `6e87704035e16e8c796fa7ea43353ed0ffe9a7d6afa2f8242fe1616fb527eede` |
+| `apps/api/src/auth/auth.service.ts` | `0a86de5f0af2b41e27b1cbb1e717ac09efb72b2fb93191e4abe24bbda030d6ad` |
 | `apps/api/src/auth/auth.types.ts` | `8f20f88a483d47b646a69fe187a0dcf53d716817c2c0e999818720b17ead1199` |
-| `apps/api/src/auth/oauth.service.test.ts` | `53def71ace22a8bcf42a6a4870f905564b6b1fff3c6d6eaee9020308b3d8a7df` |
-| `apps/api/src/auth/oauth.service.ts` | `b6992f8a55aed8fc3ff4deb10fe1065dc40a5a6c077ad2c9d4a0c19a44fd688e` |
+| `apps/api/src/auth/oauth.service.test.ts` | `3f394e9d94f4720549bbf82555d71f335839193572ee7dbb3c6508d2ec4eabf1` |
+| `apps/api/src/auth/oauth.service.ts` | `44de0313090973117c4209db73724bf3d9a28dcb36a20e40ca86836b1a20ae3c` |
 | `apps/api/src/auth/rate-limit.service.ts` | `feff07a9ecd761fffe11d3fe57f59870eeef9d9f6d7dccb9c6445f9274273208` |
 | `apps/api/src/categories/categories.controller.ts` | `4fb7a38912362ea7c512e2a420e41793183802d564bc8a680d0379ad20652fad` |
 | `apps/api/src/categories/categories.dto.ts` | `3efa6732efdb717bf56daedeec98577487e06524855c1ea91aab69c912d6ae5b` |
@@ -73,8 +74,8 @@
 | `apps/api/src/categories/categories.repository.ts` | `b4331af6461f79915d4bedf2b35ebcf78e8b18316efbcf190647360168730fee` |
 | `apps/api/src/categories/categories.service.ts` | `6fc4557a8df37bf88140cd803e69aaeef5d20674f8914a31b6e4e932fb6b6bb5` |
 | `apps/api/src/categories/category-defaults.ts` | `098db3b4b492272e0bc3815601c7f9713249cfaefbe8795d36b1a764e0dd9c2d` |
-| `apps/api/src/config.test.ts` | `53544262e05ab604ab46a15a31679b321217f53a605914ecf4fa790865500a25` |
-| `apps/api/src/config.ts` | `1e97c2e6fc02300e7ecec24da7e3fdaf077da6583aefcf2b384466fbb46e1ac1` |
+| `apps/api/src/config.test.ts` | `cdb7435e18fd16c1b5406d58ed6133f48cd8aece97e726e3bfe14760b0b92ddf` |
+| `apps/api/src/config.ts` | `fb53aff613c2196e6ab2bf553d318b629d83b9bec8d6ed59de6486e35f6cd1b7` |
 | `apps/api/src/database/database.module.ts` | `c80ac92072bc91310538535195904b088c6f67aaafa5c58e7df1d8981d5b8bfb` |
 | `apps/api/src/database/prisma.service.ts` | `d19f0550d60e83ebc62d05be9b47f598d591e6f3598f2dad0cc7a8dcc3b97db8` |
 | `apps/api/src/debts/debts.controller.ts` | `ee473e34c67956f06461c7bda7f9261f7aa4f526f4b133bf79c78a919c6b5554` |
@@ -96,13 +97,13 @@
 | `apps/api/src/exports/exports.service.ts` | `7d80ae5ad4f2f82ef5e30da83be2413100c0cdf2d1a8bdae217f3b19bfd6def7` |
 | `apps/api/src/health.controller.ts` | `c8a605c4ed1b63c67a5d7f91cc600e3c0129c1fa2142ee472bb9d593bec14058` |
 | `apps/api/src/http-error.filter.ts` | `ce419e1cd5b4f4747cf5c18498550409f119d3d02b6b43ee15711a08be51ec4c` |
-| `apps/api/src/ledgers/ledgers.controller.ts` | `d9fb880a481d129d154be1492f59c5d72776b93fa5233b57c484af41160c4cdb` |
+| `apps/api/src/ledgers/ledgers.controller.ts` | `d75c5afc37508bb16f135fa190a6b704cac9422f88aca158a1bc3aad631da19e` |
 | `apps/api/src/ledgers/ledgers.dto.ts` | `237d7341ca264e1ce3a7f758929f4e2292bfcb6831a39adcc4fc3fbaeef7e260` |
 | `apps/api/src/ledgers/ledgers.module.ts` | `737ebc7aa866f4917eac8aa672622eb17d27124bc0aecc5d0ebdce40599892ef` |
 | `apps/api/src/ledgers/ledgers.repository.ts` | `7767cba6d4bf41dac11069c21fee67b3374168e9f481ea9e651e06c2da33e243` |
 | `apps/api/src/ledgers/ledgers.service.ts` | `db76549cd9a77642a47eabdb928b974831d7e245ae8b543aab398107ed60d968` |
-| `apps/api/src/main.ts` | `665fc31fe702c505583cedce86b028a6c667cfab2e355bfda8fdab3425f5a59a` |
-| `apps/api/src/notifications/notifications.controller.ts` | `74bb965ea37c181872e5451236fa597bfcb4de18cdeda5a2ff0606c6563aff12` |
+| `apps/api/src/main.ts` | `ed968118a8a81e6ee9a2ec58055730201b95ea5436150bd2c07fbc5a19bc4525` |
+| `apps/api/src/notifications/notifications.controller.ts` | `5ed76dd63b699d8002f13fb3f8b2f9df96f0ed07d0c72805d0f54d1d7c3fcf63` |
 | `apps/api/src/notifications/notifications.dto.ts` | `a357263b4f52509ae29d046fc3361d1f64a891e3cb90dd7f042e17418c5cbac9` |
 | `apps/api/src/notifications/notifications.module.ts` | `768d0b4b21c26ca978420ed6090fe00edd7166d7622605b9256802d834746213` |
 | `apps/api/src/notifications/notifications.repository.ts` | `5322055596c58c5ea0b9c6578d935ee12784b8835e74e89d60e4e6452fd9bb00` |
@@ -141,11 +142,11 @@
 | `apps/api/src/statistics/statistics.service.test.ts` | `dea6aae5c97ad3270e5dff9ab01ce6de6a5aef35c46a87db353b4dc2b5a6e40d` |
 | `apps/api/src/statistics/statistics.service.ts` | `01c1425dbff12fbbb0c05306dc4ba0610423fd3e763427d56ab46c9ed0af660f` |
 | `apps/api/src/users/admin-auth.controller.ts` | `4d99246635d116793d7fa9f1153c7079365175b396f37dab56a4dd86c7986f34` |
-| `apps/api/src/users/users.controller.ts` | `f436d383ad7fba06636e15ecdea73b4ed0ca2c93dcb57e363782ac7ad0ed076f` |
-| `apps/api/src/users/users.dto.ts` | `ebf0bbc24907c047559d21381fce78afc3500843263cd6e4f523fd3cdd3288b0` |
+| `apps/api/src/users/users.controller.ts` | `d0701e6f2531f70902160e0300dd8adaf40cb984fb5d9dbdf62b931797d9efe5` |
+| `apps/api/src/users/users.dto.ts` | `4daab351af6006de676cfe17fbb98978c0972f5e9c1b78dffd7466d21baa369f` |
 | `apps/api/src/users/users.module.ts` | `a60ca0d45604685d23ab7c9a59b1db8ab778827f4c492e27b9dd2bcb79998ce0` |
-| `apps/api/src/worker.ts` | `6a1ec7bb677b21e8e1b135e9347e9605d06304f8fbd13bcb726590b2d7ba2872` |
-| `apps/api/test/run-e2e.cjs` | `6ef63e139fba6cc7fd688d69700614e0492578261da79e8a73db8812c37f69a8` |
+| `apps/api/src/worker.ts` | `0083fad794091ae171a46a59a4a134456a49a016977c327ccd66deefc70ca178` |
+| `apps/api/test/run-e2e.cjs` | `00004e09d0319676da56367cc770b73c87a4820dbdcc6b11f0e0a77dadbaa841` |
 | `apps/api/tsconfig.build.json` | `2cb0671aac773e691b6ab793e3dc46d71f88a9f3830d3a351e63f9630035db46` |
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
 | `apps/api/vitest.config.ts` | `ab62155f398c51eab4e82c644ad2c943e15fe60e4ee983ecaa916f4567d93e9f` |
@@ -270,14 +271,14 @@
 | `apps/mobile-web/tsconfig.json` | `255056a44d7e57a7073e416393b43b4d325eab412e14fc3cde377f89f7112d8e` |
 | `apps/mobile-web/vite.config.ts` | `129724ce0b7ec1c2864d4b66c4ac69b6870aac940529abd144fd9f42b7f015d8` |
 | `apps/mobile-web/vitest.config.ts` | `3c85807bd84ccf059da9b4a4fc8e6f1de99bd81523e377752f90cf1a571062b6` |
-| `docker-compose.yml` | `55efa41105ec21761366f022674ddaccaddb8a40ce49192fe96cd5723905b719` |
+| `docker-compose.yml` | `1692b0856a1f134de7571530f5c8b4b44634ce2e0481b14f03b7e833f8d1a14a` |
 | `docs/architecture/API_CONTRACT.md` | `10fd80cbf81069dac1feacaa319ff2cd19f7f604414628aecfa0fa57617eb4df` |
 | `docs/architecture/BACKGROUND_JOBS.md` | `e8a0fa517c635ec48d4a574d0983812488e067b496d3930a31d9b4300e38a243` |
 | `docs/architecture/DATABASE_SCHEMA.md` | `a719c4270c2072b7aab0ec332e0d5dd85a272decb495b96da8802016cedee1de` |
-| `docs/architecture/DEPLOYMENT.md` | `2d67d34ee544f4cca67ba06bcacf0736023b9202d7949596719d2dfd608c0bf0` |
-| `docs/architecture/NATIVE_RUNTIME.md` | `ec4cfc042cc944501aba40b9943ff32f084034b38cdc4a52f05159cf79712482` |
+| `docs/architecture/DEPLOYMENT.md` | `34df7c38e241ae5ad7ffb263e4c9a2f5364de95edec4a9e2ab53fce0e56b8c45` |
+| `docs/architecture/NATIVE_RUNTIME.md` | `2ba88b976f35fe46ce82f92fdacade5d6951fdd772c759d5c83d269a1658bd33` |
 | `docs/architecture/PERMISSION_MODEL.md` | `cbe61ae4ec7ca6cd64d50c993fa3bb0960f58ad592dc83a13b78790a809a111d` |
-| `docs/architecture/SECURITY.md` | `3d5f965c20dd6d7c946d3a58accba8cf558447e675c258cf12fe45f4ab285203` |
+| `docs/architecture/SECURITY.md` | `63aa015ae2f4e12b5b7ea3b8c1e1588d63f16954e522344b6766772f37a4a68d` |
 | `docs/architecture/TECH_ARCHITECTURE.md` | `177ad6d69efa94178be3a151039aa5997afff900de9e633df9a49cdedd4280c6` |
 | `docs/architecture/openapi.yaml` | `cab4d8555375d0cfc3bc6b63d90c0c5bd79315963652dc90ff0f3657b91185e0` |
 | `docs/architecture/schema.prisma` | `1a4d5ed77e83cb894b3d7d449519e7e3bc41f7699c43a8b59b4d335882ec496f` |
@@ -313,10 +314,10 @@
 | `docs/design/screens/17-couple-invite.svg` | `04d45f0e86a0b14107e36b32b8ec997a63bcb700f77a5f421460a7837b0174b9` |
 | `docs/design/screens/18-notifications.svg` | `45f2b3119a85183059deb44f4389eac943a85453c51926570e9f3205bdb8b71c` |
 | `docs/design/screens/index.html` | `8e8e495dba8ccb0a921ed0d26c9856cf9294d1ea0c6d0040c8d4e5f4e42addb1` |
-| `docs/index.md` | `973b48c5333370fd181fcb08735d86c31772b9c3c05a7525e3a281b38e12abeb` |
+| `docs/index.md` | `d6a055d186c44c526994c0b148512bb654dba5c4bc0799502d3f7e1a8462bb6b` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `07c9c3b52dcec18c605b219c49d1ea9f6d3f6915a61eb23a6b0f1c971c3a9490` |
+| `docs/plans/TASK_BACKLOG.md` | `59c417a9ef6a866af37ca2143b0d891285f0cc1231c0337c8682148ea21c1c12` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -340,26 +341,28 @@
 | `docs/plans/active/TASK-021-notifications.md` | `f6a7342c9126506eb342d39c0ef2971563b709833cdc01ead8b4fc4242cf228c` |
 | `docs/plans/active/TASK-022-admin-console.md` | `b1efbe2086dc4b092ccc03fa67a12cedb9baf7ddd7e0e4cfeced7bbb1651a2f3` |
 | `docs/plans/active/TASK-023-csv-export.md` | `4be76f137ed87d7514a73385c58e9267cf155e06278b5a3edc51a17895bb8024` |
+| `docs/plans/active/TASK-024-security-audit.md` | `1cf82d8b4e1b65bd76f73c1ada191ebf8d146ea7fe53d2ab01f91911d86fb66d` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `448514e0597a1cc9aa84cb10ed2c3bd1091b1aa2a542372feb73918458f27c8c` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `52fb58856ceba4cbb0397597a67c2876a0f9113765f17b1cf0726ae14d14b6f8` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
-| `docs/product/BUSINESS_RULES.md` | `2023ad275f1dba02f071d463194d7479b22c7639bfebfde894272d4344c641bd` |
+| `docs/product/BUSINESS_RULES.md` | `2c33cb038ba3de510069108cac65ee5cceeefe02ac575d6bcbf761e2939911bb` |
 | `docs/product/FEATURE_SCOPE.md` | `3795eb156455a01edeb88ae95ba0ebe36c9fcc6040f7627c8179d3b8b0d7ad9a` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `14b201d1b3fb15e590f3fe66b566432594d64cb8d2f91698bbc1be1d3ccd4306` |
-| `docs/project-memory/CHANGELOG_AI.md` | `9cbb90754b1da309f45e0dbcda36a957a3584bf7b9b2af9645160c485ffd3abb` |
-| `docs/project-memory/CURRENT_STATE.md` | `c85cafaa1b0e6379cf25ddf41704f7616018686969de39cfe40bd12007288efa` |
-| `docs/project-memory/DECISIONS.md` | `02a54308fffca6f1e8998ec9bc13bcc9bfa7da1cabfa456600c6643d4a8e1be0` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `37b943a2e6dfe23c06e82e1cb6d31a9515bc80e127c25ccb0ac4ae78041a1701` |
+| `docs/project-memory/CHANGELOG_AI.md` | `db31455b599927b714cc198113e8990e49bb7138133c05e5118282c09ed1bdee` |
+| `docs/project-memory/CURRENT_STATE.md` | `507172d04e87bd48b16abc947ae0b8bbb8b12998945236b42cb390edd3131f10` |
+| `docs/project-memory/DECISIONS.md` | `0db64a2d32f58840cb709ddd1b87b77f0a05b468fe7f4519c92ea8782aa1c8e8` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `0973216bd8cd6b9fbaf5237507ac4b658f132487ae34c40e7de98a02d117213d` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `20aa5ffd2509407bb3d3b7d48f75e2a19e33875fecc77559f28bf737a0747132` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
 | `docs/quality/RELEASE_CHECKLIST.md` | `af3d4cd43efe370881d6b2ac195f4f07614c88f261cea46bd867c7b3ec3bc3f2` |
-| `docs/quality/TEST_STRATEGY.md` | `7f5f2342d8b9cf89b8864161269e80d2b447db534df72eb1ed0709c318370939` |
+| `docs/quality/SECURITY_AUDIT_TASK_024.md` | `29be6ec94eb79cf42c9fc0ce66e662089b85ae75e9379d296dd5d6f3649e9325` |
+| `docs/quality/TEST_STRATEGY.md` | `231100c1c37203423f420545c52885b4262a6920df49da34a0a0813ab7b49b40` |
 | `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
-| `nginx/default.conf` | `de3b51684c9b857bc3f6d72fd4759b10c692cd2b4d4886016b4fde8d0c060c86` |
+| `nginx/default.conf` | `5e77d23c49001c7687008a6a164f27dc6b175fe72470a64e68735bcb506b8e21` |
 | `output/playwright/debt-404-375-light.png` | `e320d852b71c246f30909d35a61311a19a1c363b3e4b8e0a8fcc0d84bbe09561` |
 | `output/playwright/debt-detail-375-dark.png` | `bfd0d610a921720fb5c8bb6eea6abd131711f07e44d5ff34b3c9db208dbc0e88` |
 | `output/playwright/debt-detail-375-light.png` | `c0180f99eb3d03e7dfcea68ea1cd05a3496a4c3a27e83fb21fbf4525c8b92ab5` |
@@ -444,17 +447,20 @@
 | `packages/validation/src/index.ts` | `f840688387fccdf6815ae7c88ff7195ffc5bde8d099c9d2947bbcf4007d6b83e` |
 | `packages/validation/tsconfig.build.json` | `f795af963d7ddec6a6d07115e2b60592309fb5b1473ddfe2525c3b0f2d0a0790` |
 | `packages/validation/tsconfig.json` | `57977fbaa04c2c31948710502fc8168cd596259bdfab765db00c8ff9851ba7ad` |
-| `pnpm-lock.yaml` | `aeeef388675cdd9ac2103939050b1ea96e9245e25a51500bffe1dd2d6e0b2c4e` |
-| `pnpm-workspace.yaml` | `4d5ae403ea11b6a4dcbdda394e829142174e1e6a930e57eb2e4b6317a19c5583` |
+| `patches/minimatch@3.1.5.patch` | `1dd9f79695990a13b3f5bb998d85c2315820b3ae1ea31819470068f0dc477065` |
+| `patches/minimatch@5.1.9.patch` | `1e191e4aab641b69d7e3fb9f253ee82745ee83dca4cb3bbc92ae1be26893ebbd` |
+| `patches/minimatch@9.0.9.patch` | `e8931b0836a96c9e88c09168cb1f34822688a7883b596f7a7160643a61dcb6d9` |
+| `pnpm-lock.yaml` | `158d16a396947c6a66d7894ea29c65497bbb9b67cdfc1d2ef43c15ef5a68f7d5` |
+| `pnpm-workspace.yaml` | `5c09d4f67ea5c24be5bba9fd6ad47010eb77f77fc9823667beaeb5d37eb8be53` |
 | `redocly.yaml` | `a062ecfd66739008367bc281ac89d367e0dcaf39cf35d4b7e5ae82687a3d363e` |
 | `scripts/check-compose.mjs` | `1a9c01c1063ea67035b289ae18e12d9de5eab2112db5a09a5a3ba15177db9b3b` |
 | `scripts/check-docs.sh` | `1fdda331b4bb0669495c10dc16dae32af0b696dac78096550ab2021c60852af3` |
 | `scripts/check-native-services.mjs` | `d6846289ae6b886a0440f25f1c067d65dec8c22bddd56f81b27b30cedc9a6753` |
 | `scripts/check-openapi-coverage.mjs` | `7c74bc14e579e1f2bceeaf308a3b0998caba170efcf5ff00a22190d203643297` |
 | `scripts/generate-manifest.sh` | `6428d16548a0483f808a22359afff526dfa3c87ab579adc956fabb88f99d0c3c` |
-| `scripts/native-gateway.mjs` | `780c26c019b9ea80390a49ec816f4b55c8d7ae5281b75b49146bef509acb6843` |
-| `scripts/native-runtime.mjs` | `3c265e0ddc3a350060aa2ced43691aaca02b15f693197d1eba8b58c280c9c78a` |
-| `scripts/native-runtime.test.mjs` | `9bd43ca4ad0234ed89baf44195048fbc3148d713508a9e6f8b2c7bf80fb25fd8` |
+| `scripts/native-gateway.mjs` | `c817022605131a3d18334a5ef3f0880ffc1bc1be6e5b796c00dfbd8625a31a0e` |
+| `scripts/native-runtime.mjs` | `9509d10b3aea892e6b0c579f9779ec8b98c8c077a5fc48b2f20f42ef0ff3177a` |
+| `scripts/native-runtime.test.mjs` | `d75d948cc53f143c98e9fc062e3e6041791813bdfdd0810d4988a5c79254e597` |
 | `scripts/run-native.mjs` | `f35616edc9ac7e0c6e6faa817c641634a572158271d3f715c3652d92c56e506c` |
 | `scripts/test-db-constraints.sql` | `90a80149371edcb939153b05f600ed3a4dcc1544ce206e76648edbc11dd4d227` |
 | `scripts/test-migrations.sh` | `2fb0bbca0ba679921e23e13bd4408af216482c921da8ce4db6c37a15b242ba81` |
