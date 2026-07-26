@@ -96,6 +96,19 @@ jobs:
       - run: corepack prepare pnpm@11.11.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siyu/api prisma:migrate:deploy
+      - name: Verify database backup and isolated restore
+        run: |
+          pnpm release:backup -- \
+            --database-url "$DATABASE_URL" \
+            --output-dir /tmp/siyu-ci-backups \
+            --postgres-container "${{ job.services.postgres.id }}"
+          backup_file="$(find /tmp/siyu-ci-backups -maxdepth 1 -type f -name '*.dump' -print -quit)"
+          test -n "$backup_file"
+          pnpm release:restore:verify -- \
+            --backup "$backup_file" \
+            --target-url postgresql://siyu:siyu_test_only@127.0.0.1:55433/siyu_restore_ci \
+            --postgres-container "${{ job.services.postgres.id }}" \
+            --cleanup
       - run: docker exec -i ${{ job.services.postgres.id }} psql -U siyu -d siyu_test -v ON_ERROR_STOP=1 < scripts/test-db-constraints.sql
 
   secret-scan:

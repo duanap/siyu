@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "node --test scripts/native-runtime.test.mjs && pnpm -r --if-present test",
+    "test": "node --test scripts/*.test.mjs && pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @siyu/api test:e2e",
     "build": "pnpm -r --if-present build",
     "prisma:validate": "pnpm --filter @siyu/api prisma:validate",
@@ -28,6 +28,11 @@
     "native:migrate": "pnpm --filter @siyu/api prisma:migrate:deploy",
     "dev:native": "node scripts/run-native.mjs development",
     "start:native": "node scripts/run-native.mjs production",
+    "release:check": "node scripts/check-release-environment.mjs",
+    "release:backup": "node scripts/backup-database.mjs",
+    "release:restore:verify": "node scripts/verify-database-restore.mjs",
+    "release:smoke": "node scripts/release-smoke.mjs",
+    "release:browser:smoke": "node scripts/browser-release-smoke.mjs",
     "verify": "bash scripts/verify.sh"
   },
   "devDependencies": {

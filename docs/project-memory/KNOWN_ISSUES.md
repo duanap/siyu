@@ -14,7 +14,7 @@
 | KI-013 | Attachment、Setting、反馈和公告模型尚未批准 | 上传、设置和后台扩展 | 中 | AuthSession/RBAC 与最小后台已解决，其余后续设计 |
 | KI-015 | 商标、域名、软著、应用商店名称和 `cn.duanap.siyu` 可用性未核验 | 正式发布 | 高 | 发布前确认 |
 | KI-016 | 本机 Docker Redis 日志提示 `vm.overcommit_memory=0` | 低内存时后台持久化或复制 | 低 | 本地验收不阻断；部署主机设为 `1` |
-| KI-017 | 生产邮件提供方尚未配置 | 正式密码重置邮件 | 高 | 队列与测试传输器已验证；生产任务明确失败为 `MAIL_PROVIDER_UNCONFIGURED` |
+| KI-017 | 尚无已批准生产邮件适配器、供应商和凭据 | 正式密码重置邮件 | 高 | TASK-025 发布预检与 Worker 生产启动失败关闭；待负责人选择供应商并批准契约 |
 
 已解决：Prisma validate、OpenAPI lint/类型生成，以及“Docker/psql 环境缺失导致迁移和容器
 验收待执行”均已在 TASK-000 通过。
@@ -98,6 +98,12 @@ TASK-024 已完成权限与安全审计，发现的实时 RBAC/禁用会话、OA
 TASK-024 正式关闭。
 KI-002、KI-015、KI-017 仍属于 TASK-025 必须核验的正式凭据、品牌/域名和邮件上线阻断，未被本地或 CI
 测试冒充为已解决。
+
+TASK-025 已完成仓库内发布候选开发与验收：生产配置预检、PostgreSQL 备份/隔离恢复、HTTP 冒烟、
+Chrome 320/375/480px 双主题矩阵、完整迁移/E2E/构建均通过，CI 数据库任务已加入备份恢复演练。
+`docs/quality/RELEASE_ACCEPTANCE_TASK_025.md` 明确记录发布决定为“不允许生产上线”。KI-002、KI-015、
+KI-017 以及缺少正式域名/TLS、staging/production 访问、监控和回滚制品仍是外部阻断；无任何本地或 CI
+结果被冒充为真实 QQ、邮件或生产发布。
 
 ## 2026-07-17 工具说明
 
