@@ -62,6 +62,7 @@
 - `quality/DEFINITION_OF_DONE.md`
 - `quality/RELEASE_CHECKLIST.md`
 - `quality/SECURITY_AUDIT_TASK_024.md`
+- `quality/RELEASE_ACCEPTANCE_TASK_025.md`
 
 ## Codex
 

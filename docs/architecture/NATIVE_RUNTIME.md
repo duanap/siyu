@@ -103,8 +103,15 @@ SIYU_GATEWAY_HOST=127.0.0.1
 SIYU_GATEWAY_PORT=8080
 ```
 
+生产环境应从 `.env.production.example` 建立由秘密管理系统托管的独立文件，并先运行：
+
+```bash
+pnpm release:check -- --env-file /secure/path/siyu-production.env --mode native
+```
+
 生产配置不得沿用 `.env.native.example` 的开发 JWT，也不得设置 `SIYU_MAIL_PROVIDER=test`。项目目前尚未
-接入正式邮件提供方；在真实提供方交付前，密码重置邮件仍是明确的上线阻断项，不得用测试 Redis 邮箱替代。
+接入正式邮件提供方；发布预检与 Worker 生产启动都会失败关闭。在真实提供方交付前，密码重置邮件仍是明确的
+上线阻断项，不得用测试 Redis 邮箱或任意未实现的提供方名称替代。
 
 发布步骤：
 
@@ -181,6 +188,7 @@ curl http://127.0.0.1:8080/health
 
 隔离测试数据库和 Redis 已原生运行时，可通过 `SIYU_ENV_FILE` 指向测试环境文件后执行 `pnpm test:e2e`。
 迁移必须先在 staging 验证并备份数据库；回滚应用时保留新数据库列，数据库问题优先使用向前修复迁移。
+备份、隔离恢复和部署后冒烟命令见 `docs/architecture/DEPLOYMENT.md`，原生模式同样不得跳过。
 
 ## 当前限制
 

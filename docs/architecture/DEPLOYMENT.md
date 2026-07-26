@@ -62,6 +62,18 @@ API 自身也默认监听 `127.0.0.1`；只有经过批准的容器或隔离网�
 
 不同环境必须分离数据库、Redis、OAuth 回调、JWT 密钥、对象存储前缀和日志配置。
 
+生产环境从 `.env.production.example` 建立由秘密管理系统托管的环境文件。发布前必须显式选择运行模式并执行：
+
+```bash
+pnpm release:check -- --env-file /secure/path/siyu-production.env --mode native
+# 或：
+pnpm release:check -- --env-file /secure/path/siyu-production.env --mode compose
+```
+
+检查结果不打印 JWT、数据库密码、Redis 密码或 QQ App Key。当前仓库尚无已批准生产邮件适配器，因此检查会
+以 `MAIL_PROVIDER` 失败，Worker 生产启动也会以 `MAIL_PROVIDER_UNCONFIGURED` 或
+`MAIL_PROVIDER_UNSUPPORTED` 失败关闭；不得通过填写任意字符串绕过。
+
 ## Nginx 路由
 
 - `/` -> mobile-web
@@ -80,6 +92,24 @@ API 自身也默认监听 `127.0.0.1`；只有经过批准的容器或隔离网�
 - 迁移在发布阶段显式执行
 - 禁止应用启动时自动执行破坏性迁移
 
+发布前备份必须写到仓库之外，并在迁移前验证校验和与隔离恢复：
+
+```bash
+pnpm release:backup -- \
+  --database-url "$DATABASE_URL" \
+  --output-dir /var/backups/siyu
+
+pnpm release:restore:verify -- \
+  --backup /var/backups/siyu/siyu-YYYYMMDDTHHMMSSZ.dump \
+  --target-url "$SIYU_RESTORE_DATABASE_URL" \
+  --cleanup
+```
+
+备份使用 PostgreSQL custom format，文件与元数据权限为 `0600`，元数据记录 SHA-256 但不含密码。恢复目标
+数据库名必须匹配 `siyu_restore_*`、不得与源库同名，且默认只允许本机；远程 staging 隔离库必须显式
+`--allow-remote`。Compose 场景可增加 `--postgres-container <postgres-container>`，使备份与恢复使用
+数据库容器内同版本客户端。
+
 ## 发布
 
 1. 构建镜像或原生 Node 产物和前端资源
@@ -92,6 +122,27 @@ API 自身也默认监听 `127.0.0.1`；只有经过批准的容器或隔离网�
 8. 更新前端
 9. 验证健康、登录、记账和 Worker
 10. 记录版本和回滚点
+
+构建产物或 staging 入口启动后执行只读冒烟：
+
+```bash
+pnpm release:smoke -- --base-url https://your-siyu-domain.example --expect-production
+```
+
+该命令验证 `/health`、手机端、管理端、未认证保护和统一安全响应头。登录、记账、查询、任务与幂等仍必须在
+隔离 staging 使用完整 `pnpm test:e2e` 或专用验收账号验证；只读冒烟不替代业务 E2E。
+
+已启动 Chrome DevTools Protocol 端口时，可对手机端登录入口执行三尺寸双主题真浏览器检查：
+
+```bash
+pnpm release:browser:smoke -- \
+  --cdp-url http://127.0.0.1:9223 \
+  --base-url http://127.0.0.1:8080 \
+  --screenshot-dir /secure/path/release-evidence
+```
+
+该检查覆盖 320px、375px、480px 的日间/夜间主题、横向溢出、正式品牌和可见交互区 44px 下限；截图目录
+必须位于仓库之外，验收产物不得提交。
 
 ## 回滚
 

@@ -1026,3 +1026,37 @@ TASK-024 已完成本地交付候选；待完成全仓其余质量门、提交�
 ### 当前状态
 
 TASK-024 正式关闭；下一项为 TASK-025 全链路 E2E 与发布验收。
+
+## 2026-07-26 / TASK-025 仓库内发布候选
+
+### 修改内容
+
+- 新增 `release:check`，对运行模式、生产环境、JWT、Cookie、HTTPS/CORS、PostgreSQL/Redis、QQ 和邮件
+  进行不输出秘密的失败关闭预检。
+- 新增仓库外 PostgreSQL custom format 备份、`0600` 权限、SHA-256 元数据和 `siyu_restore_*` 隔离恢复
+  工具；支持数据库容器内同版本客户端，CI 数据库任务已接入真实备份恢复。
+- 新增构建产物 HTTP 冒烟和 Chrome CDP 三尺寸双主题发布矩阵，覆盖两个入口、401 保护、安全响应头、
+  正式品牌、横向溢出和 44px 交互区。
+- Worker 生产启动对空邮件提供方和任意未实现提供方失败关闭；不再等到真实密码重置任务才暴露配置错误。
+- 新增 `.env.production.example`、TASK-025 ExecPlan、ADR-034、发布验收报告，并同步部署、原生运行、
+  发布检查表、项目状态、已知问题和任务清单。
+
+### 数据库与 API 变化
+
+- 无 Prisma Schema、迁移、公开 API、业务响应或财务规则变化。
+- 发布工具只对显式隔离恢复数据库执行写入；名称不匹配 `siyu_restore_*` 或默认远程目标会被拒绝。
+
+### 验证
+
+- Node.js 24.18.0 标准 `pnpm verify` 完整通过；最终边界加固后受单次工具 10 分钟上限影响，按相同门禁
+  拆分复核并确认全仓 187 项测试、文档、清单、format、lint、typecheck、Prisma validate、OpenAPI 81/81、
+  Compose、完整 E2E 和生产构建全部通过。
+- 12 个迁移空库/历史回放、重复部署、status、零 diff、introspection、约束与完整 API/Worker E2E 通过。
+- PostgreSQL 17 备份经 SHA-256 校验后隔离恢复，确认 12 个迁移与 27 张表并清理。
+- 生产构建 API/原生网关只读冒烟通过；Chrome 320/375/480px × 日间/暗色 6 组矩阵与截图目视检查通过。
+- `pnpm audit --audit-level moderate` 无已知漏洞。
+
+### 当前状态
+
+仓库内开发与本地发布候选验收完成，待提交、PR、远程 CI、合并和 `main` CI。正式上线仍被真实 QQ、
+生产邮件、域名/TLS、staging/production 访问、监控/回滚制品和品牌权属阻断，不允许生产发布。

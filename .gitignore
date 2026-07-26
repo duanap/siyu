@@ -3,6 +3,7 @@
 !.env.example
 !.env.test.example
 !.env.native.example
+!.env.production.example
 
 node_modules/
 .pnpm-store/
