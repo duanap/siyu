@@ -47,7 +47,10 @@ function startupScanId(now: Date): string {
 }
 
 export async function startWorker(options: StartWorkerOptions = {}): Promise<WorkerRuntime> {
-  const { redisUrl } = readConfig();
+  const { redisUrl, isProduction } = readConfig();
+  if (isProduction && process.env.SIYU_MAIL_PROVIDER === 'test') {
+    throw new Error('生产环境禁止使用 test 邮件提供方');
+  }
   const recurringConfig = readRecurringWorkerConfig();
   const now = options.now ?? (() => new Date());
   const log = options.log ?? defaultLog;

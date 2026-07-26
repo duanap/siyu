@@ -85,7 +85,7 @@ export class LedgersController {
     @Body() body: UpdateCoupleLedgerDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
-    await this.rateLimit.consume('couple-invite', request.auth.userId, 10, 600);
+    await this.rateLimit.consume('couple-write', request.auth.userId, 30, 600);
     return this.success(
       request,
       await this.ledgers.updateCouple(request.auth.userId, id, body.name, request.requestId),
@@ -98,7 +98,7 @@ export class LedgersController {
     @Body() body: CreateCoupleInvitationDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
-    await this.rateLimit.consume('couple-accept', request.auth.userId, 20, 600);
+    await this.rateLimit.consume('couple-invite', request.auth.userId, 10, 600);
     return this.success(
       request,
       await this.ledgers.createInvitation(
@@ -116,6 +116,7 @@ export class LedgersController {
     @Body() body: AcceptCoupleInvitationDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
+    await this.rateLimit.consume('couple-accept', request.auth.userId, 20, 600);
     return this.success(
       request,
       await this.ledgers.acceptInvitation(request.auth.userId, body.token, request.requestId),
@@ -128,6 +129,7 @@ export class LedgersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
+    await this.rateLimit.consume('couple-write', request.auth.userId, 30, 600);
     await this.ledgers.leave(request.auth.userId, id, request.requestId);
     return this.action(request, 'left');
   }
@@ -139,6 +141,7 @@ export class LedgersController {
     @Body() body: TransferCoupleOwnershipDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
+    await this.rateLimit.consume('couple-write', request.auth.userId, 30, 600);
     return this.success(
       request,
       await this.ledgers.transferOwnership(
@@ -155,6 +158,7 @@ export class LedgersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
+    await this.rateLimit.consume('couple-write', request.auth.userId, 30, 600);
     await this.ledgers.dissolve(request.auth.userId, id, request.requestId);
     return this.action(request, 'dissolved');
   }

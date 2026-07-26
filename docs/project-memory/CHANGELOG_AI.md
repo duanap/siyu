@@ -977,3 +977,37 @@ TASK-023 已完成本地交付候选；待提交、PR、远程 CI、合并和 ma
 ### 当前状态
 
 TASK-023 正式关闭；下一项为 TASK-024 权限与安全审计。
+
+## 2026-07-26 / TASK-024 权限与安全审计本地交付候选
+
+### 修改内容
+
+- Access Guard 改为每次按有效 Session、活跃未删除用户及数据库实时角色/权限授权；禁用、删除和撤权立即
+  作用于旧 Access Token，登录、刷新、QQ 与密码重置路径统一失败关闭。
+- QQ OAuth state 新增 10 分钟 HttpOnly/Lax 浏览器 Cookie 绑定，并在绑定检查通过后才消费 Redis 一次性 state。
+- 原生网关不再允许 absolute-form 请求目标覆盖固定 API 上游；API 默认监听回环地址，容器显式监听容器网络。
+- 生产配置拒绝开发 JWT、非 Secure 认证 Cookie和测试邮件提供方；补齐一个可信代理跳数、CORS/头像 URL
+  协议、情侣/密码/资料/通知写限流及 API/Nginx/原生静态安全响应头。
+- 修复质量门新发现的 PostCSS、`brace-expansion` 和 Valibot 高/中危传递依赖公告；覆盖到安全版本，并为
+  仍依赖旧 `brace-expansion` 调用约定的三版 `minimatch` 加入最小兼容补丁。
+- 新增 BR-AUTH-004 至 006、BR-SECURITY-001 至 003、AC-AUTH-006 至 007、AC-SECURITY-001 至 004、
+  ADR-033 和分级安全审计报告。
+
+### 数据库与 API 变化
+
+- 无 Prisma Schema、迁移、公开路由或业务响应结构变化。
+- 授权语义收紧：禁用账号全部受保护请求返回 401；当前数据库角色授予/撤销无需等待旧 JWT 过期。
+
+### 验证
+
+- Node.js 24.18.0 全仓 177 项测试通过：移动端 104 项、API 54 项、原生网关 4 项及其余 15 项。
+- 隔离 PostgreSQL 17 的 12 个迁移部署及完整 API/Worker E2E 通过；覆盖禁用用户保留 Session、实时
+  ADMIN 授予/撤销和所有既有业务授权路径。
+- 定向 OAuth、Guard、生产配置和原生 absolute-form SSRF 回归全部通过；宿主 Redis 6.0.16 仅有最低版本
+  非阻断提示，Compose/CI 使用 Redis 7。
+- 锁文件只保留已修复的 `postcss@8.5.18`、`brace-expansion@5.0.8`、`valibot@1.4.2`；
+  `pnpm audit --audit-level moderate` 无已知漏洞。
+
+### 当前状态
+
+TASK-024 已完成本地交付候选；待完成全仓其余质量门、提交、PR、远程 CI、合并和 main CI 后正式关闭。

@@ -47,6 +47,9 @@
 - 导出权限
 - 账目导出有效成员/退出成员/解散账本隔离、日期范围、软删除排除、稳定排序、行数上限和脱敏审计
 - 工资导出本人隔离、年份、项目行、UTF-8 BOM、两位元金额、CSV 转义/公式注入防护和独立限流
+- 禁用账号保留 Session 时旧 Access Token 立即失效，数据库角色撤销后旧 JWT 不保留管理权限
+- OAuth state 浏览器 Cookie 绑定、不匹配不消费、一次性重放和禁用 QQ 账号拒绝
+- 原生网关 absolute-form 请求目标不能覆盖固定上游，生产默认密钥/Cookie/测试邮件配置失败关闭
 
 GitHub `quality` 作业必须同时提供隔离 PostgreSQL 与 Redis，先执行全部生产迁移再运行 `pnpm test:e2e`；不得
 依赖无 `siyu_test` 时仅验证 `/health` 的保护性降级冒充完整 E2E。`database` 作业继续独立回放数据库约束脚本。

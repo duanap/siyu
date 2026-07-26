@@ -7,7 +7,7 @@ export class UpdateUserDto {
   nickname?: string;
 
   @IsOptional()
-  @IsUrl({ require_protocol: true })
+  @IsUrl({ require_protocol: true, protocols: ['http', 'https'] })
   @MaxLength(2048)
   avatarUrl?: string;
 

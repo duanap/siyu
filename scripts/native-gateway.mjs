@@ -61,7 +61,8 @@ async function staticTarget(root, pathname) {
 }
 
 function proxyRequest(request, response, apiOrigin) {
-  const target = new URL(request.url ?? '/', apiOrigin);
+  const incoming = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
+  const target = new URL(`${incoming.pathname}${incoming.search}`, apiOrigin);
   const client = target.protocol === 'https:' ? https : http;
   const requestId = String(request.headers['x-request-id'] ?? `req_${randomUUID()}`);
   const forwardedFor = [request.headers['x-forwarded-for'], request.socket.remoteAddress]
@@ -119,6 +120,11 @@ async function serveStatic(request, response, root, pathname) {
     'content-length': details.size,
     'cache-control': extension === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
     'x-content-type-options': 'nosniff',
+    'x-frame-options': 'DENY',
+    'referrer-policy': 'no-referrer',
+    'permissions-policy': 'camera=(), geolocation=(), microphone=()',
+    'content-security-policy':
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
   });
   if (request.method === 'HEAD') response.end();
   else createReadStream(target).pipe(response);

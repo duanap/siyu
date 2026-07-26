@@ -37,13 +37,14 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
+      SIYU_API_HOST: 0.0.0.0
       SIYU_API_PORT: 3000
       SIYU_CORS_ORIGINS: ${SIYU_PUBLIC_URL:-http://localhost:8080}
       DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
       REDIS_URL: redis://siyu-redis:6379
       JWT_SECRET: ${JWT_SECRET:-siyu-local-compose-jwt-secret-change-me-now}
-      SIYU_COOKIE_SECURE: 'false'
+      SIYU_COOKIE_SECURE: ${SIYU_COOKIE_SECURE:-false}
       SIYU_PUBLIC_URL: ${SIYU_PUBLIC_URL:-http://localhost:8080}
       SIYU_ADMIN_URL: ${SIYU_ADMIN_URL:-http://localhost:8080/admin/}
       SIYU_QQ_CLIENT_ID: ${SIYU_QQ_CLIENT_ID:-}
@@ -71,7 +72,7 @@ services:
       dockerfile: apps/api/Dockerfile
     command: ['node', 'dist/worker.js']
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
       DATABASE_URL: postgresql://${POSTGRES_USER:-siyu}:${POSTGRES_PASSWORD:-siyu_local_only}@siyu-postgres:5432/${POSTGRES_DB:-siyu}?schema=public
       REDIS_URL: redis://siyu-redis:6379
       JWT_SECRET: ${JWT_SECRET:-siyu-local-compose-jwt-secret-change-me-now}

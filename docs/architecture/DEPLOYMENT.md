@@ -27,6 +27,11 @@ flowchart TB
 开发 Compose 中 PostgreSQL、Redis 与 Nginx 端口仅绑定 `127.0.0.1`。应用启动不得自动执行迁移；
 迁移必须由显式发布步骤执行。
 
+Compose 默认以 `NODE_ENV=development` 提供本机可运行基线。用于 staging/production 时必须显式设置
+`NODE_ENV=production`、独立强随机 `JWT_SECRET`、`SIYU_COOKIE_SECURE=true` 和真实邮件提供方；生产配置
+复用仓库默认密钥、关闭 Secure Cookie 或设置 `SIYU_MAIL_PROVIDER=test` 会失败启动。API 容器显式使用
+`SIYU_API_HOST=0.0.0.0`，宿主仍只通过 Nginx 的 `127.0.0.1:8080` 暴露。
+
 五个常驻容器均配置健康检查：PostgreSQL 使用 `pg_isready`，Redis 使用 `PING`，API 检查
 `/health`，Worker 检查 Redis TCP 链路，Nginx 通过自身代理检查 `/health`。Nginx 使用 Docker
 内置 DNS 动态解析 `siyu-api`，API 容器地址变化后不得要求重启 Nginx 才能恢复代理。
@@ -47,6 +52,7 @@ Docker 不是应用运行的强制依赖。原生模式由 Node.js 直接运行 
 
 生产原生网关应置于 Caddy/Nginx/EdgeOne HTTPS 之后。详细环境、systemd 和更新步骤见
 `docs/architecture/NATIVE_RUNTIME.md`。原生模式不改变数据库、Redis、迁移、备份、权限或幂等要求。
+API 自身也默认监听 `127.0.0.1`；只有经过批准的容器或隔离网络部署才可显式修改 `SIYU_API_HOST`。
 
 ## 环境
 

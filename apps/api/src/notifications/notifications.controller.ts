@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 
 import { AccessGuard } from '../auth/auth.guard';
+import { AuthRateLimitService } from '../auth/rate-limit.service';
 import type { AuthenticatedRequest } from '../auth/auth.types';
 import { ListNotificationsDto, MarkNotificationsReadDto } from './notifications.dto';
 import { NotificationsService } from './notifications.service';
@@ -19,7 +20,10 @@ import { NotificationsService } from './notifications.service';
 @Controller('api/v1/notifications')
 @UseGuards(AccessGuard)
 export class NotificationsController {
-  constructor(@Inject(NotificationsService) private readonly notifications: NotificationsService) {}
+  constructor(
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(AuthRateLimitService) private readonly rateLimit: AuthRateLimitService,
+  ) {}
 
   private success(request: AuthenticatedRequest, data: unknown): object {
     return { success: true, data, requestId: request.requestId };
@@ -39,6 +43,7 @@ export class NotificationsController {
     @Body() body: MarkNotificationsReadDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<object> {
+    await this.rateLimit.consume('notification-write', request.auth.userId, 60, 600);
     return this.success(request, await this.notifications.markRead(request.auth.userId, body));
   }
 }

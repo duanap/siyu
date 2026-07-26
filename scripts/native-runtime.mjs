@@ -66,8 +66,20 @@ export function validateNativeConfiguration(environment = process.env) {
   }
   const targets = nativeServiceTargets(environment);
   if (environment.NODE_ENV === 'production') {
-    if ((environment.JWT_SECRET ?? '').length < 32) {
-      throw new Error('生产原生运行要求 JWT_SECRET 至少 32 个字符。');
+    const secret = environment.JWT_SECRET ?? '';
+    const developmentSecrets = new Set([
+      'siyu-test-only-jwt-secret-change-me',
+      'siyu-local-compose-jwt-secret-change-me-now',
+      'siyu-native-local-jwt-secret-change-me',
+    ]);
+    if (secret.length < 32 || developmentSecrets.has(secret)) {
+      throw new Error('生产原生运行要求独立的强随机 JWT_SECRET。');
+    }
+    if (environment.SIYU_COOKIE_SECURE !== 'true') {
+      throw new Error('生产原生运行要求 SIYU_COOKIE_SECURE=true。');
+    }
+    if (environment.SIYU_MAIL_PROVIDER === 'test') {
+      throw new Error('生产原生运行禁止 SIYU_MAIL_PROVIDER=test。');
     }
     if (!environment.SIYU_PUBLIC_URL || !URL.canParse(environment.SIYU_PUBLIC_URL)) {
       throw new Error('生产原生运行要求 SIYU_PUBLIC_URL 为有效公开 URL。');

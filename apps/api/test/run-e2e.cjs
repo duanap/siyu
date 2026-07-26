@@ -199,6 +199,25 @@ async function main() {
     .get('/api/v1/admin/auth/check')
     .set('authorization', `Bearer ${adminLogin.body.data.accessToken}`)
     .expect(200);
+  await prisma.userRole.delete({
+    where: {
+      userId_roleId: {
+        userId: user.id,
+        roleId: '10000000-0000-0000-0000-000000000002',
+      },
+    },
+  });
+  await request(server)
+    .get('/api/v1/admin/auth/check')
+    .set('authorization', `Bearer ${adminLogin.body.data.accessToken}`)
+    .expect(403);
+  await prisma.userRole.create({
+    data: { userId: user.id, roleId: '10000000-0000-0000-0000-000000000002' },
+  });
+  await request(server)
+    .get('/api/v1/admin/auth/check')
+    .set('authorization', `Bearer ${adminLogin.body.data.accessToken}`)
+    .expect(200);
 
   const resetRegisterLimit = new IORedis(readConfig().redisUrl);
   const registerRateKeys = await resetRegisterLimit.keys('rate:auth:register:*');
@@ -810,16 +829,15 @@ async function main() {
     .set('authorization', `Bearer ${ownerAccess}`)
     .expect(200);
   assert.equal(ownerViewsDisabledCreator.body.data.canEdit, true);
-  const disabledActorView = await request(server)
+  await request(server)
     .get(`/api/v1/entries/${memberEntryId}`)
     .set('authorization', `Bearer ${partner.accessToken}`)
-    .expect(200);
-  assert.equal(disabledActorView.body.data.canEdit, false);
+    .expect(401);
   await request(server)
     .patch(`/api/v1/entries/${memberEntryId}`)
     .set('authorization', `Bearer ${partner.accessToken}`)
     .send({ expectedVersion: 3, note: '禁用用户写入' })
-    .expect(403);
+    .expect(401);
   await request(server)
     .patch(`/api/v1/entries/${memberEntryId}`)
     .set('authorization', `Bearer ${ownerAccess}`)
@@ -2595,11 +2613,34 @@ async function main() {
     9,
   );
 
+  await prisma.user.update({ where: { id: outsider.user.id }, data: { status: 'DISABLED' } });
+  assert.equal(
+    await prisma.authSession.count({ where: { userId: outsider.user.id, status: 'ACTIVE' } }),
+    1,
+  );
+  await request(server)
+    .get('/api/v1/users/me')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(401);
+  await request(server)
+    .post('/api/v1/auth/login')
+    .send({ email: `outsider-${suffix}@example.com`, password: 'couple-password-1234' })
+    .expect(401);
+  await prisma.user.update({ where: { id: outsider.user.id }, data: { status: 'ACTIVE' } });
+  await request(server)
+    .get('/api/v1/users/me')
+    .set('authorization', `Bearer ${outsider.accessToken}`)
+    .expect(200);
+
   const adminAccess = adminLogin.body.data.accessToken;
   await request(server)
     .get('/api/v1/admin/overview')
-    .set('authorization', `Bearer ${ownerAccess}`)
+    .set('authorization', `Bearer ${partner.accessToken}`)
     .expect(403);
+  await request(server)
+    .get('/api/v1/admin/overview')
+    .set('authorization', `Bearer ${ownerAccess}`)
+    .expect(200);
   const adminOverview = await request(server)
     .get('/api/v1/admin/overview')
     .set('authorization', `Bearer ${adminAccess}`)

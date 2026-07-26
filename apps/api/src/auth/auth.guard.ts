@@ -33,14 +33,34 @@ export class AccessGuard implements CanActivate {
           userId: payload.sub,
           status: 'ACTIVE',
           expiresAt: { gt: new Date() },
+          user: { status: 'ACTIVE', deletedAt: null },
+        },
+        include: {
+          user: {
+            include: {
+              userRoles: {
+                include: {
+                  role: { include: { rolePermissions: { include: { permission: true } } } },
+                },
+              },
+            },
+          },
         },
       });
       if (!session) throw new UnauthorizedException('登录状态已失效');
+      const roles = session.user.userRoles.map(({ role }) => role.code);
+      const permissions = [
+        ...new Set(
+          session.user.userRoles.flatMap(({ role }) =>
+            role.rolePermissions.map(({ permission }) => permission.code),
+          ),
+        ),
+      ];
       request.auth = {
         userId: payload.sub,
         sessionId: payload.sid,
-        roles: payload.roles,
-        permissions: payload.permissions,
+        roles,
+        permissions,
       };
       return true;
     } catch {

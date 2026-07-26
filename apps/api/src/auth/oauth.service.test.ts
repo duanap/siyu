@@ -62,12 +62,16 @@ describe('OAuthService', () => {
       return Response.json({ ret: 0, nickname: 'QQ 用户' });
     });
     const prisma = {
-      user: { findUnique: vi.fn().mockResolvedValue({ id: 'existing-user' }) },
+      user: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'existing-user', status: 'ACTIVE', deletedAt: null }),
+      },
     } as unknown as PrismaService;
     const service = new OAuthService(prisma);
 
     const state = await service.createState();
-    await expect(service.consumeCallback('authorization-code', state)).resolves.toBe(
+    await expect(service.consumeCallback('authorization-code', state, state)).resolves.toBe(
       'existing-user',
     );
     expect(requests.map((url) => url.pathname)).toEqual([
@@ -86,9 +90,59 @@ describe('OAuthService', () => {
     expect(tokenRequest.searchParams.has('need_openid')).toBe(false);
     expect(openIdRequest.searchParams.get('access_token')).toBe('qq-access-token');
     expect(profileRequest.searchParams.get('openid')).toBe('qq-open-id');
-    await expect(service.consumeCallback('authorization-code', state)).rejects.toBeInstanceOf(
-      UnauthorizedException,
+    await expect(
+      service.consumeCallback('authorization-code', state, state),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await service.onModuleDestroy();
+  });
+
+  it('binds state to the initiating browser before consuming it', async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith('/token')) return Response.json({ access_token: 'token' });
+      if (url.pathname.endsWith('/me')) return Response.json({ openid: 'open-id' });
+      return Response.json({ ret: 0, nickname: 'QQ 用户' });
+    });
+    const prisma = {
+      user: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'existing-user', status: 'ACTIVE', deletedAt: null }),
+      },
+    } as unknown as PrismaService;
+    const service = new OAuthService(prisma);
+    const state = await service.createState();
+
+    await expect(
+      service.consumeCallback('authorization-code', state, 'attacker-state'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+    await expect(service.consumeCallback('authorization-code', state, state)).resolves.toBe(
+      'existing-user',
     );
+    await service.onModuleDestroy();
+  });
+
+  it('rejects an existing disabled QQ account', async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith('/token')) return Response.json({ access_token: 'token' });
+      if (url.pathname.endsWith('/me')) return Response.json({ openid: 'disabled-open-id' });
+      return Response.json({ ret: 0, nickname: 'QQ 用户' });
+    });
+    const prisma = {
+      user: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'disabled-user', status: 'DISABLED', deletedAt: null }),
+      },
+    } as unknown as PrismaService;
+    const service = new OAuthService(prisma);
+    const state = await service.createState();
+
+    await expect(
+      service.consumeCallback('authorization-code', state, state),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
     await service.onModuleDestroy();
   });
 });

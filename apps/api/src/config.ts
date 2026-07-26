@@ -1,7 +1,9 @@
 import { existsSync } from 'node:fs';
+import { isIP } from 'node:net';
 import { isAbsolute, resolve } from 'node:path';
 
 export interface AppConfig {
+  apiHost: string;
   port: number;
   corsOrigins: string[];
   redisUrl: string;
@@ -39,14 +41,31 @@ function readPort(value: string | undefined): number {
   return port;
 }
 
+function readHost(value: string | undefined): string {
+  const host = (value ?? '127.0.0.1').trim();
+  const hostname =
+    /^(?=.{1,253}$)(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?\.)*[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?$/i;
+  if (!host || (!isIP(host) && !hostname.test(host))) {
+    throw new TypeError('SIYU_API_HOST 必须是有效 IP 地址或主机名。');
+  }
+  return host;
+}
+
 function readOrigins(value: string | undefined): string[] {
   const origins = (value ?? 'http://localhost:5173,http://localhost:5174')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  if (origins.length === 0 || origins.some((origin) => !URL.canParse(origin))) {
-    throw new TypeError('SIYU_CORS_ORIGINS 必须是逗号分隔的有效 URL。');
+  if (
+    origins.length === 0 ||
+    origins.some((origin) => {
+      if (!URL.canParse(origin)) return true;
+      const url = new URL(origin);
+      return !['http:', 'https:'].includes(url.protocol) || url.origin !== origin;
+    })
+  ) {
+    throw new TypeError('SIYU_CORS_ORIGINS 必须是逗号分隔的 HTTP(S) Origin。');
   }
 
   return origins;
@@ -54,13 +73,25 @@ function readOrigins(value: string | undefined): string[] {
 
 export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppConfig {
   const isProduction = environment.NODE_ENV === 'production';
+  const developmentSecrets = new Set([
+    'siyu-test-only-jwt-secret-change-me',
+    'siyu-local-compose-jwt-secret-change-me-now',
+  ]);
   const jwtSecret =
     environment.JWT_SECRET ?? (isProduction ? '' : 'siyu-test-only-jwt-secret-change-me');
-  if (jwtSecret.length < 32) {
+  if (jwtSecret.length < 32 || (isProduction && developmentSecrets.has(jwtSecret))) {
     throw new TypeError('JWT_SECRET 必须至少包含 32 个字符。');
+  }
+  const cookieSecure =
+    environment.SIYU_COOKIE_SECURE === undefined
+      ? isProduction
+      : environment.SIYU_COOKIE_SECURE === 'true';
+  if (isProduction && !cookieSecure) {
+    throw new TypeError('生产环境 SIYU_COOKIE_SECURE 必须为 true。');
   }
 
   return {
+    apiHost: readHost(environment.SIYU_API_HOST),
     port: readPort(environment.SIYU_API_PORT),
     corsOrigins: readOrigins(environment.SIYU_CORS_ORIGINS),
     redisUrl: environment.REDIS_URL ?? 'redis://localhost:6379',
@@ -71,10 +102,7 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppCon
     publicUrl: environment.SIYU_PUBLIC_URL ?? 'http://localhost:5173',
     adminUrl: environment.SIYU_ADMIN_URL ?? 'http://localhost:5174/admin/',
     isProduction,
-    cookieSecure:
-      environment.SIYU_COOKIE_SECURE === undefined
-        ? isProduction
-        : environment.SIYU_COOKIE_SECURE === 'true',
+    cookieSecure,
     qqClientId: environment.SIYU_QQ_CLIENT_ID || undefined,
     qqClientSecret: environment.SIYU_QQ_CLIENT_SECRET || undefined,
     qqCallbackUrl: environment.SIYU_QQ_CALLBACK_URL || undefined,

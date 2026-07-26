@@ -93,6 +93,7 @@ pnpm dev:native
 ```env
 NODE_ENV=production
 JWT_SECRET=至少32字符的强随机值
+SIYU_API_HOST=127.0.0.1
 SIYU_PUBLIC_URL=https://你的域名
 SIYU_ADMIN_URL=https://你的域名/admin/
 SIYU_CORS_ORIGINS=https://你的域名
@@ -101,6 +102,9 @@ SIYU_API_ORIGIN=http://127.0.0.1:3000
 SIYU_GATEWAY_HOST=127.0.0.1
 SIYU_GATEWAY_PORT=8080
 ```
+
+生产配置不得沿用 `.env.native.example` 的开发 JWT，也不得设置 `SIYU_MAIL_PROVIDER=test`。项目目前尚未
+接入正式邮件提供方；在真实提供方交付前，密码重置邮件仍是明确的上线阻断项，不得用测试 Redis 邮箱替代。
 
 发布步骤：
 
@@ -121,7 +125,8 @@ pnpm start:native
 - `/admin/`：管理后台静态文件和 SPA 回退
 - `/api/`、`/health`：反向代理到 `SIYU_API_ORIGIN`
 
-网关默认只监听 `127.0.0.1:8080`。正式域名继续使用宿主机 Caddy/Nginx/面板反代并提供 HTTPS，例如：
+API 与网关分别默认只监听 `127.0.0.1:3000` 和 `127.0.0.1:8080`。正式域名继续使用宿主机
+Caddy/Nginx/面板反代并提供 HTTPS，例如：
 
 ```caddy
 你的域名 {
@@ -130,6 +135,7 @@ pnpm start:native
 ```
 
 原生网关用于减少部署依赖，不替代公网边界上的 TLS、限流、WAF 和访问日志设施。
+网关会忽略 absolute-form 请求目标中的协议与主机，只把 path/query 转发到固定 `SIYU_API_ORIGIN`。
 
 ## systemd 示例
 

@@ -61,6 +61,7 @@
 - `quality/QA_CHECKLIST.md`
 - `quality/DEFINITION_OF_DONE.md`
 - `quality/RELEASE_CHECKLIST.md`
+- `quality/SECURITY_AUDIT_TASK_024.md`
 
 ## Codex
 

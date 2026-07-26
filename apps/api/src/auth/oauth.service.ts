@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 import {
   Injectable,
@@ -51,9 +51,22 @@ export class OAuthService implements OnModuleDestroy {
     return state;
   }
 
-  async consumeCallback(code: string, state: string): Promise<string> {
+  async consumeCallback(
+    code: string,
+    state: string,
+    browserState: string | undefined,
+  ): Promise<string> {
     if (!this.config.qqClientId || !this.config.qqClientSecret || !this.config.qqCallbackUrl) {
       throw new ServiceUnavailableException('QQ 登录尚未配置');
+    }
+    const stateBytes = Buffer.from(state);
+    const browserStateBytes = Buffer.from(browserState ?? '');
+    if (
+      stateBytes.length === 0 ||
+      stateBytes.length !== browserStateBytes.length ||
+      !timingSafeEqual(stateBytes, browserStateBytes)
+    ) {
+      throw new UnauthorizedException('QQ 登录状态无效或已过期');
     }
     const redis = this.client();
     if (redis.status === 'wait') await redis.connect();
@@ -100,7 +113,12 @@ export class OAuthService implements OnModuleDestroy {
       throw new UnauthorizedException('QQ 用户资料获取失败');
 
     const existing = await this.prisma.user.findUnique({ where: { qqOpenId: openId } });
-    if (existing) return existing.id;
+    if (existing) {
+      if (existing.status !== 'ACTIVE' || existing.deletedAt) {
+        throw new UnauthorizedException('账号不可用');
+      }
+      return existing.id;
+    }
     const created = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {

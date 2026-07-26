@@ -18,7 +18,12 @@ import type { Request, Response } from 'express';
 import { readConfig } from '../config';
 import type { RequestWithId } from '../request-id';
 import { AccessGuard } from './auth.guard';
-import { REFRESH_COOKIE, SESSION_SECONDS } from './auth.constants';
+import {
+  OAUTH_STATE_COOKIE,
+  OAUTH_STATE_SECONDS,
+  REFRESH_COOKIE,
+  SESSION_SECONDS,
+} from './auth.constants';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -60,6 +65,25 @@ export class AuthController {
       secure: this.config.cookieSecure,
       sameSite: 'lax',
       path: '/api/v1/auth',
+    });
+  }
+
+  private setOAuthState(response: Response, state: string): void {
+    response.cookie(OAUTH_STATE_COOKIE, state, {
+      httpOnly: true,
+      secure: this.config.cookieSecure,
+      sameSite: 'lax',
+      path: '/api/v1/auth/qq',
+      maxAge: OAUTH_STATE_SECONDS * 1000,
+    });
+  }
+
+  private clearOAuthState(response: Response): void {
+    response.clearCookie(OAUTH_STATE_COOKIE, {
+      httpOnly: true,
+      secure: this.config.cookieSecure,
+      sameSite: 'lax',
+      path: '/api/v1/auth/qq',
     });
   }
 
@@ -146,6 +170,7 @@ export class AuthController {
   @Post('password/reset')
   @HttpCode(HttpStatus.OK)
   async reset(@Body() body: ResetPasswordDto, @Req() request: RequestWithId): Promise<object> {
+    await this.rateLimit.consume('password-reset', request.ip || 'unknown', 10, 3600);
     await this.auth.resetPassword(body.token, body.newPassword);
     return {
       success: true,
@@ -163,6 +188,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<object> {
     this.assertTrustedOrigin(request);
+    await this.rateLimit.consume('password-change', request.auth.userId, 5, 3600);
     const result = await this.auth.changePassword(
       request.auth,
       body.currentPassword,
@@ -176,6 +202,7 @@ export class AuthController {
   async qqAuthorize(@Req() request: RequestWithId, @Res() response: Response): Promise<void> {
     await this.rateLimit.consume('qq-authorize', request.ip || 'unknown', 20, 600);
     const state = await this.oauth.createState();
+    this.setOAuthState(response, state);
     response.redirect(this.auth.qqAuthorizeUrl(state));
   }
 
@@ -183,16 +210,18 @@ export class AuthController {
   async qqCallback(
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
-    @Req() request: RequestWithId,
+    @Req() request: RequestWithCookies,
     @Res() response: Response,
   ): Promise<void> {
+    const browserState = request.cookies?.[OAUTH_STATE_COOKIE];
+    this.clearOAuthState(response);
     if (!code || !state) {
       response.redirect(new URL('/?qqCallback=ready', this.config.publicUrl).toString());
       return;
     }
 
     await this.rateLimit.consume('qq-callback', request.ip || 'unknown', 20, 600);
-    const userId = await this.oauth.consumeCallback(code, state);
+    const userId = await this.oauth.consumeCallback(code, state, browserState);
     const result = await this.auth.createSession(userId);
     this.setRefresh(response, result.refreshToken);
     response.redirect(new URL('/oauth/callback', this.config.publicUrl).toString());
