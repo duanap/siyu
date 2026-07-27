@@ -81,6 +81,43 @@ export function validateNativeConfiguration(environment = process.env) {
     if (environment.SIYU_MAIL_PROVIDER === 'test') {
       throw new Error('生产原生运行禁止 SIYU_MAIL_PROVIDER=test。');
     }
+    if (!['personal', 'public'].includes(environment.SIYU_DEPLOYMENT_PROFILE)) {
+      throw new Error('生产原生运行要求 SIYU_DEPLOYMENT_PROFILE=personal 或 public。');
+    }
+    const qqEnabled = environment.SIYU_QQ_AUTH_ENABLED;
+    const passwordResetEnabled = environment.SIYU_PASSWORD_RESET_ENABLED;
+    const registrationEnabled = environment.SIYU_REGISTRATION_ENABLED;
+    if (!['true', 'false'].includes(registrationEnabled)) {
+      throw new Error('生产原生运行要求显式设置 SIYU_REGISTRATION_ENABLED。');
+    }
+    if (!['true', 'false'].includes(qqEnabled)) {
+      throw new Error('生产原生运行要求显式设置 SIYU_QQ_AUTH_ENABLED。');
+    }
+    if (!['true', 'false'].includes(passwordResetEnabled)) {
+      throw new Error('生产原生运行要求显式设置 SIYU_PASSWORD_RESET_ENABLED。');
+    }
+    if (environment.SIYU_DEPLOYMENT_PROFILE === 'public' && qqEnabled !== 'true') {
+      throw new Error('public 档案必须启用 QQ 登录。');
+    }
+    if (environment.SIYU_DEPLOYMENT_PROFILE === 'public' && registrationEnabled !== 'true') {
+      throw new Error('public 档案必须启用新账号注册。');
+    }
+    if (
+      qqEnabled === 'true' &&
+      !(
+        environment.SIYU_QQ_CLIENT_ID &&
+        environment.SIYU_QQ_CLIENT_SECRET &&
+        environment.SIYU_QQ_CALLBACK_URL
+      )
+    ) {
+      throw new Error('启用 QQ 登录时必须完整配置 QQ 凭据与回调。');
+    }
+    if (environment.SIYU_DEPLOYMENT_PROFILE === 'public' && passwordResetEnabled !== 'true') {
+      throw new Error('public 档案必须启用邮件密码重置。');
+    }
+    if (passwordResetEnabled === 'false' && environment.SIYU_MAIL_PROVIDER) {
+      throw new Error('关闭密码重置时不得配置 SIYU_MAIL_PROVIDER。');
+    }
     if (!environment.SIYU_PUBLIC_URL || !URL.canParse(environment.SIYU_PUBLIC_URL)) {
       throw new Error('生产原生运行要求 SIYU_PUBLIC_URL 为有效公开 URL。');
     }

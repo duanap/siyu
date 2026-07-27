@@ -52,6 +52,13 @@ async function main() {
   activeApp = app;
   await app.init();
   const server = app.getHttpServer();
+  const capabilities = await request(server).get('/api/v1/auth/capabilities').expect(200);
+  assert.deepEqual(capabilities.body.data, {
+    emailPassword: true,
+    registration: true,
+    qqOAuth: false,
+    passwordReset: true,
+  });
   const health = await request(server).get('/health').expect(200);
   assert.equal(health.body.success, true);
   assert.match(health.body.requestId, /^req_/);

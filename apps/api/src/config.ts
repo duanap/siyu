@@ -13,6 +13,9 @@ export interface AppConfig {
   adminUrl: string;
   isProduction: boolean;
   cookieSecure: boolean;
+  registrationEnabled: boolean;
+  qqAuthEnabled: boolean;
+  passwordResetEnabled: boolean;
   qqClientId: string | undefined;
   qqClientSecret: string | undefined;
   qqCallbackUrl: string | undefined;
@@ -71,6 +74,13 @@ function readOrigins(value: string | undefined): string[] {
   return origins;
 }
 
+function readFeatureFlag(name: string, value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined || value === '') return fallback;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  throw new TypeError(`${name} 必须为 true 或 false。`);
+}
+
 export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppConfig {
   const isProduction = environment.NODE_ENV === 'production';
   const developmentSecrets = new Set([
@@ -89,6 +99,28 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppCon
   if (isProduction && !cookieSecure) {
     throw new TypeError('生产环境 SIYU_COOKIE_SECURE 必须为 true。');
   }
+  const qqClientId = environment.SIYU_QQ_CLIENT_ID || undefined;
+  const qqClientSecret = environment.SIYU_QQ_CLIENT_SECRET || undefined;
+  const qqCallbackUrl = environment.SIYU_QQ_CALLBACK_URL || undefined;
+  const qqConfigured = Boolean(qqClientId && qqClientSecret && qqCallbackUrl);
+  const qqAuthEnabled = readFeatureFlag(
+    'SIYU_QQ_AUTH_ENABLED',
+    environment.SIYU_QQ_AUTH_ENABLED,
+    qqConfigured,
+  );
+  if (qqAuthEnabled && !qqConfigured) {
+    throw new TypeError('启用 QQ 登录时必须完整配置 App ID、App Key 和回调地址。');
+  }
+  const passwordResetEnabled = readFeatureFlag(
+    'SIYU_PASSWORD_RESET_ENABLED',
+    environment.SIYU_PASSWORD_RESET_ENABLED,
+    !isProduction,
+  );
+  const registrationEnabled = readFeatureFlag(
+    'SIYU_REGISTRATION_ENABLED',
+    environment.SIYU_REGISTRATION_ENABLED,
+    !isProduction,
+  );
 
   return {
     apiHost: readHost(environment.SIYU_API_HOST),
@@ -103,8 +135,11 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): AppCon
     adminUrl: environment.SIYU_ADMIN_URL ?? 'http://localhost:5174/admin/',
     isProduction,
     cookieSecure,
-    qqClientId: environment.SIYU_QQ_CLIENT_ID || undefined,
-    qqClientSecret: environment.SIYU_QQ_CLIENT_SECRET || undefined,
-    qqCallbackUrl: environment.SIYU_QQ_CALLBACK_URL || undefined,
+    registrationEnabled,
+    qqAuthEnabled,
+    passwordResetEnabled,
+    qqClientId,
+    qqClientSecret,
+    qqCallbackUrl,
   };
 }

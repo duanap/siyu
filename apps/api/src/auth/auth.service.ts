@@ -123,6 +123,9 @@ export class AuthService implements OnModuleDestroy {
     password: string;
     nickname: string;
   }): Promise<{ data: AuthTokenData; refreshToken: string }> {
+    if (!this.config.registrationEnabled) {
+      throw new ServiceUnavailableException('此部署已关闭新账号注册');
+    }
     const email = normalizeEmail(input.email);
     const passwordHash = await this.passwordHash(input.password);
     let userId: string;
@@ -317,6 +320,9 @@ export class AuthService implements OnModuleDestroy {
   }
 
   async requestReset(emailInput: string): Promise<void> {
+    if (!this.config.passwordResetEnabled) {
+      throw new ServiceUnavailableException('此部署未启用邮件找回密码');
+    }
     const credential = await this.prisma.userCredential.findUnique({
       where: { emailNormalized: normalizeEmail(emailInput) },
       include: { user: true },
@@ -338,6 +344,9 @@ export class AuthService implements OnModuleDestroy {
   }
 
   async resetPassword(tokenValue: string, password: string): Promise<void> {
+    if (!this.config.passwordResetEnabled) {
+      throw new ServiceUnavailableException('此部署未启用邮件找回密码');
+    }
     const token = await this.prisma.passwordResetToken.findFirst({
       where: {
         tokenHash: digest(tokenValue),

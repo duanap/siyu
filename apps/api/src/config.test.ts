@@ -19,9 +19,44 @@ describe('readConfig', () => {
       adminUrl: 'http://localhost:5174/admin/',
       isProduction: false,
       cookieSecure: false,
+      registrationEnabled: true,
+      qqAuthEnabled: false,
+      passwordResetEnabled: true,
       qqClientId: undefined,
       qqClientSecret: undefined,
       qqCallbackUrl: undefined,
+    });
+  });
+
+  it('requires explicit valid feature flags and complete QQ configuration', () => {
+    expect(() => readConfig({ SIYU_QQ_AUTH_ENABLED: 'yes' })).toThrow(/true 或 false/);
+    expect(() => readConfig({ SIYU_QQ_AUTH_ENABLED: 'true' })).toThrow(/完整配置/);
+    expect(
+      readConfig({
+        SIYU_QQ_AUTH_ENABLED: 'true',
+        SIYU_QQ_CLIENT_ID: 'client',
+        SIYU_QQ_CLIENT_SECRET: 'secret',
+        SIYU_QQ_CALLBACK_URL: 'https://example.test/api/v1/auth/qq/callback',
+        SIYU_PASSWORD_RESET_ENABLED: 'false',
+      }),
+    ).toMatchObject({
+      registrationEnabled: true,
+      qqAuthEnabled: true,
+      passwordResetEnabled: false,
+    });
+  });
+
+  it('keeps optional external authentication disabled by default in production', () => {
+    expect(
+      readConfig({
+        NODE_ENV: 'production',
+        JWT_SECRET: 'production-secret-that-is-long-enough-to-use',
+        SIYU_COOKIE_SECURE: 'true',
+      }),
+    ).toMatchObject({
+      registrationEnabled: false,
+      qqAuthEnabled: false,
+      passwordResetEnabled: false,
     });
   });
 

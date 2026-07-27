@@ -9,6 +9,8 @@
 认证成功响应返回 15 分钟 Access Token 和当前用户；Refresh Token 不出现在 JSON 中，只通过
 `siyu_refresh_token` HttpOnly Cookie 传递。刷新必须轮换 Cookie，退出清除 Cookie 并幂等撤销会话。
 密码重置请求始终返回一致的受理结果。
+`GET /auth/capabilities` 是无需认证的部署能力事实，返回 `emailPassword`、`registration`、`qqOAuth`
+和 `passwordReset`。客户端不得通过按钮是否存在或环境名称猜测能力；禁用的注册、QQ/密码重置端点返回 503。
 
 金额最小值与各业务规则一致，最大值不得超过 `Number.MAX_SAFE_INTEGER`（9007199254740991）。
 客户端幂等键按“用户 + 操作 + Key”隔离：相同载荷重放已保存结果，不同载荷返回
@@ -77,6 +79,7 @@
 
 ### 认证和用户
 
+- `GET /auth/capabilities`
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/qq/authorize`

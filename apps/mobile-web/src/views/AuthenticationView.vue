@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useAuthStore } from '../auth';
+import { getAuthCapabilities, type AuthCapabilities, useAuthStore } from '../auth';
 import { applyTheme, oppositeTheme, type ThemeMode } from '../theme';
 
 const route = useRoute();
@@ -15,6 +15,14 @@ const confirmPassword = ref('');
 const submitting = ref(false);
 const error = ref('');
 const success = ref('');
+const capabilities = ref<AuthCapabilities>({
+  emailPassword: true,
+  registration: false,
+  qqOAuth: false,
+  passwordReset: false,
+});
+const capabilitiesLoading = ref(true);
+const capabilitiesError = ref('');
 const theme = ref<ThemeMode>(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
 const mode = computed(() => String(route.name));
 const title = computed(
@@ -23,6 +31,21 @@ const title = computed(
       mode.value
     ] || '身份认证',
 );
+const featureUnavailable = computed(
+  () =>
+    (mode.value === 'register' && !capabilities.value.registration) ||
+    ((mode.value === 'forgot' || mode.value === 'reset') && !capabilities.value.passwordReset),
+);
+
+onMounted(async () => {
+  try {
+    capabilities.value = await getAuthCapabilities();
+  } catch {
+    capabilitiesError.value = '可选登录能力暂时无法确认，仍可使用邮箱密码登录。';
+  } finally {
+    capabilitiesLoading.value = false;
+  }
+});
 
 function toggleTheme(): void {
   theme.value = oppositeTheme(theme.value);
@@ -70,7 +93,18 @@ async function submit(): Promise<void> {
       <p class="brand">SIYU</p>
       <h1 id="auth-title">{{ title }}</h1>
       <p class="subtitle">朝暮同笺，四时有余。</p>
-      <form @submit.prevent="submit">
+      <p v-if="capabilitiesLoading" class="message" role="status">正在确认可用登录方式…</p>
+      <p v-else-if="featureUnavailable" class="message error" role="alert">
+        {{
+          mode === 'register'
+            ? '此部署已关闭新账号注册。'
+            : '此部署未启用邮件找回密码，请联系部署负责人重置账号。'
+        }}
+      </p>
+      <p v-if="capabilitiesError && mode === 'login'" class="message" role="status">
+        {{ capabilitiesError }}
+      </p>
+      <form v-if="!capabilitiesLoading && !featureUnavailable" @submit.prevent="submit">
         <label v-if="mode === 'register'"
           >昵称<input v-model.trim="nickname" autocomplete="name" maxlength="100" required
         /></label>
@@ -104,11 +138,17 @@ async function submit(): Promise<void> {
         <p v-if="success" class="message success" role="status">{{ success }}</p>
         <button :disabled="submitting" type="submit">{{ submitting ? '提交中…' : title }}</button>
       </form>
-      <a v-if="mode === 'login'" class="qq" href="/api/v1/auth/qq/authorize">使用 QQ 登录</a>
+      <a v-if="mode === 'login' && capabilities.qqOAuth" class="qq" href="/api/v1/auth/qq/authorize"
+        >使用 QQ 登录</a
+      >
       <nav>
         <RouterLink v-if="mode !== 'login'" to="/login">返回登录</RouterLink>
-        <RouterLink v-if="mode === 'login'" to="/register">注册账号</RouterLink>
-        <RouterLink v-if="mode === 'login'" to="/forgot-password">忘记密码</RouterLink>
+        <RouterLink v-if="mode === 'login' && capabilities.registration" to="/register"
+          >注册账号</RouterLink
+        >
+        <RouterLink v-if="mode === 'login' && capabilities.passwordReset" to="/forgot-password"
+          >忘记密码</RouterLink
+        >
         <button class="theme-link" type="button" @click="toggleTheme">
           {{ theme === 'light' ? '夜间模式' : '日间模式' }}
         </button>

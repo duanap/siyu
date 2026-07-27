@@ -14,14 +14,44 @@ function productionEnvironment() {
     SIYU_PUBLIC_URL: 'https://siyu.test',
     SIYU_ADMIN_URL: 'https://siyu.test/admin/',
     SIYU_CORS_ORIGINS: 'https://siyu.test',
+    SIYU_DEPLOYMENT_PROFILE: 'public',
+    SIYU_REGISTRATION_ENABLED: 'true',
+    SIYU_QQ_AUTH_ENABLED: 'true',
     SIYU_QQ_CLIENT_ID: 'real-client-id',
     SIYU_QQ_CLIENT_SECRET: 'real-client-secret',
     SIYU_QQ_CALLBACK_URL: 'https://siyu.test/api/v1/auth/qq/callback',
+    SIYU_PASSWORD_RESET_ENABLED: 'true',
     SIYU_MAIL_PROVIDER: 'smtp',
     SIYU_API_HOST: '127.0.0.1',
     SIYU_GATEWAY_HOST: '127.0.0.1',
   };
 }
+
+test('personal release passes with optional external authentication explicitly disabled', () => {
+  const environment = productionEnvironment();
+  Object.assign(environment, {
+    SIYU_DEPLOYMENT_PROFILE: 'personal',
+    SIYU_REGISTRATION_ENABLED: 'false',
+    SIYU_QQ_AUTH_ENABLED: 'false',
+    SIYU_QQ_CLIENT_ID: '',
+    SIYU_QQ_CLIENT_SECRET: '',
+    SIYU_QQ_CALLBACK_URL: '',
+    SIYU_PASSWORD_RESET_ENABLED: 'false',
+    SIYU_MAIL_PROVIDER: '',
+  });
+  const report = inspectReleaseEnvironment(environment, 'native');
+  assert.equal(report.ok, true);
+  assert.deepEqual(report.summary, {
+    publicUrl: 'https://siyu.test',
+    database: 'postgresql://db.internal:5432/siyu',
+    redis: 'rediss://cache.internal:6380',
+    profile: 'personal',
+    registrationEnabled: false,
+    qqAuthEnabled: false,
+    passwordResetEnabled: false,
+    mailProvider: undefined,
+  });
+});
 
 test('release preflight redacts URLs and blocks the unimplemented production mail adapter', () => {
   const report = inspectReleaseEnvironment(productionEnvironment(), 'native');
@@ -58,8 +88,12 @@ test('release preflight rejects unsafe origins, defaults, incomplete QQ and publ
     SIYU_PUBLIC_URL: 'http://siyu.example.com/path',
     SIYU_ADMIN_URL: 'https://admin.example.com/',
     SIYU_CORS_ORIGINS: '*',
+    SIYU_DEPLOYMENT_PROFILE: '',
+    SIYU_REGISTRATION_ENABLED: 'false',
+    SIYU_QQ_AUTH_ENABLED: 'true',
     SIYU_QQ_CLIENT_SECRET: '',
     SIYU_QQ_CALLBACK_URL: 'https://evil.example.com/callback',
+    SIYU_PASSWORD_RESET_ENABLED: 'false',
     SIYU_MAIL_PROVIDER: 'test',
     SIYU_API_HOST: '0.0.0.0',
   });
@@ -67,6 +101,7 @@ test('release preflight rejects unsafe origins, defaults, incomplete QQ and publ
     .checks.filter((check) => !check.ok)
     .map((check) => check.code);
   assert.deepEqual(failedCodes, [
+    'DEPLOYMENT_PROFILE',
     'JWT_SECRET',
     'COOKIE_SECURE',
     'PUBLIC_URL',
