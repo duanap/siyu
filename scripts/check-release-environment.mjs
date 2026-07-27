@@ -28,12 +28,32 @@ function presentSecret(value) {
   return Boolean(value && !placeholder.test(value));
 }
 
+function booleanFlag(value) {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+}
+
 export function inspectReleaseEnvironment(environment, mode) {
   const checks = [];
   const add = (code, ok, message) => checks.push({ code, ok, message });
 
   add('MODE', ['native', 'compose'].includes(mode), '运行模式必须显式为 native 或 compose');
   add('NODE_ENV', environment.NODE_ENV === 'production', 'NODE_ENV 必须为 production');
+  const profile = environment.SIYU_DEPLOYMENT_PROFILE;
+  add(
+    'DEPLOYMENT_PROFILE',
+    ['personal', 'public'].includes(profile),
+    'SIYU_DEPLOYMENT_PROFILE 必须显式为 personal 或 public',
+  );
+  const registrationEnabled = booleanFlag(environment.SIYU_REGISTRATION_ENABLED);
+  add(
+    'REGISTRATION_FEATURE',
+    registrationEnabled !== undefined && (profile !== 'public' || registrationEnabled),
+    profile === 'public'
+      ? 'public 档案必须启用新账号注册'
+      : 'SIYU_REGISTRATION_ENABLED 必须显式为 true 或 false',
+  );
 
   const secret = environment.JWT_SECRET ?? '';
   add(
@@ -98,29 +118,58 @@ export function inspectReleaseEnvironment(environment, mode) {
   if (environment.SIYU_QQ_CALLBACK_URL && URL.canParse(environment.SIYU_QQ_CALLBACK_URL)) {
     qqCallback = new URL(environment.SIYU_QQ_CALLBACK_URL);
   }
-  add('QQ_CREDENTIALS', qqValues.every(presentSecret), 'QQ App ID、App Key 和回调地址必须全部配置');
+  const qqEnabled = booleanFlag(environment.SIYU_QQ_AUTH_ENABLED);
+  add(
+    'QQ_FEATURE',
+    qqEnabled !== undefined && (profile !== 'public' || qqEnabled),
+    profile === 'public'
+      ? 'public 档案必须启用 QQ 登录'
+      : 'SIYU_QQ_AUTH_ENABLED 必须显式为 true 或 false',
+  );
+  add(
+    'QQ_CREDENTIALS',
+    qqEnabled === true ? qqValues.every(presentSecret) : qqValues.every((value) => !value),
+    qqEnabled === true
+      ? '启用 QQ 登录时 App ID、App Key 和回调地址必须全部配置'
+      : '关闭 QQ 登录时不得保留 QQ 凭据或回调',
+  );
   add(
     'QQ_CALLBACK',
-    Boolean(
-      publicUrl &&
-      qqCallback &&
-      qqCallback.protocol === 'https:' &&
-      qqCallback.origin === publicUrl.origin &&
-      qqCallback.pathname === '/api/v1/auth/qq/callback' &&
-      !qqCallback.search &&
-      !qqCallback.hash &&
-      !placeholder.test(environment.SIYU_QQ_CALLBACK_URL),
-    ),
-    'QQ 回调必须为公开域名同源的 HTTPS /api/v1/auth/qq/callback',
+    qqEnabled !== true ||
+      Boolean(
+        publicUrl &&
+        qqCallback &&
+        qqCallback.protocol === 'https:' &&
+        qqCallback.origin === publicUrl.origin &&
+        qqCallback.pathname === '/api/v1/auth/qq/callback' &&
+        !qqCallback.search &&
+        !qqCallback.hash &&
+        !placeholder.test(environment.SIYU_QQ_CALLBACK_URL),
+      ),
+    qqEnabled === true
+      ? 'QQ 回调必须为公开域名同源的 HTTPS /api/v1/auth/qq/callback'
+      : 'QQ 登录已关闭，不要求回调',
   );
 
   const mailProvider = environment.SIYU_MAIL_PROVIDER;
+  const passwordResetEnabled = booleanFlag(environment.SIYU_PASSWORD_RESET_ENABLED);
+  add(
+    'PASSWORD_RESET_FEATURE',
+    passwordResetEnabled !== undefined && (profile !== 'public' || passwordResetEnabled),
+    profile === 'public'
+      ? 'public 档案必须启用邮件密码重置'
+      : 'SIYU_PASSWORD_RESET_ENABLED 必须显式为 true 或 false',
+  );
   add(
     'MAIL_PROVIDER',
-    false,
-    mailProvider === 'test'
-      ? '生产禁止测试邮件传输器'
-      : '仓库尚无已批准生产邮件适配器，密码重置邮件无法验收',
+    passwordResetEnabled === false && !mailProvider,
+    passwordResetEnabled === false
+      ? mailProvider
+        ? '关闭密码重置时不得配置邮件提供方'
+        : '邮件密码重置已关闭，不要求邮件提供方'
+      : mailProvider === 'test'
+        ? '生产禁止测试邮件传输器'
+        : '仓库尚无已批准生产邮件适配器，启用密码重置时无法验收',
   );
 
   if (mode === 'native') {
@@ -144,6 +193,10 @@ export function inspectReleaseEnvironment(environment, mode) {
       publicUrl: publicUrl?.origin,
       database: databaseOk ? safeUrlSummary(environment.DATABASE_URL) : undefined,
       redis: redisOk ? safeUrlSummary(environment.REDIS_URL) : undefined,
+      profile: ['personal', 'public'].includes(profile) ? profile : undefined,
+      registrationEnabled,
+      qqAuthEnabled: qqEnabled,
+      passwordResetEnabled,
       mailProvider: mailProvider || undefined,
     },
   };

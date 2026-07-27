@@ -10,6 +10,13 @@ interface AuthPayload {
   user: AuthUser;
 }
 
+export interface AuthCapabilities {
+  emailPassword: boolean;
+  registration: boolean;
+  qqOAuth: boolean;
+  passwordReset: boolean;
+}
+
 interface ApiResponse<T> {
   success: true;
   data: T;
@@ -25,6 +32,10 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const body = (await response.json()) as ApiResponse<T> & { message?: string };
   if (!response.ok) throw new Error(body.message || '请求失败，请稍后重试');
   return body.data;
+}
+
+export function getAuthCapabilities(): Promise<AuthCapabilities> {
+  return api<AuthCapabilities>('/auth/capabilities');
 }
 
 export const useAuthStore = defineStore('auth', () => {

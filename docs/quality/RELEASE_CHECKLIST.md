@@ -3,9 +3,10 @@
 ## 发布前
 
 - [ ] 版本号和发布说明
+- [ ] 显式选择 `personal` 或 `public` 部署档案，并核对认证能力开关
 - [ ] 所有 CI 通过
 - [ ] 数据库迁移审查
-- [ ] staging 迁移和 E2E
+- [ ] 隔离 staging（个人档案可为本机隔离副本）迁移和 E2E
 - [ ] 权限和安全审计
 - [ ] `pnpm release:check -- --env-file <受控环境文件> --mode native|compose` 通过
 - [ ] 已选择并验证 Docker Compose 或原生 Node 运行模式
@@ -25,6 +26,7 @@
 - [ ] `pnpm release:smoke -- --base-url <入口> --expect-production` 通过
 - [ ] 登录、记账、查询和任务冒烟
 - [ ] 错误率和任务失败监控
+- [ ] 个人档案至少确认健康检查、Worker 日志和备份失败可被负责人发现
 
 ## 发布后
 

@@ -70,6 +70,23 @@ test('production native configuration requires public URL and strong JWT secret'
   );
 });
 
+test('production native personal profile accepts explicitly disabled external authentication', () => {
+  assert.doesNotThrow(() =>
+    validateNativeConfiguration({
+      NODE_ENV: 'production',
+      JWT_SECRET: 'a-production-secret-with-at-least-32-characters',
+      SIYU_COOKIE_SECURE: 'true',
+      SIYU_PUBLIC_URL: 'https://siyu.test',
+      SIYU_DEPLOYMENT_PROFILE: 'personal',
+      SIYU_REGISTRATION_ENABLED: 'false',
+      SIYU_QQ_AUTH_ENABLED: 'false',
+      SIYU_PASSWORD_RESET_ENABLED: 'false',
+      DATABASE_URL: 'postgresql://siyu:secret@127.0.0.1:5432/siyu',
+      REDIS_URL: 'redis://127.0.0.1:6379',
+    }),
+  );
+});
+
 const directory = mkdtempSync(join(tmpdir(), 'siyu-native-gateway-'));
 const mobileRoot = join(directory, 'mobile');
 const adminRoot = join(directory, 'admin');

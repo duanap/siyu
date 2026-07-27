@@ -1,9 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
+import { getAuthCapabilities, type AuthCapabilities } from '../auth';
 import { applyTheme, oppositeTheme, type ThemeMode } from '../theme';
 
 const theme = ref<ThemeMode>(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+const capabilities = ref<AuthCapabilities>({
+  emailPassword: true,
+  registration: false,
+  qqOAuth: false,
+  passwordReset: false,
+});
+
+onMounted(async () => {
+  try {
+    capabilities.value = await getAuthCapabilities();
+  } catch {
+    // Optional external sign-in stays hidden when the capability endpoint is unavailable.
+  }
+});
 
 function toggleTheme(): void {
   theme.value = oppositeTheme(theme.value);
@@ -34,11 +49,11 @@ function toggleTheme(): void {
         <h1>四时有余</h1>
         <p class="subtitle">认真记录每一笔，也认真生活每一天。</p>
         <p class="description">
-          支持个人账本、情侣账本、收支记录、统计分析和攒钱计划。网站目前处于功能建设阶段，QQ
-          登录服务已开放申请与测试。
+          支持个人账本、情侣账本、收支记录、统计分析和攒钱计划。先把自己的日常账目安全、清楚地记录下来。
         </p>
 
-        <a class="qq-login" href="/api/v1/auth/qq/authorize">
+        <RouterLink class="email-login" to="/login">使用邮箱登录</RouterLink>
+        <a v-if="capabilities.qqOAuth" class="qq-login" href="/api/v1/auth/qq/authorize">
           <span aria-hidden="true">QQ</span>
           使用 QQ 登录
         </a>
@@ -73,13 +88,21 @@ function toggleTheme(): void {
     </section>
 
     <section class="audit-info">
-      <div>
+      <div v-if="capabilities.qqOAuth">
         <strong>QQ 官方授权</strong>
         <p>登录过程由 QQ 互联完成，本站不会获取或保存 QQ 密码。</p>
       </div>
-      <div>
+      <div v-else>
+        <strong>私有账号模式</strong>
+        <p>当前使用邮箱密码登录，未配置的外部登录服务不会显示或接收请求。</p>
+      </div>
+      <div v-if="capabilities.qqOAuth">
         <strong>基础资料使用</strong>
         <p>仅在授权后使用 OpenID、昵称和头像完成账号识别与资料展示。</p>
+      </div>
+      <div v-else>
+        <strong>数据最小化</strong>
+        <p>账号与财务数据仅用于登录、同步和记账，不接入广告或第三方画像服务。</p>
       </div>
       <div>
         <strong>公开合规页面</strong>
@@ -89,7 +112,7 @@ function toggleTheme(): void {
 
     <footer>
       <span>© 2026 SIYU · 四时有余</span>
-      <span>siyu.duanap.cn</span>
+      <span>个人与情侣私有使用</span>
     </footer>
   </main>
 </template>
@@ -184,6 +207,7 @@ h1 {
   font-size: 16px;
   line-height: 1.9;
 }
+.email-login,
 .qq-login {
   display: inline-flex;
   min-height: 54px;
@@ -198,6 +222,11 @@ h1 {
   color: #fff;
   font-weight: 700;
   text-decoration: none;
+}
+.email-login {
+  margin-right: 12px;
+  background: var(--siyu-primary);
+  box-shadow: 0 14px 32px rgb(91 124 250 / 26%);
 }
 .qq-login span {
   font-size: 13px;

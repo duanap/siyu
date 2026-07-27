@@ -22,7 +22,7 @@ type WorkerLogger = (record: RecurringWorkerLog) => void;
 
 export interface WorkerRuntime {
   recurringWorker: Worker;
-  passwordResetWorker: Worker;
+  passwordResetWorker: Worker | undefined;
   recurringQueue: Queue;
   connection: IORedis;
   app: INestApplicationContext;
@@ -46,16 +46,28 @@ function startupScanId(now: Date): string {
   return `recurring-scan-startup-${now.toISOString().slice(0, 16).replaceAll(/[-:T]/g, '')}`;
 }
 
-export function validatePasswordResetMailProvider(isProduction: boolean, provider?: string): void {
+export function validatePasswordResetMailProvider(
+  isProduction: boolean,
+  enabled: boolean,
+  provider?: string,
+): void {
   if (!isProduction) return;
-  if (!provider) throw new Error('MAIL_PROVIDER_UNCONFIGURED');
   if (provider === 'test') throw new Error('生产环境禁止使用 test 邮件提供方');
+  if (!enabled) {
+    if (provider) throw new Error('MAIL_PROVIDER_DISABLED_WITH_PROVIDER');
+    return;
+  }
+  if (!provider) throw new Error('MAIL_PROVIDER_UNCONFIGURED');
   throw new Error('MAIL_PROVIDER_UNSUPPORTED');
 }
 
 export async function startWorker(options: StartWorkerOptions = {}): Promise<WorkerRuntime> {
-  const { redisUrl, isProduction } = readConfig();
-  validatePasswordResetMailProvider(isProduction, process.env.SIYU_MAIL_PROVIDER);
+  const { redisUrl, isProduction, passwordResetEnabled } = readConfig();
+  validatePasswordResetMailProvider(
+    isProduction,
+    passwordResetEnabled,
+    process.env.SIYU_MAIL_PROVIDER,
+  );
   const recurringConfig = readRecurringWorkerConfig();
   const now = options.now ?? (() => new Date());
   const log = options.log ?? defaultLog;
@@ -85,26 +97,28 @@ export async function startWorker(options: StartWorkerOptions = {}): Promise<Wor
       connection,
       concurrency: recurringConfig.concurrency,
     });
-    passwordResetWorker = new Worker(
-      passwordResetQueue,
-      async (job: Job<{ resetId: string; email: string; token: string }>) => {
-        const provider = process.env.SIYU_MAIL_PROVIDER;
-        if (!provider) throw new Error('MAIL_PROVIDER_UNCONFIGURED');
-        if (provider === 'test') {
-          await connection.lpush(
-            'test:mailbox:password-reset',
-            JSON.stringify({
-              resetId: job.data.resetId,
-              email: job.data.email,
-              token: job.data.token,
-            }),
-          );
-          return;
-        }
-        throw new Error('MAIL_PROVIDER_UNSUPPORTED');
-      },
-      { connection },
-    );
+    if (passwordResetEnabled) {
+      passwordResetWorker = new Worker(
+        passwordResetQueue,
+        async (job: Job<{ resetId: string; email: string; token: string }>) => {
+          const provider = process.env.SIYU_MAIL_PROVIDER;
+          if (!provider) throw new Error('MAIL_PROVIDER_UNCONFIGURED');
+          if (provider === 'test') {
+            await connection.lpush(
+              'test:mailbox:password-reset',
+              JSON.stringify({
+                resetId: job.data.resetId,
+                email: job.data.email,
+                token: job.data.token,
+              }),
+            );
+            return;
+          }
+          throw new Error('MAIL_PROVIDER_UNSUPPORTED');
+        },
+        { connection },
+      );
+    }
 
     recurringWorker.on('stalled', (jobId) => {
       log({ level: 'warn', event: 'recurring.job.stalled', jobId });

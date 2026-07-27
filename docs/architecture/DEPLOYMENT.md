@@ -28,8 +28,9 @@ flowchart TB
 迁移必须由显式发布步骤执行。
 
 Compose 默认以 `NODE_ENV=development` 提供本机可运行基线。用于 staging/production 时必须显式设置
-`NODE_ENV=production`、独立强随机 `JWT_SECRET`、`SIYU_COOKIE_SECURE=true` 和真实邮件提供方；生产配置
-复用仓库默认密钥、关闭 Secure Cookie 或设置 `SIYU_MAIL_PROVIDER=test` 会失败启动。API 容器显式使用
+`NODE_ENV=production`、`SIYU_DEPLOYMENT_PROFILE`、独立强随机 `JWT_SECRET`、
+`SIYU_COOKIE_SECURE=true` 和认证能力开关。个人档案可关闭 QQ 与邮件密码重置；启用能力必须完整配置。
+生产配置复用仓库默认密钥、关闭 Secure Cookie 或设置 `SIYU_MAIL_PROVIDER=test` 会失败启动。API 容器显式使用
 `SIYU_API_HOST=0.0.0.0`，宿主仍只通过 Nginx 的 `127.0.0.1:8080` 暴露。
 
 五个常驻容器均配置健康检查：PostgreSQL 使用 `pg_isready`，Redis 使用 `PING`，API 检查
@@ -62,6 +63,15 @@ API 自身也默认监听 `127.0.0.1`；只有经过批准的容器或隔离网�
 
 不同环境必须分离数据库、Redis、OAuth 回调、JWT 密钥、对象存储前缀和日志配置。
 
+发布档案分为：
+
+- `personal`：供负责人和其女朋友私有使用，可设置 `SIYU_QQ_AUTH_ENABLED=false` 和
+  `SIYU_PASSWORD_RESET_ENABLED=false`；首次建号期间临时设置 `SIYU_REGISTRATION_ENABLED=true`，
+  两个账号创建完成后改为 `false` 并重启 API。邮箱登录和已登录修改密码始终可用。
+- `public`：面向不特定用户，必须启用并验收 QQ、邮件密码重置及 TASK-025 记录的公开运行条件。
+
+两种档案均要求强 JWT、HTTPS、Secure Cookie、精确 CORS、数据库/Redis 隔离、备份恢复和回滚。
+
 生产环境从 `.env.production.example` 建立由秘密管理系统托管的环境文件。发布前必须显式选择运行模式并执行：
 
 ```bash
@@ -70,9 +80,9 @@ pnpm release:check -- --env-file /secure/path/siyu-production.env --mode native
 pnpm release:check -- --env-file /secure/path/siyu-production.env --mode compose
 ```
 
-检查结果不打印 JWT、数据库密码、Redis 密码或 QQ App Key。当前仓库尚无已批准生产邮件适配器，因此检查会
-以 `MAIL_PROVIDER` 失败，Worker 生产启动也会以 `MAIL_PROVIDER_UNCONFIGURED` 或
-`MAIL_PROVIDER_UNSUPPORTED` 失败关闭；不得通过填写任意字符串绕过。
+检查结果不打印 JWT、数据库密码、Redis 密码或 QQ App Key。`personal` 档案在 QQ 与密码重置显式关闭、
+相关配置留空时可通过；若启用密码重置，当前仓库因尚无生产邮件适配器仍以 `MAIL_PROVIDER` 失败。
+`public` 档案继续要求两项外部认证能力，不得通过填写任意字符串绕过。
 
 ## Nginx 路由
 

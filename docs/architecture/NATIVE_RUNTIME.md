@@ -92,6 +92,7 @@ pnpm dev:native
 
 ```env
 NODE_ENV=production
+SIYU_DEPLOYMENT_PROFILE=personal
 JWT_SECRET=至少32字符的强随机值
 SIYU_API_HOST=127.0.0.1
 SIYU_PUBLIC_URL=https://你的域名
@@ -101,6 +102,9 @@ SIYU_COOKIE_SECURE=true
 SIYU_API_ORIGIN=http://127.0.0.1:3000
 SIYU_GATEWAY_HOST=127.0.0.1
 SIYU_GATEWAY_PORT=8080
+SIYU_REGISTRATION_ENABLED=false
+SIYU_QQ_AUTH_ENABLED=false
+SIYU_PASSWORD_RESET_ENABLED=false
 ```
 
 生产环境应从 `.env.production.example` 建立由秘密管理系统托管的独立文件，并先运行：
@@ -109,9 +113,12 @@ SIYU_GATEWAY_PORT=8080
 pnpm release:check -- --env-file /secure/path/siyu-production.env --mode native
 ```
 
-生产配置不得沿用 `.env.native.example` 的开发 JWT，也不得设置 `SIYU_MAIL_PROVIDER=test`。项目目前尚未
-接入正式邮件提供方；发布预检与 Worker 生产启动都会失败关闭。在真实提供方交付前，密码重置邮件仍是明确的
-上线阻断项，不得用测试 Redis 邮箱或任意未实现的提供方名称替代。
+生产配置不得沿用 `.env.native.example` 的开发 JWT，也不得设置 `SIYU_MAIL_PROVIDER=test`。个人档案可
+显式关闭 QQ 与邮件密码重置，相关凭据和提供方必须留空；此时邮箱注册、登录和已登录修改密码仍可用。
+首次建号时可暂时启用 `SIYU_REGISTRATION_ENABLED=true`，负责人和伴侣账号创建完成后应改回 `false`
+并重启 API，防止私有入口接受其他注册。
+如启用密码重置，项目当前尚无正式邮件适配器，发布预检与 Worker 会失败关闭，不得用测试 Redis 邮箱或任意
+未实现的提供方名称替代。
 
 发布步骤：
 
@@ -192,6 +199,7 @@ curl http://127.0.0.1:8080/health
 
 ## 当前限制
 
-- 生产邮件提供方尚未实现；`SIYU_MAIL_PROVIDER=test` 只把密码重置邮件写入 Redis 测试邮箱。
+- 生产邮件提供方尚未实现；个人档案需关闭邮件密码重置，`SIYU_MAIL_PROVIDER=test` 只用于开发测试邮箱。
+- QQ OAuth 未配置时需关闭能力；客户端以 `/api/v1/auth/capabilities` 的服务端事实隐藏入口。
 - PostgreSQL 与 Redis 的安装、升级、备份、高可用和 TLS 由宿主机或云服务负责。
 - `pnpm native:check` 不创建数据库或 Redis 实例，也不会修改数据。

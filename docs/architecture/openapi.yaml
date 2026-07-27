@@ -40,6 +40,21 @@ tags:
 security:
   - bearerAuth: []
 paths:
+  /auth/capabilities:
+    get:
+      tags: [Auth]
+      operationId: getAuthCapabilities
+      summary: 获取当前部署可用的公开认证能力
+      security: []
+      responses:
+        '200':
+          description: 当前部署的公开认证能力
+          headers:
+            X-Request-ID: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthCapabilitiesResponse' }
+        '429': { $ref: '#/components/responses/RateLimited' }
   /auth/register:
     post:
       tags: [Auth]
@@ -2335,6 +2350,21 @@ components:
         code: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
         message: { type: string }
         details: { type: object, additionalProperties: true }
+        requestId: { type: string }
+    AuthCapabilitiesResponse:
+      type: object
+      required: [success, data, requestId]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [emailPassword, registration, qqOAuth, passwordReset]
+          additionalProperties: false
+          properties:
+            emailPassword: { type: boolean, const: true }
+            registration: { type: boolean }
+            qqOAuth: { type: boolean }
+            passwordReset: { type: boolean }
         requestId: { type: string }
     AuthTokenResponse:
       type: object

@@ -10,6 +10,7 @@ import {
   Query,
   Req,
   Res,
+  ServiceUnavailableException,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -98,12 +99,46 @@ export class AuthController {
     return { success: true, data, requestId: request.requestId };
   }
 
+  private assertQqEnabled(): void {
+    if (!this.config.qqAuthEnabled) {
+      throw new ServiceUnavailableException('此部署未启用 QQ 登录');
+    }
+  }
+
+  private assertRegistrationEnabled(): void {
+    if (!this.config.registrationEnabled) {
+      throw new ServiceUnavailableException('此部署已关闭新账号注册');
+    }
+  }
+
+  private assertPasswordResetEnabled(): void {
+    if (!this.config.passwordResetEnabled) {
+      throw new ServiceUnavailableException('此部署未启用邮件找回密码');
+    }
+  }
+
+  @Get('capabilities')
+  async capabilities(@Req() request: RequestWithId): Promise<object> {
+    await this.rateLimit.consume('auth-capabilities', request.ip || 'unknown', 120, 60);
+    return {
+      success: true,
+      data: {
+        emailPassword: true,
+        registration: this.config.registrationEnabled,
+        qqOAuth: this.config.qqAuthEnabled,
+        passwordReset: this.config.passwordResetEnabled,
+      },
+      requestId: request.requestId,
+    };
+  }
+
   @Post('register')
   async register(
     @Body() body: RegisterDto,
     @Req() request: RequestWithId,
     @Res({ passthrough: true }) response: Response,
   ): Promise<object> {
+    this.assertRegistrationEnabled();
     await this.rateLimit.consume('register', request.ip || 'unknown', 5, 3600);
     const result = await this.auth.register(body);
     this.setRefresh(response, result.refreshToken);
@@ -158,6 +193,7 @@ export class AuthController {
   @Post('password/forgot')
   @HttpCode(HttpStatus.OK)
   async forgot(@Body() body: ForgotPasswordDto, @Req() request: RequestWithId): Promise<object> {
+    this.assertPasswordResetEnabled();
     await this.rateLimit.consume('forgot', request.ip || 'unknown', 5, 3600);
     await this.auth.requestReset(body.email);
     return {
@@ -170,6 +206,7 @@ export class AuthController {
   @Post('password/reset')
   @HttpCode(HttpStatus.OK)
   async reset(@Body() body: ResetPasswordDto, @Req() request: RequestWithId): Promise<object> {
+    this.assertPasswordResetEnabled();
     await this.rateLimit.consume('password-reset', request.ip || 'unknown', 10, 3600);
     await this.auth.resetPassword(body.token, body.newPassword);
     return {
@@ -200,6 +237,7 @@ export class AuthController {
 
   @Get('qq/authorize')
   async qqAuthorize(@Req() request: RequestWithId, @Res() response: Response): Promise<void> {
+    this.assertQqEnabled();
     await this.rateLimit.consume('qq-authorize', request.ip || 'unknown', 20, 600);
     const state = await this.oauth.createState();
     this.setOAuthState(response, state);
@@ -213,6 +251,7 @@ export class AuthController {
     @Req() request: RequestWithCookies,
     @Res() response: Response,
   ): Promise<void> {
+    this.assertQqEnabled();
     const browserState = request.cookies?.[OAUTH_STATE_COOKIE];
     this.clearOAuthState(response);
     if (!code || !state) {

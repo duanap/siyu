@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+  '/auth/capabilities': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** 获取当前部署可用的公开认证能力 */
+    get: operations['getAuthCapabilities'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/register': {
     parameters: {
       query?: never;
@@ -1875,6 +1892,18 @@ export interface components {
       };
       requestId: string;
     };
+    AuthCapabilitiesResponse: {
+      /** @constant */
+      success: true;
+      data: {
+        /** @constant */
+        emailPassword: true;
+        registration: boolean;
+        qqOAuth: boolean;
+        passwordReset: boolean;
+      };
+      requestId: string;
+    };
     AuthTokenResponse: {
       /** @constant */
       success: true;
@@ -2523,6 +2552,28 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  getAuthCapabilities: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 当前部署的公开认证能力 */
+      200: {
+        headers: {
+          'X-Request-ID': components['headers']['RequestId'];
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AuthCapabilitiesResponse'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   registerWithEmail: {
     parameters: {
       query?: never;
