@@ -28,6 +28,6 @@
 | TASK-023 | CSV 导出（已合并、CI 通过并正式关闭） | M8 | Terra | Medium | TASK-007,TASK-017 |
 | TASK-024 | 权限与安全审计（已合并、CI 通过并正式关闭） | M8 | Sol | Extra High | TASK-005,TASK-016,TASK-019 |
 | TASK-025 | 全链路 E2E 和发布验收（仓库开发与 CI 已闭环；生产上线外部阻断） | M8 | Sol | Ultra | TASK-022,TASK-024 |
-| TASK-026 | 个人/情侣私有部署就绪（本地候选完成，待 Git/CI） | M8 | Sol | High | TASK-025 |
+| TASK-026 | 个人/情侣私有部署就绪（已合并、CI 通过并正式关闭） | M8 | Sol | High | TASK-025 |
 
 模型与推理是建议值，执行前按 Codex 当前可用模型确认。

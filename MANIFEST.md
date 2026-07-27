@@ -321,7 +321,7 @@
 | `docs/index.md` | `ccdbbb56aa6d15b8db3976dbb00707c8aab11c5e0cf68f1b9075c6c1129d0ea0` |
 | `docs/plans/PLANS.md` | `f778f5507422d8950c66ce574cbe7a69488927d6ba7376d3c32b3a9df1cd79fc` |
 | `docs/plans/ROADMAP.md` | `e522339ddddea1b3663c36697fdfc310c0bd91e76ba262b1fb4b670791909024` |
-| `docs/plans/TASK_BACKLOG.md` | `fe9ead9a8b583181311015b364578774109391ab4fb9b1271ef0e169196b3f16` |
+| `docs/plans/TASK_BACKLOG.md` | `8f0a06162a1c7ac45b2a169278a53bc80f6a703acd0dfac7122dced418d002e8` |
 | `docs/plans/active/TASK-000-project-bootstrap.md` | `affde5f063397ab7357c97a803ee52042694372d6d17415ab6821cc70ef02c81` |
 | `docs/plans/active/TASK-004-authentication-foundation.md` | `65aee8f9858def8ca678d16af405d724ab58a106874406c82dc0dec34fce7e95` |
 | `docs/plans/active/TASK-005-couple-ledger-permissions.md` | `13b5bc5cd5c62f8f1331af61fa0fc55f7476c82112d9cfa183b6a5a23e0bc1f2` |
@@ -347,7 +347,7 @@
 | `docs/plans/active/TASK-023-csv-export.md` | `4be76f137ed87d7514a73385c58e9267cf155e06278b5a3edc51a17895bb8024` |
 | `docs/plans/active/TASK-024-security-audit.md` | `050517855ad3e81043a422bd97446b763228bb9cc8b2016c640607aaa536ca47` |
 | `docs/plans/active/TASK-025-release-acceptance.md` | `bf21bd0397a547ff8e212c1af14eedc8f2c8086c7b50052473d60924eb1a71c9` |
-| `docs/plans/active/TASK-026-personal-deployment.md` | `ab416f0916b7eb17ed24d950df03c0ab2cdb57f5a84c46d183d6fff3aeed647d` |
+| `docs/plans/active/TASK-026-personal-deployment.md` | `a6151198afd0255b21bd0b3b69ea989849592da693266105927a16d8aa3b0d89` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
 | `docs/product/ACCEPTANCE_CRITERIA.md` | `60091ab554436553ef2f9b873450f0f16ebfe11e82a6293365bf4748260bd0cc` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
@@ -355,11 +355,11 @@
 | `docs/product/FEATURE_SCOPE.md` | `4f18295cd19e8c541c8108f2ec45823f73e862e3e503cc91a0584c45b2c8af3c` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `b7797987c885ce659ff89bec6cb8a3a67c7689b676dc088d791295d1cbd33179` |
-| `docs/project-memory/CHANGELOG_AI.md` | `a1e80797f8f46dd6b886132ce004eab40fa8752d15214766fadcde1cbd44ec56` |
-| `docs/project-memory/CURRENT_STATE.md` | `27ffe376a68ea89d4fb90e584f230ade9b5a82df3df8279981bbacd902ce693a` |
+| `docs/project-memory/CHANGELOG_AI.md` | `0baecf37ee90ce71a772949f0a3aa130b5b91eca9eef63481fc70e8d6ea01db0` |
+| `docs/project-memory/CURRENT_STATE.md` | `2e0fac1238774f8cef10bc0f412efbf483402d0c48e79804842f7d3d66a4c39d` |
 | `docs/project-memory/DECISIONS.md` | `1af675dbcd7e7fb072423d758e572fdfdb4f5099324430b8a449c36e9161f6e9` |
 | `docs/project-memory/KNOWN_ISSUES.md` | `9fb9f826afb0c90855dec10c56df09f85f27cc10cc3254da440f9a1a1fb64fc6` |
-| `docs/project-memory/RELEASE_HISTORY.md` | `d532553a64382611d9b7187b5dd43fb2e0e6b7566316023185df07cf0409cace` |
+| `docs/project-memory/RELEASE_HISTORY.md` | `6e40cb769805b49b6be9a98c7af8354819e239fef588892741bc91f7ba26e76a` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
 | `docs/quality/QA_CHECKLIST.md` | `029a68f3e6b80d6ed5d870d95b1c4a1c2f78f8438b783cfb4d9c78e23eec44ef` |
