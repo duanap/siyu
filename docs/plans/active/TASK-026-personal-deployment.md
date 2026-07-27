@@ -2,7 +2,7 @@
 
 ## 状态
 
-本地交付候选完成，待 Git/CI 闭环
+已正式关闭
 
 ## 背景
 
@@ -42,7 +42,7 @@ TASK-025 已完成仓库开发、PR、远程 CI、合并和最终 `main` CI，�
 - [x] 手机端按服务端能力隐藏注册、QQ 与密码重置入口
 - [x] 更新 OpenAPI、环境示例、部署/安全/设计与发布文档
 - [x] 完成针对性测试、全量验证、浏览器验收和最终差异审查
-- [ ] 更新项目记忆并完成提交、PR、远程 CI、合并和最终 main CI
+- [x] 更新项目记忆并完成提交、PR、远程 CI、合并和最终 main CI
 
 ## 验证命令
 
@@ -72,3 +72,7 @@ git diff --check
   动态入口；个人档案 CLI 发布预检全部 PASS。
 - 2026-07-27：Node 24 标准 `pnpm verify` 通过，全仓 197 项测试通过；另行完成 12 迁移/历史升级/约束、
   隔离 PostgreSQL/Redis 完整 API/Worker E2E、依赖审计和 Chrome 320/375/480px 双主题矩阵。
+- 2026-07-27：功能提交 `344e4e7d5be0942ccf38759b09255d4e28073a3b` 经 PR #40 Squash merge
+  合入 `main`，合并提交为 `fa36e9567906b087ac494f891be0e2fc63f39601`；PR CI Run
+  `30236916112` 与 main push CI Run `30237054972` 的 `quality`、`database`、`secret-scan`
+  全部通过，TASK-026 正式关闭。
