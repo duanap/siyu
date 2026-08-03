@@ -6,10 +6,99 @@
     <meta name="theme-color" content="#5b7cfa" />
     <meta name="description" content="四时有余，个人与情侣的轻量财务记录。" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <title>四时有余</title>
+    <style>
+      .siyu-boot {
+        box-sizing: border-box;
+        width: min(100%, 480px);
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 28px 16px;
+        background: #f6f7f9;
+        color: #1f2430;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+      }
+      .siyu-boot__brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .siyu-boot__brand img {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+      }
+      .siyu-boot__brand strong {
+        font-size: 20px;
+      }
+      .siyu-boot__card {
+        display: grid;
+        min-height: 160px;
+        align-content: center;
+        gap: 14px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+      }
+      .siyu-boot__line {
+        display: block;
+        width: 72%;
+        height: 13px;
+        border-radius: 999px;
+        background: #eceef2;
+      }
+      .siyu-boot__line:nth-child(2) {
+        width: 58%;
+        height: 34px;
+      }
+      .siyu-boot__line:nth-child(3) {
+        width: 44%;
+      }
+      .siyu-boot__status {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+      @media (prefers-color-scheme: dark) {
+        .siyu-boot {
+          background: #0f1115;
+          color: #f5f7fa;
+        }
+        .siyu-boot__card {
+          border-color: #2a3038;
+          background: #171a20;
+        }
+        .siyu-boot__line {
+          background: #292e36;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <main class="siyu-boot" role="status" aria-live="polite">
+        <span class="siyu-boot__status">正在启动四时有余</span>
+        <div class="siyu-boot__brand" aria-hidden="true">
+          <img src="/icons/brand-mark.png" alt="" />
+          <strong>四时有余</strong>
+        </div>
+        <div class="siyu-boot__card" aria-hidden="true">
+          <span class="siyu-boot__line"></span>
+          <span class="siyu-boot__line"></span>
+          <span class="siyu-boot__line"></span>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

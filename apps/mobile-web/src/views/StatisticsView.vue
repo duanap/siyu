@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ApiError } from '../api';
 import { useAuthStore } from '../auth';
 import AppBottomNav from '../components/AppBottomNav.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 import LedgerSwitcher from '../components/LedgerSwitcher.vue';
 import MonthlySummaryCard from '../components/MonthlySummaryCard.vue';
 import StatisticsTrendChart from '../components/StatisticsTrendChart.vue';
@@ -130,10 +131,7 @@ onMounted(initialize);
       >
     </header>
 
-    <section v-if="loading" class="state-panel" aria-live="polite">
-      <strong>正在计算统计</strong>
-      <p>聚合所选账本的月度收支…</p>
-    </section>
+    <AppSkeleton v-if="loading" label="正在计算统计" variant="statistics" :rows="2" />
 
     <section v-else-if="noAccess" class="state-panel">
       <strong>无法访问这个账本</strong>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="siyu_ivory">#F7F1E5</color>
+    <color name="siyu_surface">#FFFDF8</color>
+    <color name="siyu_primary">#4F7194</color>
+    <color name="siyu_text">#263442</color>
+    <color name="siyu_muted">#6F7B84</color>
+    <color name="siyu_skeleton">#E6E2D8</color>
+</resources>

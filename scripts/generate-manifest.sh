@@ -12,6 +12,10 @@ mapfile -d '' files < <(
     -not -path '*/node_modules/*' \
     -not -path '*/dist/*' \
     -not -path '*/coverage/*' \
+    -not -path '*/graphify-out/*' \
+    -not -path '*/.gradle/*' \
+    -not -path 'apps/android-app/*/build/*' \
+    -not -path 'apps/android-app/build/*' \
     -not -path '*/.vite/*' \
     -not -name '*.tsbuildinfo' \
     -not -path './MANIFEST.md' \

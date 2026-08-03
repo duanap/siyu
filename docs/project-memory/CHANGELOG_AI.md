@@ -1145,3 +1145,33 @@ TASK-027 功能提交 `d9d8a99` 经 PR #42 进入远程 CI。首次 Run `3083878
 `30839314625` 的 `quality`、`database`、`secret-scan` 全绿。PR #42 Squash merge 合入 `main`，合并提交
 `27f56dd61791fdf561cc0b00985b49de3d824907`；main push CI Run `30839548270` 全绿，TASK-027 正式关闭。
 公网生产验收仍由部署任务单独跟踪，本地浏览器和 E2E 结果不冒充生产发布。
+
+## 2026-08-04 / TASK-028 Android APP、品牌图标与骨架屏
+
+### 修改内容
+
+- 使用负责人提供的 100×100 品牌图和 Image 2 重构结果生成 Android 多密度图标、圆形图标、PWA 192/512
+  图标及应用内品牌标记；保留暖米色、灰蓝、鼠尾草绿和柔橙的“四时有余”视觉语言。
+- 新增 JavaScript 执行前首屏骨架和通用 `AppSkeleton`，接入首页、明细、统计加载态；日夜主题可读，减少
+  动态效果时停止高光动画，装饰元素不进入无障碍朗读。
+- 新增集中图标注册表，统一五项底部导航与账目分类的 Ant Design 矢量图标映射，未改变图标语义和点击区。
+- 新增最小 Android WebView 壳、固定域名导航、站外浏览器跳转、断网重试、本地品牌骨架、Gradle Wrapper
+  和构建产物忽略规则。
+
+### 数据库与 API 变化
+
+- 无 Prisma Schema、迁移、API、权限、Cookie 或服务器部署配置变化。
+- Android 壳只加载既有 `https://siyu.duanap.cn`，继续使用该一方域名现有认证和财务权限边界。
+
+### 验证
+
+- Android Studio JBR 21、Android SDK 35 下 `lint testDebugUnitTest assembleDebug` 通过；APK 元数据确认
+  包名 `cn.duanap.siyu`、名称“四时有余”、minSdk 26、targetSdk 35 且只申请 INTERNET 权限。
+- Node.js 24.14.0 下 lint、typecheck、204 项测试（脚本 14、移动端 115、API 60、其余 15）、生产构建、
+  文档检查和清单检查通过。
+- Chrome 375×844 日间/夜间在主脚本不可用时仍显示品牌首屏骨架；截图位于
+  `docs/quality/evidence/task028/`。未连接 Android 真机，安装和运行验收仍待执行。
+
+### 当前状态
+
+仓库内实现和本地构建完成，待任务分支推送、远程 CI 与真机安装验证；调试签名 APK 不等于正式签名或上架包。

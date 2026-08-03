@@ -27,3 +27,8 @@ Thumbs.db
 .vscode/
 
 apps/api/src/generated/prisma/
+apps/android-app/.gradle/
+apps/android-app/build/
+apps/android-app/app/build/
+apps/android-app/local.properties
+**/graphify-out/

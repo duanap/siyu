@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { ApiError } from '../api';
 import { useAuthStore } from '../auth';
 import AppBottomNav from '../components/AppBottomNav.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 import EntryListItem from '../components/EntryListItem.vue';
 import LedgerSwitcher from '../components/LedgerSwitcher.vue';
 import MonthlySummaryCard from '../components/MonthlySummaryCard.vue';
@@ -258,10 +259,7 @@ onMounted(initialize);
       </div>
     </header>
 
-    <section v-if="loading" class="state-panel" aria-live="polite">
-      <strong>正在准备首页</strong>
-      <p>读取账本、本月汇总和最近账目…</p>
-    </section>
+    <AppSkeleton v-if="loading" label="正在准备首页" variant="dashboard" :rows="3" />
 
     <section v-else-if="noAccess" class="state-panel">
       <strong>无法访问这个账本</strong>

@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import {
-  EditOutlined,
-  HomeOutlined,
-  PieChartOutlined,
-  UnorderedListOutlined,
-  UserOutlined,
-} from '@ant-design/icons-vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-type NavKey = 'home' | 'entries' | 'create' | 'statistics' | 'profile';
-const props = defineProps<{ active?: NavKey }>();
+import { primaryNavigationIcons, type PrimaryNavKey } from '../app-icons';
+
+const props = defineProps<{ active?: PrimaryNavKey }>();
 const route = useRoute();
 
 const items = [
-  { key: 'home', label: '首页', to: '/home', icon: HomeOutlined },
-  { key: 'entries', label: '明细', to: '/entries', icon: UnorderedListOutlined },
-  { key: 'create', label: '记一笔', to: '/entries/new', icon: EditOutlined },
-  { key: 'statistics', label: '统计', to: '/statistics', icon: PieChartOutlined },
-  { key: 'profile', label: '我的', to: '/account', icon: UserOutlined },
+  { key: 'home', label: '首页', to: '/home', icon: primaryNavigationIcons.home },
+  { key: 'entries', label: '明细', to: '/entries', icon: primaryNavigationIcons.entries },
+  { key: 'create', label: '记一笔', to: '/entries/new', icon: primaryNavigationIcons.create },
+  { key: 'statistics', label: '统计', to: '/statistics', icon: primaryNavigationIcons.statistics },
+  { key: 'profile', label: '我的', to: '/account', icon: primaryNavigationIcons.profile },
 ] as const;
 
-const routeKeys: Record<string, NavKey> = {
+const routeKeys: Record<string, PrimaryNavKey> = {
   dashboard: 'home',
   entries: 'entries',
   'entry-new': 'create',

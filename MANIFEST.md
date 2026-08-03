@@ -2,7 +2,7 @@
 
 生成日期：2026-08-04
 
-文件数量（不含本清单、依赖和构建产物）：491
+文件数量（不含本清单、依赖和构建产物）：536
 
 | 文件 | SHA-256 |
 |---|---|
@@ -11,9 +11,9 @@
 | `.env.native.example` | `0e05c6069dae33027368fd0eba968f30545513447586da9312bd9a9a768da713` |
 | `.env.production.example` | `6f13f0b46df054da12bc62542dd6fda6c4898f5a467c4d29cc7c8e17dd33afd9` |
 | `.env.test.example` | `3b4a02d5031fbd11e3fc1bab1b6c279605e163fd67c61dd2b6fc0710c53abf0c` |
-| `.git` | `5f0346aa6dce4454a6040266d90e2cb2bff2789c2308112ed007583dd1eb359e` |
+| `.git` | `c207df75eb558920f10115eb58b5945c1de4e5815e7ccd2994f92cf18a97440e` |
 | `.github/workflows/ci.yml` | `836edc521c4bf186aaf7150d2f7a53ea0f91eb467c40b2f538b9e94bf24bcd3e` |
-| `.gitignore` | `c68943ed8d781fe1411ee5f72080d3096db30e9d06a67fe978b2dbff120d694e` |
+| `.gitignore` | `a1ec66329cf09a0b3c47c601b7982444a0c6387335106cfcb1b877aa2874f84b` |
 | `.prettierignore` | `69bbb9b129e2fbcb1f2906a328a9c40c00c01e80e39297d7e7fd64fc87e8b903` |
 | `.prettierrc.json` | `cb3b25949fd23c141c84113f8bed9185d452f8f720bba3f375ef6d048b02d3ae` |
 | `AGENTS.md` | `2f3ccb497815ded606b9a108f09d3a5b34971757e30be92117adda689d04d494` |
@@ -35,6 +35,42 @@
 | `apps/admin-web/tsconfig.json` | `36e137eb73075b1111a01c854a7f4ca2de5a9c74f6f2f71d523199cde7a7ecfe` |
 | `apps/admin-web/vite.config.ts` | `0043ab945008fbae6257fe089a205932223e929dfb759060f9fba59e42be3dc5` |
 | `apps/admin-web/vitest.config.ts` | `5d9a8aa3cb51ea7586d7cbc9ba4939e22a0ccaf41286ebd11308873b6b8ad014` |
+| `apps/android-app/.gitignore` | `f0d90fe6dd188cfa5cbac987949cfa3893a2c1ac3cf6dbfcb837e0e2abb698b1` |
+| `apps/android-app/README.md` | `a627b0c17e9fa1172e2fa9b9ed58f925c7e78e33d558a88e7247aca53e0c33c2` |
+| `apps/android-app/app/build.gradle.kts` | `86f0d445e7e91a1184d96c555847d03757642278e07e7bd20dec58eb9cba2d7b` |
+| `apps/android-app/app/proguard-rules.pro` | `e67728a96555d993acbefd54e007d0af0321942513e6963cf5420cd3ee406329` |
+| `apps/android-app/app/src/main/AndroidManifest.xml` | `e596830525762da05af7ddad2821d7fd4607f1207a713b89de6d4ac9da52d62e` |
+| `apps/android-app/app/src/main/java/cn/duanap/siyu/MainActivity.java` | `3b86210e6bded62729d32cbf165cc67070b7b4286b178b4138b253948fca9873` |
+| `apps/android-app/app/src/main/java/cn/duanap/siyu/NavigationPolicy.java` | `295f86c77b0b930ad9f69a11c93e37501352cc73afa923179f1b7248cd09d703` |
+| `apps/android-app/app/src/main/res/drawable-nodpi/brand_mark.png` | `95dc17e32f68a20fe8e7796cc514e4d5b39b372056454901605518cfd41cae27` |
+| `apps/android-app/app/src/main/res/drawable/retry_button.xml` | `03a2cf9b10136c8a0553dc94d4f097fd5006a9c8c69a8dd514f11872e74f8d62` |
+| `apps/android-app/app/src/main/res/drawable/skeleton_block.xml` | `88c269aa4c9d781fa969d21e4b859d92adfb8fe501d559d05fd64995c5f49758` |
+| `apps/android-app/app/src/main/res/drawable/surface_card.xml` | `bbd5c8bb28b0b789b3c231dc24e08e01f0b537c61d206e692c9a62a30fa14745` |
+| `apps/android-app/app/src/main/res/layout/activity_main.xml` | `d7c5895c191143c55702949b14fd39cbfedafbcf58ebdf7e919ac667bfc01089` |
+| `apps/android-app/app/src/main/res/mipmap-hdpi/ic_launcher.png` | `f348d862d486e721466d7b9544bcb87583c54387b5e2d8a156cffcc8c84b17ed` |
+| `apps/android-app/app/src/main/res/mipmap-hdpi/ic_launcher_round.png` | `58fdcecb54749da5b4e6d735a1d3c46f945267348e2bf767f06703c96e1952ce` |
+| `apps/android-app/app/src/main/res/mipmap-mdpi/ic_launcher.png` | `eb4bd0ae4bd5a917678c9cf0b776c2338b4ceff7ea441b053874be26d076eab5` |
+| `apps/android-app/app/src/main/res/mipmap-mdpi/ic_launcher_round.png` | `e1033ac6792663c9631a0100c995c0fc65c6113cdd04772a7ffbba0412e64845` |
+| `apps/android-app/app/src/main/res/mipmap-xhdpi/ic_launcher.png` | `f9654c3d89ed461560a35f368e68b0624c18e1acc3557b095f4e6b615c8d1847` |
+| `apps/android-app/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png` | `af6f2235d3dab5fb4974b2d882e034496813f033f77879653ebf03de4e0cb66f` |
+| `apps/android-app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png` | `5e7d15f5b9d7dbbdf07c7a7a8b6ac3721a7be87ab23ce0f1334569af3f984056` |
+| `apps/android-app/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png` | `14002aa69677935bd78dbdc14c252f498b21c97937359d2a73478aae934d6157` |
+| `apps/android-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` | `96df91531b0b082e54a3f7d017465692b4008042e71060e371fd4136dabcde36` |
+| `apps/android-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png` | `ae24731a3bc95181a463143cc27a91acdead1e6b99f4a4a2eeff94e69a460fdd` |
+| `apps/android-app/app/src/main/res/values-night/colors.xml` | `2f357890e638be7c00cf2329406d489a7418379f49d7fc362ec78ab2951d2c3a` |
+| `apps/android-app/app/src/main/res/values/colors.xml` | `45b7500713bcc7dcd07503d7d40a77e51c0b531d9d6456450cced6adb876282f` |
+| `apps/android-app/app/src/main/res/values/strings.xml` | `3ea32a01ccbbf1342ae02f8d66278743be19944753b593cdf5956ea3dad7de9a` |
+| `apps/android-app/app/src/main/res/values/styles.xml` | `cf25bfb126e6d4b67568f92178d8f584ecf4bb8e6d64283a46e1cc50728cade6` |
+| `apps/android-app/app/src/main/res/xml/data_extraction_rules.xml` | `c1648248f5da1d4a14636eb7e3d5917b07f41686222ab1f22a8e8c7b09b00e4b` |
+| `apps/android-app/app/src/main/res/xml/network_security_config.xml` | `dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7` |
+| `apps/android-app/app/src/test/java/cn/duanap/siyu/NavigationPolicyTest.java` | `719858edfd71f0d606e919fbaff5460875eb726231eb2eda5c70573ee51fba6c` |
+| `apps/android-app/build.gradle.kts` | `d8fdb3cbbe9a80290e21f3a5b1d92d2bd4a95e97edc6ab602a5491dd7a954929` |
+| `apps/android-app/gradle.properties` | `cc38bc495ca4e4d7fa2fe7c9c1112f36af7a63fbf4fc3e7a088e215942403385` |
+| `apps/android-app/gradle/wrapper/gradle-wrapper.jar` | `2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046` |
+| `apps/android-app/gradle/wrapper/gradle-wrapper.properties` | `697470de4156fe8a8f815967353d17fb1154e1c779b441135bd60ddaa4930c31` |
+| `apps/android-app/gradlew` | `a3648413b47ef77af21d5ebc36c687c7d103aaef3e17f33de7d4f080a6f300a3` |
+| `apps/android-app/gradlew.bat` | `2209f919a22528af59a2af2ad97e8d056cca18e39f7d87aa3fd549a73b180150` |
+| `apps/android-app/settings.gradle.kts` | `36ddbe2a2679e4eaf79a5c3be41c44deefb6298b5d364028b49a807833fe3b15` |
 | `apps/api/AGENTS.md` | `72e3502f9393ba1e2e67088ba7af73f645af0386f8cde3538a0ffef554839810` |
 | `apps/api/Dockerfile` | `ee35184d46cd95d32245945701f6c21739faffeaf7867ca412e3c0b1a5ead912` |
 | `apps/api/package.json` | `00399d4908eee19006a6b8dc578f690d565fa84767b661bdbb0e12267c449285` |
@@ -155,12 +191,16 @@
 | `apps/api/tsconfig.json` | `f50790b1e75a525db764d84b9fc493c9870f82337bd98bb71fa804f1e5eb71c7` |
 | `apps/api/vitest.config.ts` | `ab62155f398c51eab4e82c644ad2c943e15fe60e4ee983ecaa916f4567d93e9f` |
 | `apps/mobile-web/AGENTS.md` | `53f17e5bb4cd9296e1b5f796d53a32f17b90736c7d86803e55f619ebf698534b` |
-| `apps/mobile-web/index.html` | `9eafcfbf2bb770af3c1b7ad1246c2717c68e2dfdcb8b52bf36acc3d71d5dbea7` |
+| `apps/mobile-web/index.html` | `f5805e201ca6669d8bc99777d9733d1bd0cb6f3b62214e178d6069534810ce56` |
 | `apps/mobile-web/package.json` | `35d94b3a42aff6e8c55204bc3199c4fb5079a09555d7ec2952447d129323a977` |
-| `apps/mobile-web/public/manifest.webmanifest` | `18e2ad0eca76c67d0d85e96812bbb5c529bb5d8968fd0414603705bf851aa068` |
+| `apps/mobile-web/public/icons/brand-mark.png` | `e1e383808c8f83c009640315ce74846b4b8616c8a969b60f859a99d92cb4317d` |
+| `apps/mobile-web/public/icons/icon-192.png` | `eb1f4bcdde4238fe52718997fbb6b6b64d41fce71b478e76dc2febb2ab4309ec` |
+| `apps/mobile-web/public/icons/icon-512.png` | `d5eb2fb0887465b4700d1e6c147d87f43cee65f21807c27835438c966be88877` |
+| `apps/mobile-web/public/manifest.webmanifest` | `b49f395a776941f5ef1002ae1a0b7ae3d5b305d4778ac73e42360fab85556823` |
 | `apps/mobile-web/src/App.vue` | `27db60ef49f4fc24a3b4cf16589fe90f32ef562b039b3c4f36fe33eb7d2fc3f6` |
 | `apps/mobile-web/src/api.test.ts` | `ad0a29355a90de0ae802128059392ee3541244d78809fae9f735f85c129f402a` |
 | `apps/mobile-web/src/api.ts` | `a80e3989814db291a657efb25f3e98759817a4b083966fc3bce90b3c24cc4cb5` |
+| `apps/mobile-web/src/app-icons.ts` | `98cd4159233e6eef3f52631763a7b60bae785d9acbafa082a8ba7810d582d42b` |
 | `apps/mobile-web/src/assets/monthly-summary-illustration.png` | `7dd824946885b227e8e3214cd163f381e4fc207918957a911b683bd321462282` |
 | `apps/mobile-web/src/auth.test.ts` | `54edbda8d84f61c58169c0f54de252355f637085eaf293b22b8c8521527d4f0b` |
 | `apps/mobile-web/src/auth.ts` | `50e2e5a2783275a38420e9fa8b98042a0135ead5d6806aa4ddd678938b3d7d16` |
@@ -170,13 +210,15 @@
 | `apps/mobile-web/src/components/AppAmount.test.ts` | `c9a4236474e4c265b327af910e30be27ee8f3b314a500099e244d89d8652a16e` |
 | `apps/mobile-web/src/components/AppAmount.vue` | `f442c382cc7de7fdb19a22ebf828886529698d5eb46f20933ff897e620555d0b` |
 | `apps/mobile-web/src/components/AppBottomNav.test.ts` | `0d41fc4435262dc8b26bd26b0dcc9e9d439c75b24bd3e0e766c569c891817610` |
-| `apps/mobile-web/src/components/AppBottomNav.vue` | `834edaffd8788fa3104237853b22aedec5ff39bc7666fda693fe8f739027788a` |
+| `apps/mobile-web/src/components/AppBottomNav.vue` | `f87c7ae29919faef9e3fccb876ba0be550767f7867391af00fd7489926571e15` |
 | `apps/mobile-web/src/components/AppDialog.vue` | `5cd05a4e54a8199a950b6115519a71d52f13fe7c64ec10a1ee564d189514f44c` |
 | `apps/mobile-web/src/components/AppDrawer.vue` | `c92e000d58454f5f142c4578014e83aa316d645d5eab1d9486e560c43a01d63e` |
 | `apps/mobile-web/src/components/AppEmpty.vue` | `e122a81866bf533eb8a628a3b2bbf61d60fe3e86991e93dc71bc1550067ed26a` |
 | `apps/mobile-web/src/components/AppErrorState.vue` | `030d541603e048c82c9e187a1df20a35b42a62b6b68316498bf55c19b061e273` |
 | `apps/mobile-web/src/components/AppOverlayFocus.test.ts` | `1d2ddd6339e92bd0fae283950c76bfbdcc5ea7590462e0c37da10e6cbe39202c` |
 | `apps/mobile-web/src/components/AppPageHeader.vue` | `dc7502ce9b7f9dd5a89b97437f16f6837dba5be8dab55750f571e9105224ec65` |
+| `apps/mobile-web/src/components/AppSkeleton.test.ts` | `0e65d250956933b96e4035c1a5479d08a7a8b8d17a9234f3ff8ed53d97cd9010` |
+| `apps/mobile-web/src/components/AppSkeleton.vue` | `959c039657c093bd5114a6de96c6ad057d5fa05fd888eed2ad0f03bb91689c2b` |
 | `apps/mobile-web/src/components/CategoryGrid.vue` | `2c08798448c3de68cfe79aeb06943bc6e76b75b383e399d6f3f0ef20cbabec96` |
 | `apps/mobile-web/src/components/DebtEditorForm.vue` | `334a40750f1a12a9b20df25903cc337ea17c426c8cd74c51803c6409ae39096d` |
 | `apps/mobile-web/src/components/DebtProgressCard.vue` | `5b4913181dadacc1122262902754d202cecd2e71687140489d5f4e2143d826f2` |
@@ -186,7 +228,7 @@
 | `apps/mobile-web/src/components/EntryEditorForm.vue` | `e5fb7285e15fb4509748bb06037fcaca78d1b192a8d1b2fae21dd5ef45541b90` |
 | `apps/mobile-web/src/components/EntryFilterDrawer.vue` | `86322029c9907b219cb93a601468d1c6ae1b9442c683471cd5d48bbcc9621127` |
 | `apps/mobile-web/src/components/EntryListItem.test.ts` | `c7d57caba7c226312a43e7755d7adbcce17df03eab2bf531eefbfc36f59efd00` |
-| `apps/mobile-web/src/components/EntryListItem.vue` | `85c1091ad4904b8deae0ea4563c5c82915cd591d5196ba8cf0f61fa1d40aaafa` |
+| `apps/mobile-web/src/components/EntryListItem.vue` | `f8c81392be317e61533d7176c05ba12b11d79a74aa38d9d34ffc576151a803dd` |
 | `apps/mobile-web/src/components/LedgerSwitcher.vue` | `b1569cca6ef27115f76c23691536d788b96fa314625eadd5343ff33d3e5d9ce1` |
 | `apps/mobile-web/src/components/MonthlySummaryCard.vue` | `17609f1657789ce9ce19ea901231495c5ea9db9676c5cfeae97dd3d6844e4f08` |
 | `apps/mobile-web/src/components/NotificationItem.vue` | `931817f695a2452a9cf56295b9cfe7007310323c41679597a969a87df19d32ef` |
@@ -240,7 +282,7 @@
 | `apps/mobile-web/src/views/CategoryManagementView.vue` | `227736e8fa2d958faa3b169ac1c09b5e6434be73287f2e768373854c25a2d87c` |
 | `apps/mobile-web/src/views/CoupleLedgerView.test.ts` | `ba4fa48acda52e4e1aed6b8d7486d18e60fba60367473bcd5b100f35a504db49` |
 | `apps/mobile-web/src/views/CoupleLedgerView.vue` | `1e9e275df0bd81d58ad36864780b8ae59b7c4a0cdbaf514c9be8cfcefa7d6f7d` |
-| `apps/mobile-web/src/views/DashboardView.vue` | `d92a0afd75d8ae6ece1bd154849175146b7245565569936f9409ac45ee7cb15b` |
+| `apps/mobile-web/src/views/DashboardView.vue` | `d4a76f7b30803cdad82943ba1debd5aa9726d2ef6b7bface97313c69ef8dffb7` |
 | `apps/mobile-web/src/views/DebtCreateView.vue` | `03c8680c1de8be3c052bdd05804d8f64e531017f5ce8e324817a38bdf2f62933` |
 | `apps/mobile-web/src/views/DebtDetailView.vue` | `57f656dc08bf9dca719a63619d23cb8350c9d7b921315864ea97657056808839` |
 | `apps/mobile-web/src/views/DebtViews.test.ts` | `a4fdb97319890244c577ecbca1e15709500258b54f3a84045932e2c90c757a50` |
@@ -251,7 +293,7 @@
 | `apps/mobile-web/src/views/EntryCreateView.vue` | `8b5699af8e2b74bc09544e8380348940c8f030e303d433f205f27a731d8047f5` |
 | `apps/mobile-web/src/views/EntryDetailView.test.ts` | `63d4e8204c54227703c4e3a7ddfb6978b93d334a9f1dd8197b7fdacc43de7ce2` |
 | `apps/mobile-web/src/views/EntryDetailView.vue` | `c0a0f948c072bc5d2134407d03f9bddb60d723930fe83e5e34724fb9cb6f5fcd` |
-| `apps/mobile-web/src/views/EntryListView.vue` | `97ee1f342eb0c1f52f86fe7efb04cf38c754d067035d68c03c22d6663941c81b` |
+| `apps/mobile-web/src/views/EntryListView.vue` | `551809fe38db3d2ea8c30ed90c2284f7446613af523acd91ee5f71480c94a24a` |
 | `apps/mobile-web/src/views/EntryViews.test.ts` | `d03a8ddcd131704eae13d615d14c291660e022310fa46c339e8dece2bf541d61` |
 | `apps/mobile-web/src/views/ExportsView.test.ts` | `791723258de3087ed225fc885e91b576d7c13fd76af82ce93990ab0fa7919c74` |
 | `apps/mobile-web/src/views/ExportsView.vue` | `2bf8ca4b2cd588119a50adcddb11e20f8b82b29503c0c51f9ff55617762ca34a` |
@@ -273,7 +315,7 @@
 | `apps/mobile-web/src/views/SavingGoalDetailView.vue` | `525fe80511b8368feac1072c2678f01c63dbb2d1b85b8a0aafcfe7ce6c039e5f` |
 | `apps/mobile-web/src/views/SavingGoalViews.test.ts` | `efeac350f65bc2db5568e4e261fc63c6f4400cb5a9fdc4fc7a7964e5d0240bea` |
 | `apps/mobile-web/src/views/SavingGoalsView.vue` | `f13ea93b8875672bbae413f4108e216d697d06e1da35cfced77fd4ae7e3565c5` |
-| `apps/mobile-web/src/views/StatisticsView.vue` | `533f226bce3c91ed6fa9d15a2cdea086f16b033e60756235ad40a5804ce4dada` |
+| `apps/mobile-web/src/views/StatisticsView.vue` | `a83bd3a382a41b9d75d4bc88ece667552adbb02c10690662c8edaebfa62e1d31` |
 | `apps/mobile-web/src/views/StatisticsViews.test.ts` | `9eb52abed9935622693e53a4d868b1ff6447a75b44f83d97ad47400a632fa427` |
 | `apps/mobile-web/src/views/entry-view-test-utils.ts` | `e9889cf6a9e8e1dcd1013654337a9da32857cb8a40ea3c20bdc1fcae4ef6dacb` |
 | `apps/mobile-web/src/vite-env.d.ts` | `65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5` |
@@ -303,7 +345,7 @@
 | `docs/design/DESIGN_TOKENS.md` | `e67e4f5e05d93d4359ac79e5d2de4213826d471ef52d776288c3cbeab729ea22` |
 | `docs/design/INFORMATION_ARCHITECTURE.md` | `7ae74cfbbd5f981d67a11580fc4960c5b4f8e1fc8cf5dc71c19f5192e6388ae4` |
 | `docs/design/SCREEN_FLOW.md` | `0276ec2fdb56eff858e05824430b2248cfc45428706a6a2d7e1cba383d40dc3c` |
-| `docs/design/SCREEN_SPECIFICATIONS.md` | `649b7030ae0d636c9047894650a2da7c4b124ddb90000fe502b6cfc8fcab48b1` |
+| `docs/design/SCREEN_SPECIFICATIONS.md` | `3c1c1f235267270510e46ee572d687ebc6e8c5580db4f4e78cf54b0e1aab8785` |
 | `docs/design/UI_DESIGN_GUIDE.md` | `c3b8ef2168d2bb5cae4f43491cee45d73790642379870b393ddd6bd549452a5d` |
 | `docs/design/screens/01-login.svg` | `5344e730c52bf6a06da83456e82f78977abf964d6b1e0c8ce91ea6e06d45768a` |
 | `docs/design/screens/02-personal-home.svg` | `c35174cae55e589da488ff7b2f990682f30dcfe2635e04a871c7e8c70f84affe` |
@@ -355,17 +397,18 @@
 | `docs/plans/active/TASK-025-release-acceptance.md` | `bf21bd0397a547ff8e212c1af14eedc8f2c8086c7b50052473d60924eb1a71c9` |
 | `docs/plans/active/TASK-026-personal-deployment.md` | `a6151198afd0255b21bd0b3b69ea989849592da693266105927a16d8aa3b0d89` |
 | `docs/plans/active/TASK-027-app-home-profile.md` | `8326f59d2df359c0d46df7965a80faecc183b803cfdf484ae5aa3b7591faa288` |
+| `docs/plans/active/TASK-028-android-app.md` | `ec61485db79d271cdb2c76c70f7852d046c6d678f22aa4de4558c8378c228554` |
 | `docs/plans/templates/TASK_TEMPLATE.md` | `2d929bd920c8058635d64b5386a649018e9fe4cf64e0e428534823ce682089a2` |
-| `docs/product/ACCEPTANCE_CRITERIA.md` | `f8b4ebfa48eb383208c06a3b06cbfb535bba1579a5488c52f7a3132ba149890a` |
+| `docs/product/ACCEPTANCE_CRITERIA.md` | `723a2d295c95ce1e5873cb29e33ba3094d3b96d420a74086fd85713d6abb0551` |
 | `docs/product/BRAND_IDENTITY.md` | `04d9b3cbcdf92cab58612b8b67e8a03623e1cee24e977d5c5653316f60b0b75b` |
 | `docs/product/BUSINESS_RULES.md` | `aa44bd15ad2735afbbb491783b40dda9295b196ae1d06c1c767972335a599f2a` |
 | `docs/product/FEATURE_SCOPE.md` | `4f18295cd19e8c541c8108f2ec45823f73e862e3e503cc91a0584c45b2c8af3c` |
 | `docs/product/GLOSSARY.md` | `4b0e3556fce7c76c4a29754600e494d0c13ad016cddd039bc9ff8d2ee0020061` |
 | `docs/product/PRODUCT_REQUIREMENTS.md` | `b7797987c885ce659ff89bec6cb8a3a67c7689b676dc088d791295d1cbd33179` |
-| `docs/project-memory/CHANGELOG_AI.md` | `e38d348ddac59ec2e96b2b0ecb59e580628c25149d7216ccf2e13a27dd2cc657` |
-| `docs/project-memory/CURRENT_STATE.md` | `00b2433db16ae64146015b1a962ec313d1196fbe80283295eb825949f96126f6` |
-| `docs/project-memory/DECISIONS.md` | `1af675dbcd7e7fb072423d758e572fdfdb4f5099324430b8a449c36e9161f6e9` |
-| `docs/project-memory/KNOWN_ISSUES.md` | `f7c2ad8bc64b1c859844ccd2da579199b1a29571342064438460fcdcabb848d0` |
+| `docs/project-memory/CHANGELOG_AI.md` | `96ad8b7d252f2fcdcbb39e94a1baa975f0012ed92712a4be61e2eead97157b39` |
+| `docs/project-memory/CURRENT_STATE.md` | `5bcd3de9b96aaf1a2feb11188b00f0e90945313d61bd33bc966483f90db8cc2a` |
+| `docs/project-memory/DECISIONS.md` | `8fab164a015c44c1f28d36ff6ef628cf5c2f60ee7bbbfa976f48f60ff8e392e2` |
+| `docs/project-memory/KNOWN_ISSUES.md` | `8b7d12ba17a44239cc39768a51f541c4c30cddf6bfda689d17e8698992c4b22a` |
 | `docs/project-memory/RELEASE_HISTORY.md` | `e05725cab6263345dca9c4b1912c2c624e648b93a4158e282a2840f0a7ef7ea8` |
 | `docs/project-memory/TECH_DEBT.md` | `24d5f9ad04204e51fdbdebcaafdf870188d0c4404ea4f8720b4015dd909932a6` |
 | `docs/quality/DEFINITION_OF_DONE.md` | `274861eaadf7166f45f5379a96a71188c68ed86fe4c1de0df606dcc75b408a83` |
@@ -381,7 +424,9 @@
 | `docs/quality/evidence/task027/home-426-light.png` | `433b156a8a6b05001077e3327d11c2ddf47cb9e42c67af19e7e5b48c89372316` |
 | `docs/quality/evidence/task027/option-1-reference-normalized.png` | `8a03bfcd5a4f22e3d74b2e26e522f3371369a27fdba23b4cba973d46a0cea943` |
 | `docs/quality/evidence/task027/option-1-reference.png` | `0b375ca89c74baed9bbba50a1c30e53e707d82b86afe6ac217a289843201c252` |
-| `eslint.config.mjs` | `a32c1e923450f00c972b4b49f129793c60112462c08088f8b4cd1c3b6d29b0db` |
+| `docs/quality/evidence/task028/boot-skeleton-375-dark.png` | `1254adb340125fca1223547f0d9397812238e422d92768159fb82883192578b0` |
+| `docs/quality/evidence/task028/boot-skeleton-375-light.png` | `b1b807e839cf972e263fc2b2de072da1a1ef8c307d0206603441ed9aecf81da8` |
+| `eslint.config.mjs` | `2d62ebeca8c09ab869ec46abdcfaa6c47cdcfb96940eab7aa71d4c30734b64aa` |
 | `nginx/Dockerfile` | `ec0a1e8b7969d3ca949416b6745563f0cec74cb01ce871abc381d4f61f5f087f` |
 | `nginx/default.conf` | `5e77d23c49001c7687008a6a164f27dc6b175fe72470a64e68735bcb506b8e21` |
 | `output/playwright/debt-404-375-light.png` | `e320d852b71c246f30909d35a61311a19a1c363b3e4b8e0a8fcc0d84bbe09561` |
@@ -483,7 +528,7 @@
 | `scripts/check-release-environment.mjs` | `fc379a24181ece84cd536d56a71ebbf2a9538f61606707fae4ef916317fc95fd` |
 | `scripts/check-release-environment.test.mjs` | `9ef63c15abf3813bff20c49d909bc034409ffb6cb8a6173e3f6c1704f1ab05a5` |
 | `scripts/database-release.test.mjs` | `d11f12dab5c151ae57d4a28f448cc311de46bfdc270c90bde1d32250d5d7fa75` |
-| `scripts/generate-manifest.sh` | `6428d16548a0483f808a22359afff526dfa3c87ab579adc956fabb88f99d0c3c` |
+| `scripts/generate-manifest.sh` | `4b19357b49ca821fd45f520f36668a21bcdadb83791bb2debb6315f9ef9c42fc` |
 | `scripts/native-gateway.mjs` | `c817022605131a3d18334a5ef3f0880ffc1bc1be6e5b796c00dfbd8625a31a0e` |
 | `scripts/native-runtime.mjs` | `210f59533ddf5bacf049016f4506a890593558c6d5694ce147c239357dde5c7c` |
 | `scripts/native-runtime.test.mjs` | `e1f670a86b5ef584404d1fbb2c1d6c2c9e013803a60ccd0ed7c4f86bd3da0a32` |

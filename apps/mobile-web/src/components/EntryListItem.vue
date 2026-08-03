@@ -1,24 +1,5 @@
 <script setup lang="ts">
-import {
-  AppstoreOutlined,
-  CarOutlined,
-  ClockCircleOutlined,
-  CoffeeOutlined,
-  DollarOutlined,
-  FundOutlined,
-  GiftOutlined,
-  HomeOutlined,
-  MedicineBoxOutlined,
-  PlayCircleOutlined,
-  ReadOutlined,
-  RedEnvelopeOutlined,
-  ShoppingCartOutlined,
-  TrophyOutlined,
-  UndoOutlined,
-} from '@ant-design/icons-vue';
-import type { Component } from 'vue';
-
-import type { CategoryIcon } from '../category';
+import { categoryIcons } from '../app-icons';
 import type { Entry, Ledger } from '../entry';
 import AppAmount from './AppAmount.vue';
 defineProps<{
@@ -41,23 +22,6 @@ const sourceLabels = {
   DEBT_TRANSACTION: '借贷',
   RECURRING_RUN: '周期账目',
 } as const;
-const categoryIcons: Record<CategoryIcon, Component> = {
-  food: CoffeeOutlined,
-  shopping: ShoppingCartOutlined,
-  transport: CarOutlined,
-  housing: HomeOutlined,
-  entertainment: PlayCircleOutlined,
-  medical: MedicineBoxOutlined,
-  education: ReadOutlined,
-  gift: GiftOutlined,
-  salary: DollarOutlined,
-  bonus: TrophyOutlined,
-  part_time: ClockCircleOutlined,
-  investment: FundOutlined,
-  red_packet: RedEnvelopeOutlined,
-  refund: UndoOutlined,
-  other: AppstoreOutlined,
-};
 function shortBusinessDate(value: string): string {
   const [, month, day] = value.split('-');
   return month && day ? `${Number(month)}月${Number(day)}日` : value;

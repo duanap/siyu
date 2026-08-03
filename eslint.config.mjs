@@ -10,6 +10,8 @@ export default tseslint.config(
       '**/dist/**',
       '**/coverage/**',
       '**/node_modules/**',
+      'apps/android-app/**/.gradle/**',
+      'apps/android-app/**/build/**',
       '**/src/generated/**',
       'docs/design/screens/**',
     ],

@@ -6,6 +6,7 @@ import { ApiError } from '../api';
 import { useAuthStore } from '../auth';
 import { categoryApi, type Category } from '../category';
 import AppBottomNav from '../components/AppBottomNav.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 import EntryListItem from '../components/EntryListItem.vue';
 import LedgerSwitcher from '../components/LedgerSwitcher.vue';
 import { coupleLedgerApi, type Ledger } from '../couple-ledger';
@@ -196,10 +197,7 @@ onMounted(initialize);
       >
     </header>
 
-    <section v-if="loading" class="state-panel" aria-live="polite">
-      <strong>正在加载明细</strong>
-      <p>读取账本和本月账目…</p>
-    </section>
+    <AppSkeleton v-if="loading" label="正在加载明细" variant="list" :rows="5" />
 
     <section v-else-if="noAccess" class="state-panel">
       <strong>无法访问这个账本</strong>
