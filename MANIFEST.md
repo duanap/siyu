@@ -470,8 +470,8 @@
 | `patches/minimatch@3.1.5.patch` | `1dd9f79695990a13b3f5bb998d85c2315820b3ae1ea31819470068f0dc477065` |
 | `patches/minimatch@5.1.9.patch` | `1e191e4aab641b69d7e3fb9f253ee82745ee83dca4cb3bbc92ae1be26893ebbd` |
 | `patches/minimatch@9.0.9.patch` | `e8931b0836a96c9e88c09168cb1f34822688a7883b596f7a7160643a61dcb6d9` |
-| `pnpm-lock.yaml` | `f8de4475196fc226a01770702b6bbc8b6b4dca8f011428b4c4e1bedbb650753a` |
-| `pnpm-workspace.yaml` | `5c09d4f67ea5c24be5bba9fd6ad47010eb77f77fc9823667beaeb5d37eb8be53` |
+| `pnpm-lock.yaml` | `5f35f7cbbfc2ada66923d6aa03de4bd50200e4c203fe0726cdb02ed123978730` |
+| `pnpm-workspace.yaml` | `f0be358bb6c2bb717e5f7a8822d65ed8a91e3826f97675d78853c09b606357d6` |
 | `redocly.yaml` | `a062ecfd66739008367bc281ac89d367e0dcaf39cf35d4b7e5ae82687a3d363e` |
 | `scripts/backup-database.mjs` | `f460907425dfc18bf023f91a27c94872dbd748e46ff99a5d31e47868614cd425` |
 | `scripts/browser-release-smoke.mjs` | `1877b03cc36cd57f1221b9fb42115d71dc3eea2c57f1661a2ad8eeef19326302` |
