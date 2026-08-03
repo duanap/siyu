@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { DownOutlined, UserOutlined } from '@ant-design/icons-vue';
 import { ref } from 'vue';
 import type { Ledger } from '../entry';
 import AppDrawer from './AppDrawer.vue';
-const props = defineProps<{ ledgers: Ledger[]; modelValue: string; disabled?: boolean }>();
+const props = defineProps<{
+  ledgers: Ledger[];
+  modelValue: string;
+  disabled?: boolean;
+  compact?: boolean;
+}>();
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 const open = ref(false);
 function select(id: string) {
@@ -11,11 +17,15 @@ function select(id: string) {
 }
 </script>
 <template>
-  <div class="ledger-switcher">
+  <div class="ledger-switcher" :class="{ compact }">
     <button type="button" :disabled="disabled" aria-haspopup="dialog" @click="open = true">
-      <span>当前账本</span
+      <UserOutlined v-if="compact" class="compact-icon" aria-hidden="true" />
+      <span v-else>当前账本</span
       ><strong>{{ ledgers.find((item) => item.id === modelValue)?.name || '选择账本' }}</strong
-      ><span aria-hidden="true">⌄</span></button
+      ><span v-if="!compact" class="switcher-type">{{
+        ledgers.find((item) => item.id === modelValue)?.type === 'COUPLE' ? '朝暮同笺' : '个人账本'
+      }}</span
+      ><DownOutlined v-else class="compact-icon" aria-hidden="true" /></button
     ><AppDrawer :open="open" title="选择账本" @close="open = false"
       ><div class="ledger-options">
         <button
@@ -57,6 +67,23 @@ function select(id: string) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.switcher-type {
+  color: var(--siyu-text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.compact > button {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+}
+.compact strong {
+  font-size: 13px;
+}
+.compact-icon {
+  color: var(--siyu-primary);
+  font-size: 15px;
 }
 .ledger-options {
   display: grid;

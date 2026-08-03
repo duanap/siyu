@@ -33,6 +33,7 @@
     "release:restore:verify": "node scripts/verify-database-restore.mjs",
     "release:smoke": "node scripts/release-smoke.mjs",
     "release:browser:smoke": "node scripts/browser-release-smoke.mjs",
+    "qa:task027": "node scripts/task027-browser-qa.mjs",
     "verify": "bash scripts/verify.sh"
   },
   "devDependencies": {

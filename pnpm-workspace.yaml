@@ -4,10 +4,10 @@ packages:
 
 overrides:
   '@hono/node-server': '2.0.11'
-  brace-expansion: '5.0.8'
+  brace-expansion: '5.0.9'
   fast-uri: '3.1.4'
   js-yaml: '4.3.0'
-  postcss: '8.5.18'
+  postcss: '8.5.23'
   valibot: '1.4.2'
 
 patchedDependencies:
