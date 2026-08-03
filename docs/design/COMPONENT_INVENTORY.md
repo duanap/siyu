@@ -9,10 +9,10 @@
 | AppDrawer | 手机底部抽屉 | Ant Drawer |
 | AppDialog | 确认与提示 | Ant Modal |
 | AppStatusTag | 统一状态标签 | Ant Tag 二次封装 |
-| AppAmount | 金额格式、符号、语义 | 自定义 |
+| AppAmount | 金额格式、符号、语义和不泄露原值的隐藏态 | 自定义 |
 | AppEmpty | 空状态 | Ant Empty |
 | AppPageHeader | 页面标题与操作 | 自定义 |
-| AppBottomNav | 五项底部导航 | 自定义 |
+| AppBottomNav | 五项真实图标底部导航、中央记账动作和底部安全区 | 自定义 |
 | AppErrorState | 网络/权限/业务错误 | Ant Result 二次封装 |
 
 ## 业务组件
@@ -28,13 +28,13 @@ Access Token 只由集中 Pinia Store 在内存管理。
 | CategoryManager | 分类管理的账本/类型切换、启停分组和服务端能力呈现 |
 | CategoryEditorDrawer | 自定义分类名称、固定图标和颜色选择 |
 | CategoryOrderControls | OWNER 使用的 44px 上移/下移完整排序控件 |
-| EntryListItem | 明细、首页最近账目 |
+| EntryListItem | 明细、首页最近账目；首页模式使用备注、日期和分类/收入语义 |
 | EntryAmountInput | 字符串金额输入、精确转分和字段错误 |
 | CategoryGrid | 记账与编辑时选择当前启用分类 |
 | EntryFilterDrawer | 明细类型、分类和创建人筛选 |
 | EntryEditorForm | 新增和编辑共享字段与提交状态 |
 | EntryDetailCard | 账目完整字段、来源和历史分类状态 |
-| MonthlySummaryCard | 首页 |
+| MonthlySummaryCard | 首页月结主卡、金额隐藏与透明财务插画 |
 | SalaryBalanceCard | 工资首页的当前周期余额、固定/日常支出和日均可用 |
 | DebtSummaryCard | 借贷完整汇总、完整性加载与失败状态 |
 | DebtProgressCard | 借贷列表方向、进度、到期和剩余金额 |

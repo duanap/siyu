@@ -3,7 +3,12 @@ import { computed } from 'vue';
 import { formatAmount } from '../entry-money';
 import type { EntryType } from '../entry';
 
-const props = defineProps<{ amountCent: number; type: EntryType; large?: boolean }>();
+const props = defineProps<{
+  amountCent: number;
+  type: EntryType;
+  large?: boolean;
+  hidden?: boolean;
+}>();
 const text = computed(() => formatAmount(props.amountCent, props.type));
 </script>
 
@@ -11,8 +16,8 @@ const text = computed(() => formatAmount(props.amountCent, props.type));
   <span
     class="app-amount"
     :class="[type.toLowerCase(), { large }]"
-    :aria-label="`${type === 'INCOME' ? '收入' : '支出'}${text}`"
-    >{{ text }}</span
+    :aria-label="hidden ? '金额已隐藏' : `${type === 'INCOME' ? '收入' : '支出'}${text}`"
+    >{{ hidden ? '••••••' : text }}</span
   >
 </template>
 

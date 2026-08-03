@@ -11,4 +11,13 @@ describe('AppAmount', () => {
     expect(expense.text()).toBe('-¥ 1.00');
     expect(expense.classes()).toContain('expense');
   });
+
+  it('hides the value without exposing it in the accessible label', () => {
+    const wrapper = mount(AppAmount, {
+      props: { amountCent: 123_45, type: 'EXPENSE', hidden: true },
+    });
+    expect(wrapper.text()).toBe('••••••');
+    expect(wrapper.attributes('aria-label')).toBe('金额已隐藏');
+    expect(wrapper.text()).not.toContain('123');
+  });
 });

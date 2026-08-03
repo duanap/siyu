@@ -145,21 +145,36 @@ describe('TASK-009 home and statistics views', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders real overview, member and recent-entry data without fake future modules', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((url: string) => {
-        if (url.includes('/ledgers')) return Promise.resolve(response({ items: [ledger] }));
-        if (url.includes('/statistics/overview')) return Promise.resolve(response(overview));
-        if (url.includes('/statistics/members')) return Promise.resolve(response(members));
-        if (url.includes('/entries?')) {
-          return Promise.resolve(
-            response({ items: [entry], page: 1, pageSize: 5, total: 1, hasNext: false }),
-          );
-        }
-        throw new Error(`unexpected URL ${url}`);
-      }),
-    );
+  it('renders the selected monthly narrative with real attention, member and recent data', async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes('/ledgers')) return Promise.resolve(response({ items: [ledger] }));
+      if (url.includes('/statistics/overview')) return Promise.resolve(response(overview));
+      if (url.includes('/statistics/members')) return Promise.resolve(response(members));
+      if (url.includes('/entries?')) {
+        return Promise.resolve(
+          response({ items: [entry], page: 1, pageSize: 5, total: 1, hasNext: false }),
+        );
+      }
+      if (url.includes('/recurring-runs?')) {
+        return Promise.resolve(
+          response({
+            items: [
+              {
+                id: 'run-1',
+                status: 'PENDING',
+                rule: { ledgerId: ledger.id },
+              },
+            ],
+            page: 1,
+            pageSize: 100,
+            total: 1,
+            hasNext: false,
+          }),
+        );
+      }
+      throw new Error(`unexpected URL ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const wrapper = mount(DashboardView, mountOptions);
     await flushPromises();
@@ -168,9 +183,71 @@ describe('TASK-009 home and statistics views', () => {
     expect(wrapper.text()).toContain('¥ 3,268.00');
     expect(wrapper.text()).toContain('这是一个用于验证长文本的成员昵称');
     expect(wrapper.text()).toContain('晚餐');
-    expect(wrapper.text()).toContain('工资、周期和攒钱模块上线后');
-    expect(wrapper.text()).not.toContain('工资还剩多少');
+    expect(wrapper.text()).toContain('待确认周期账目');
+    expect(wrapper.text()).toContain('本月记录贡献');
+    expect(wrapper.text()).not.toContain('工资、周期和攒钱模块上线后');
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/debts?'))).toBe(false);
     expect(localStorage.getItem('siyu-current-ledger-id')).toBe(ledger.id);
+
+    await wrapper.get('button[aria-label="隐藏首页金额"]').trigger('click');
+    expect(wrapper.text()).toContain('••••••');
+    expect(localStorage.getItem('siyu-amount-hidden')).toBe('true');
+  });
+
+  it('shows personal debt attention without leaking it into couple mode', async () => {
+    const personalLedger = {
+      ...ledger,
+      id: '00000000-0000-4000-8000-000000000011',
+      type: 'PERSONAL',
+      name: '我的个人账本',
+      members: [ledger.members[0]],
+    };
+    routerState.query = { ledger: 'personal', month: '2026-07' };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => {
+        if (url.includes('/ledgers')) return Promise.resolve(response({ items: [personalLedger] }));
+        if (url.includes('/statistics/overview'))
+          return Promise.resolve(
+            response({ ...overview, ledgerId: personalLedger.id, ledgerType: 'PERSONAL' }),
+          );
+        if (url.includes('/entries?'))
+          return Promise.resolve(
+            response({ items: [], page: 1, pageSize: 5, total: 0, hasNext: false }),
+          );
+        if (url.includes('/recurring-runs?'))
+          return Promise.resolve(
+            response({ items: [], page: 1, pageSize: 100, total: 0, hasNext: false }),
+          );
+        if (url.includes('/debts?'))
+          return Promise.resolve(
+            response({
+              items: [
+                {
+                  id: 'debt-1',
+                  status: 'ACTIVE',
+                  direction: 'BORROWED',
+                  dueDate: '2026-08-08',
+                  overdueDays: 0,
+                  remainingCent: 100_00,
+                },
+              ],
+              page: 1,
+              pageSize: 100,
+              total: 1,
+              hasNext: false,
+            }),
+          );
+        throw new Error(`unexpected URL ${url}`);
+      }),
+    );
+
+    const wrapper = mount(DashboardView, mountOptions);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('个人借贷');
+    expect(wrapper.text()).toContain('8月8日到期');
+    expect(wrapper.text()).toContain('这个月还没有账目');
   });
 
   it('renders trend, category rankings and member comparison from one month', async () => {

@@ -1,8 +1,33 @@
 <script setup lang="ts">
-import { categoryGlyph } from '../category';
+import {
+  AppstoreOutlined,
+  CarOutlined,
+  ClockCircleOutlined,
+  CoffeeOutlined,
+  DollarOutlined,
+  FundOutlined,
+  GiftOutlined,
+  HomeOutlined,
+  MedicineBoxOutlined,
+  PlayCircleOutlined,
+  ReadOutlined,
+  RedEnvelopeOutlined,
+  ShoppingCartOutlined,
+  TrophyOutlined,
+  UndoOutlined,
+} from '@ant-design/icons-vue';
+import type { Component } from 'vue';
+
+import type { CategoryIcon } from '../category';
 import type { Entry, Ledger } from '../entry';
 import AppAmount from './AppAmount.vue';
-defineProps<{ entry: Entry; ledgerType: Ledger['type']; highlighted?: boolean }>();
+defineProps<{
+  entry: Entry;
+  ledgerType: Ledger['type'];
+  highlighted?: boolean;
+  amountHidden?: boolean;
+  homeSummary?: boolean;
+}>();
 defineEmits<{ open: [] }>();
 const paymentLabels = {
   CASH: '现金',
@@ -16,25 +41,52 @@ const sourceLabels = {
   DEBT_TRANSACTION: '借贷',
   RECURRING_RUN: '周期账目',
 } as const;
+const categoryIcons: Record<CategoryIcon, Component> = {
+  food: CoffeeOutlined,
+  shopping: ShoppingCartOutlined,
+  transport: CarOutlined,
+  housing: HomeOutlined,
+  entertainment: PlayCircleOutlined,
+  medical: MedicineBoxOutlined,
+  education: ReadOutlined,
+  gift: GiftOutlined,
+  salary: DollarOutlined,
+  bonus: TrophyOutlined,
+  part_time: ClockCircleOutlined,
+  investment: FundOutlined,
+  red_packet: RedEnvelopeOutlined,
+  refund: UndoOutlined,
+  other: AppstoreOutlined,
+};
+function shortBusinessDate(value: string): string {
+  const [, month, day] = value.split('-');
+  return month && day ? `${Number(month)}月${Number(day)}日` : value;
+}
 </script>
 <template>
   <button class="entry-item" :class="{ highlighted }" type="button" @click="$emit('open')">
-    <span class="icon" :style="{ '--category-color': entry.category.color }" aria-hidden="true">{{
-      categoryGlyph(entry.category.icon)
-    }}</span
+    <span class="icon" :style="{ '--category-color': entry.category.color }" aria-hidden="true"
+      ><component :is="categoryIcons[entry.category.icon]" /></span
     ><span class="main"
       ><span class="title-row"
-        ><strong>{{ entry.category.name }}</strong
+        ><strong>{{ homeSummary && entry.note ? entry.note : entry.category.name }}</strong
         ><small v-if="!entry.category.isEnabled">已停用</small
         ><small v-if="entry.sourceType !== 'MANUAL'">{{
           sourceLabels[entry.sourceType]
         }}</small></span
-      ><span v-if="entry.note" class="note">{{ entry.note }}</span
+      ><span v-if="entry.note && !homeSummary" class="note">{{ entry.note }}</span
       ><span class="meta"
-        ><span v-if="ledgerType === 'COUPLE'">{{ entry.creator.nickname }}</span
-        ><span v-if="entry.paymentMethod">{{ paymentLabels[entry.paymentMethod] }}</span></span
+        ><template v-if="homeSummary"
+          ><span>{{ shortBusinessDate(entry.businessDate) }}</span
+          ><span>{{ entry.type === 'INCOME' ? '收入' : entry.category.name }}</span></template
+        ><template v-else
+          ><span v-if="ledgerType === 'COUPLE'">{{ entry.creator.nickname }}</span
+          ><span v-if="entry.paymentMethod">{{
+            paymentLabels[entry.paymentMethod]
+          }}</span></template
+        ></span
       ></span
-    ><AppAmount :amount-cent="entry.amountCent" :type="entry.type" />
+    ><AppAmount :amount-cent="entry.amountCent" :type="entry.type" :hidden="amountHidden" />
   </button>
 </template>
 <style scoped>
@@ -67,6 +119,7 @@ const sourceLabels = {
   border-radius: 14px;
   background: color-mix(in srgb, var(--category-color) 17%, var(--siyu-surface));
   color: var(--category-color);
+  font-size: 20px;
   font-weight: 700;
 }
 .main {

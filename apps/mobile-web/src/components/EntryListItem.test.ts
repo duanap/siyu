@@ -31,4 +31,14 @@ describe('EntryListItem', () => {
     await wrapper.trigger('click');
     expect(wrapper.emitted('open')).toHaveLength(1);
   });
+
+  it('uses note and business context for the home summary hierarchy', () => {
+    const wrapper = mount(EntryListItem, {
+      props: { entry, ledgerType: 'PERSONAL', homeSummary: true },
+    });
+    expect(wrapper.text()).toContain('非常长的早餐备注');
+    expect(wrapper.text()).toContain('7月14日');
+    expect(wrapper.text()).toContain('餐饮');
+    expect(wrapper.text()).not.toContain('微信');
+  });
 });

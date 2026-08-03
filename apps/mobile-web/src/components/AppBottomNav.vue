@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  EditOutlined,
+  HomeOutlined,
+  PieChartOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
+} from '@ant-design/icons-vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -7,11 +14,11 @@ const props = defineProps<{ active?: NavKey }>();
 const route = useRoute();
 
 const items = [
-  { key: 'home', label: '首页', to: '/home', symbol: '⌂' },
-  { key: 'entries', label: '明细', to: '/entries', symbol: '明' },
-  { key: 'create', label: '记账', to: '/entries/new', symbol: '+' },
-  { key: 'statistics', label: '统计', to: '/statistics', symbol: '统' },
-  { key: 'profile', label: '我的', to: '/account', symbol: '我' },
+  { key: 'home', label: '首页', to: '/home', icon: HomeOutlined },
+  { key: 'entries', label: '明细', to: '/entries', icon: UnorderedListOutlined },
+  { key: 'create', label: '记一笔', to: '/entries/new', icon: EditOutlined },
+  { key: 'statistics', label: '统计', to: '/statistics', icon: PieChartOutlined },
+  { key: 'profile', label: '我的', to: '/account', icon: UserOutlined },
 ] as const;
 
 const routeKeys: Record<string, NavKey> = {
@@ -38,7 +45,7 @@ const currentActive = computed(() => props.active ?? routeKeys[String(route.name
       :to="item.to"
       :aria-current="currentActive === item.key ? 'page' : undefined"
     >
-      <span aria-hidden="true">{{ item.symbol }}</span>
+      <span aria-hidden="true"><component :is="item.icon" /></span>
       <small>{{ item.label }}</small>
     </RouterLink>
   </nav>
@@ -75,7 +82,7 @@ const currentActive = computed(() => props.active ?? routeKeys[String(route.name
   height: 26px;
   place-items: center;
   border-radius: 10px;
-  font-weight: 700;
+  font-size: 20px;
 }
 .bottom-nav__item small {
   font-size: 11px;
@@ -92,6 +99,6 @@ const currentActive = computed(() => props.active ?? routeKeys[String(route.name
   background: var(--siyu-primary);
   box-shadow: 0 8px 18px color-mix(in srgb, var(--siyu-primary) 28%, transparent);
   color: #fff;
-  font-size: 25px;
+  font-size: 22px;
 }
 </style>
