@@ -29,6 +29,6 @@
 | TASK-024 | 权限与安全审计（已合并、CI 通过并正式关闭） | M8 | Sol | Extra High | TASK-005,TASK-016,TASK-019 |
 | TASK-025 | 全链路 E2E 和发布验收（仓库开发与 CI 已闭环；生产上线外部阻断） | M8 | Sol | Ultra | TASK-022,TASK-024 |
 | TASK-026 | 个人/情侣私有部署就绪（已合并、CI 通过并正式关闭） | M8 | Sol | High | TASK-025 |
-| TASK-027 | 首页与“我的”APP 化重构（本地交付候选，待 PR/CI） | M9 | Sol | High | TASK-026 |
+| TASK-027 | 首页与“我的”APP 化重构（已合并、CI 通过并正式关闭） | M9 | Sol | High | TASK-026 |
 
 模型与推理是建议值，执行前按 Codex 当前可用模型确认。

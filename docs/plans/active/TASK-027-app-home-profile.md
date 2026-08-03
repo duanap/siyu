@@ -2,7 +2,7 @@
 
 ## 状态
 
-本地交付候选（待提交、PR 与远程 CI）
+已合并、CI 通过并正式关闭
 
 ## 模型与推理
 
@@ -101,8 +101,14 @@ git diff --check
 - 2026-08-03：Chrome/CDP 完成首页与“我的”10 组移动端矩阵和金额隐藏交互；三轮设计对照修复后
   `design-qa.md` 为 `passed`。
 - 2026-08-03：Node 24 下 lint、typecheck、203 项测试、生产构建、12 迁移后的完整 API/Worker E2E 通过。
+- 2026-08-04：功能提交 `d9d8a99` 经 PR #42 进入远程 CI；首次 Run `30838781197` 在依赖审计发现
+  `brace-expansion` 与 PostCSS 新公告，未跳过门禁。
+- 2026-08-04：提交 `881b0a3` 将安全覆盖更新到 `brace-expansion@5.0.9` 与 `postcss@8.5.23`；PR CI
+  Run `30839314625` 的 `quality`、`database`、`secret-scan` 全绿。
+- 2026-08-04：PR #42 Squash merge 合入 `main`，合并提交为
+  `27f56dd61791fdf561cc0b00985b49de3d824907`；main push CI Run `30839548270` 全绿。
 
 ## 完成结果
 
-首页与“我的”APP 化重构已形成本地交付候选。无数据库、迁移或公开 API 变化；金额与主题偏好仅写入本机
-`localStorage`，服务端财务权限边界不变。待按独立提交序列进入 PR 和远程 CI 后正式关闭 TASK-027。
+首页与“我的”APP 化重构已通过独立提交、PR、远程 CI、合并和最终 `main` CI，TASK-027 正式关闭。
+无数据库、迁移或公开 API 变化；金额与主题偏好仅写入本机 `localStorage`，服务端财务权限边界不变。
